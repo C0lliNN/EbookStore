@@ -10,7 +10,7 @@
 * As a customer, I should be able to list my a purchases
 * As a customer, I should be able to download a PDF of my books
 * As a customer, I should be able to show and edit my profile information
-* As an administrator, I should be able to list the register users
+* As an administrator, I should be able to list the registered users
 * As an administrator, I should be able to list and register books
 * As an administrator, I should be able to list all the orders
 
