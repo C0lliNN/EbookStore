@@ -5,4 +5,7 @@ import (
 	"github.com/google/wire"
 )
 
-var Container = wire.NewSet(internal.NewBar, internal.NewFoo, Provider)
+var Container = wire.NewSet(
+	Provider,
+	internal.NewRepository,
+)

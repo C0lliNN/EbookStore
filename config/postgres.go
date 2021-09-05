@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/schema"
 )
 
 func NewConnection() (conn *gorm.DB) {
@@ -17,15 +16,11 @@ func NewConnection() (conn *gorm.DB) {
 
 	dbUrl := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, pass, dbName)
 
-	config := gorm.Config{
-		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "coupon_management.",
-		}}
-
-	conn, err := gorm.Open(postgres.New(postgres.Config{
+	dialector := postgres.New(postgres.Config{
 		DSN:                  dbUrl,
 		PreferSimpleProtocol: true,
-	}), &config)
+	})
+	conn, err := gorm.Open(dialector, &gorm.Config{})
 
 	if err != nil {
 		Logger.Fatalw("Postgres connection has failed", "error", err.Error())

@@ -8,7 +8,7 @@ import (
 	"github.com/google/wire"
 )
 
-func SetupApplication() internal.Foo {
+func SetupApplication() internal.Repository {
 	wire.Build(config.Container)
-	return internal.Foo{}
+	return internal.Repository{}
 }

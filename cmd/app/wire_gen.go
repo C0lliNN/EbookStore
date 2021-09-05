@@ -6,13 +6,14 @@
 package app
 
 import (
+	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal"
 )
 
 // Injectors from wire.go:
 
-func SetupApplication() internal.Foo {
-	bar := internal.NewBar()
-	foo := internal.NewFoo(bar)
-	return foo
+func SetupApplication() internal.Repository {
+	db := config.NewConnection()
+	repository := internal.NewRepository(db)
+	return repository
 }
