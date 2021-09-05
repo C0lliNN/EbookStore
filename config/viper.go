@@ -6,7 +6,7 @@ import (
 )
 
 func InitConfiguration() {
-	viper.AddConfigPath("etc")
+	viper.AddConfigPath("../config")
 	viper.SetConfigName("env")
 
 	err := viper.ReadInConfig()

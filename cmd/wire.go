@@ -1,6 +1,6 @@
 //+build wireinject
 
-package app
+package main
 
 import (
 	"github.com/c0llinn/ebook-store/config"

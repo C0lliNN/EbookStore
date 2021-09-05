@@ -3,7 +3,7 @@
 //go:generate go run github.com/google/wire/cmd/wire
 //+build !wireinject
 
-package app
+package main
 
 import (
 	"github.com/c0llinn/ebook-store/config"
