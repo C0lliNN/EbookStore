@@ -1,6 +1,5 @@
 # Todo
 
-* Setup Dependency Injection
 * Setup ORM
 * Setup docker-compose and dockerfile
 * Use a package by feature approach
