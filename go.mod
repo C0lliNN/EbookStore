@@ -3,6 +3,7 @@ module github.com/c0llinn/ebook-store
 go 1.16
 
 require (
+	github.com/bxcodec/faker/v3 v3.6.0 // indirect
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0

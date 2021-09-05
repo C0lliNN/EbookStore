@@ -5,8 +5,7 @@ import (
 	"github.com/c0llinn/ebook-store/config/db"
 	"github.com/c0llinn/ebook-store/config/env"
 	"github.com/c0llinn/ebook-store/config/log"
-	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/google/uuid"
+	"github.com/c0llinn/ebook-store/test/factory"
 )
 
 func init() {
@@ -18,15 +17,8 @@ func init() {
 func main() {
 	repo := SetupApplication()
 
-	user := auth.User{
-		ID:        uuid.NewString(),
-		FirstName: "Raphael",
-		LastName:  "Collin",
-		Role:      auth.Admin,
-		Email:     "raphael@test.com",
-		Password:  "some-password",
-	}
-
+	user := factory.NewUser()
 	err := repo.Save(&user)
+
 	fmt.Println(err)
 }
