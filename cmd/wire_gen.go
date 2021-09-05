@@ -10,10 +10,6 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth"
 )
 
-import (
-	_ "github.com/c0llinn/ebook-store/config"
-)
-
 // Injectors from wire.go:
 
 func SetupApplication() auth.UserRepository {
