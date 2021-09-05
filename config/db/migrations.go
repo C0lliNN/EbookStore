@@ -18,7 +18,7 @@ func LoadMigrations() {
 
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, pass, host, port, dbName)
 
-	m, err := migrate.New("file:../migrations", dbUrl)
+	m, err := migrate.New("file:../migration", dbUrl)
 
 	if err != nil {
 		log.Logger.Fatalw("DB migration has failed", "error", err)

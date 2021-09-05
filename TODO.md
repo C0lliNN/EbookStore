@@ -1,4 +1,5 @@
 # Todo
 
-* Use a package by feature approach
-* Use users as a single table
+* Setup webserver
+* Setup tests
+* Add faker

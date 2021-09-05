@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/golang-migrate/migrate/v4 v4.14.1
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/google/wire v0.5.0
 	github.com/jackc/pgx/v4 v4.13.0 // indirect
 	github.com/lib/pq v1.10.2
