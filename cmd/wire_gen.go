@@ -6,14 +6,18 @@
 package main
 
 import (
-	"github.com/c0llinn/ebook-store/config"
-	"github.com/c0llinn/ebook-store/internal"
+	"github.com/c0llinn/ebook-store/config/db"
+	"github.com/c0llinn/ebook-store/internal/auth"
+)
+
+import (
+	_ "github.com/c0llinn/ebook-store/config"
 )
 
 // Injectors from wire.go:
 
-func SetupApplication() internal.Repository {
-	db := config.NewConnection()
-	repository := internal.NewRepository(db)
-	return repository
+func SetupApplication() auth.UserRepository {
+	gormDB := db.NewConnection()
+	userRepository := auth.NewUserRepository(gormDB)
+	return userRepository
 }

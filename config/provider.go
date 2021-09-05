@@ -1,12 +1,17 @@
 package config
 
-import "github.com/google/wire"
+import (
+	"github.com/c0llinn/ebook-store/config/db"
+	"github.com/c0llinn/ebook-store/config/env"
+	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/google/wire"
+)
 
 func init() {
-	InitConfiguration()
-	InitLogger()
+	env.InitConfiguration()
+	log.InitLogger()
 }
 
 var Provider = wire.NewSet(
-	NewConnection,
+	db.NewConnection,
 )

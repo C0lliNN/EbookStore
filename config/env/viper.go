@@ -1,4 +1,4 @@
-package config
+package env
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 )
 
 func InitConfiguration() {
-	viper.AddConfigPath("../config")
+	viper.AddConfigPath("..")
 	viper.SetConfigName("env")
 
 	err := viper.ReadInConfig()

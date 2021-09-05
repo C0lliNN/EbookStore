@@ -1,11 +1,21 @@
 package main
 
 import (
-	_ "github.com/c0llinn/ebook-store/config"
+	"fmt"
+	"github.com/c0llinn/ebook-store/internal/auth"
 )
 
 func main() {
 	repo := SetupApplication()
 
-	repo.HealthTest()
+	user := auth.User{
+		ID:        "some-id",
+		FirstName: "Raphael",
+		LastName:  "Collin",
+		Email:     "raphael@test.com",
+		Password:  "some-password",
+	}
+
+	err := repo.Save(&user)
+	fmt.Println(err)
 }
