@@ -2,4 +2,4 @@
 
 * Setup webserver
 * Setup tests
-* Add faker
+* Start working on features

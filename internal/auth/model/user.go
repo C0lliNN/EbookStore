@@ -1,4 +1,4 @@
-package auth
+package model
 
 type UserRole string
 
@@ -11,8 +11,8 @@ type User struct {
 	ID        string
 	FirstName string
 	LastName  string
-	Email     string
-	Role      UserRole
-	Password  string
+	Email    string
+	Role     UserRole
+	Password string
 	CreatedAt int64
 }

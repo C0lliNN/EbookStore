@@ -1,7 +1,8 @@
-package auth
+package repository
 
 import (
 	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"gorm.io/gorm"
 )
 
@@ -13,7 +14,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return UserRepository{db: db}
 }
 
-func (r UserRepository) Save(user *User) error {
+func (r UserRepository) Save(user *model.User) error {
 	result := r.db.Create(user)
 	if err := result.Error; err != nil {
 		log.Logger.Errorf("error trying to save user: %v", err)
