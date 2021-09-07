@@ -16,3 +16,11 @@ type User struct {
 	Password string
 	CreatedAt int64
 }
+
+func (u User) IsAdmin() bool {
+	return u.Role == Admin
+}
+
+func (u User) FullName() string {
+	return u.FirstName + " " + u.LastName
+}

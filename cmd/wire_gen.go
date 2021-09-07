@@ -7,13 +7,26 @@ package main
 
 import (
 	"github.com/c0llinn/ebook-store/config/db"
+	"github.com/c0llinn/ebook-store/internal/api"
+	http2 "github.com/c0llinn/ebook-store/internal/auth/delivery/http"
+	"github.com/c0llinn/ebook-store/internal/auth/helper"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
+	"github.com/c0llinn/ebook-store/internal/auth/token"
+	"github.com/c0llinn/ebook-store/internal/auth/usecase"
+	"net/http"
 )
 
 // Injectors from wire.go:
 
-func SetupApplication() repository.UserRepository {
+func CreateWebServer() *http.Server {
+	engine := api.NewRouter()
 	gormDB := db.NewConnection()
 	userRepository := repository.NewUserRepository(gormDB)
-	return userRepository
+	hmacSecret := token.NewHMACSecret()
+	jwtWrapper := token.NewJWTWrapper(hmacSecret)
+	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper)
+	uuidGenerator := helper.NewUUIDGenerator()
+	authHandler := http2.NewAuthHandler(authUseCase, uuidGenerator)
+	server := api.NewHttpServer(engine, authHandler)
+	return server
 }

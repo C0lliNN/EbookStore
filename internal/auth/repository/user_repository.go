@@ -17,7 +17,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 func (r UserRepository) Save(user *model.User) error {
 	result := r.db.Create(user)
 	if err := result.Error; err != nil {
-		log.Logger.Errorf("error trying to save user: %v", err)
+		log.Logger.Error("error trying to save user: ", err)
 		return err
 	}
 

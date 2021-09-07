@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"github.com/c0llinn/ebook-store/config/db"
 	"github.com/c0llinn/ebook-store/config/env"
 	"github.com/c0llinn/ebook-store/config/log"
-	"github.com/c0llinn/ebook-store/test/factory"
 )
 
 func init() {
@@ -15,10 +13,10 @@ func init() {
 }
 
 func main() {
-	repo := SetupApplication()
+	server := CreateWebServer()
 
-	user := factory.NewUser()
-	err := repo.Save(&user)
-
-	fmt.Println(err)
+	err := server.ListenAndServe()
+	if err != nil {
+		log.Logger.Fatalf("Could not start web api: %v", err)
+	}
 }

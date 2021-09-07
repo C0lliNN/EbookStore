@@ -4,11 +4,11 @@ package main
 
 import (
 	"github.com/c0llinn/ebook-store/config/di"
-	"github.com/c0llinn/ebook-store/internal/auth/repository"
 	"github.com/google/wire"
+	"net/http"
 )
 
-func SetupApplication() repository.UserRepository {
+func CreateWebServer() *http.Server {
 	wire.Build(di.Container)
-	return repository.UserRepository{}
+	return &http.Server{}
 }

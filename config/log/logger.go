@@ -1,8 +1,6 @@
 package log
 
-
 import (
-	"fmt"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -17,7 +15,6 @@ var (
 )
 
 func InitLogger() {
-	fmt.Println("here")
 	once.Do(func() {
 		log, err := newLogger()
 		if err != nil {
