@@ -43,11 +43,12 @@ func (s *UserRepositoryTestSuite) TestUserRepository_SaveSuccessfully() {
 	assert.Nil(s.T(), err)
 }
 
-func (s *UserRepositoryTestSuite) TestUserRepository_WithError() {
+func (s *UserRepositoryTestSuite) TestUserRepository_WithDuplicateEmail() {
 	user := factory.NewUser()
-	user.ID += user.ID
 
 	err := s.repo.Save(&user)
+	assert.Nil(s.T(), err)
 
-	assert.NotNil(s.T(), err)
+	err = s.repo.Save(&user)
+	assert.IsType(s.T(), &model.ErrDuplicateKey{}, err)
 }
