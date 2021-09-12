@@ -27,7 +27,7 @@ func NewAuthHandler(useCase UseCase, idGenerator IDGenerator) AuthHandler {
 func (h AuthHandler) register(context *gin.Context) {
 	var r dto.RegisterRequest
 	if err := context.ShouldBindJSON(&r); err != nil {
-		context.Error(err)
+		context.Error(&model.ErrNotValid{Input: "RegisterRequest", Err: err})
 		return
 	}
 

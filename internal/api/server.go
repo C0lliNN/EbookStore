@@ -14,6 +14,7 @@ func NewRouter() *gin.Engine {
 
 func NewHttpServer(router *gin.Engine, authHandler auth.AuthHandler) *http.Server {
 	router.Use(gin.Recovery())
+	router.Use(Errors())
 
 	authHandler.Routes(router)
 
