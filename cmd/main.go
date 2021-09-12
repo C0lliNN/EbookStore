@@ -9,7 +9,7 @@ import (
 func init() {
 	env.InitConfiguration()
 	log.InitLogger()
-	db.LoadMigrations()
+	db.LoadMigrations("file:../migration")
 }
 
 func main() {

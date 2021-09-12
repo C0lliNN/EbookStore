@@ -5,6 +5,7 @@ package repository
 import (
 	"github.com/c0llinn/ebook-store/config/db"
 	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/stretchr/testify/assert"
@@ -20,9 +21,14 @@ type UserRepositoryTestSuite struct {
 func (s *UserRepositoryTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
 	log.InitLogger()
+	db.LoadMigrations("file:../../../migration")
 
 	conn := db.NewConnection()
 	s.repo = UserRepository{conn}
+}
+
+func (s *UserRepositoryTestSuite) TearDownTest() {
+	s.repo.db.Delete(&model.User{}, "1 = 1")
 }
 
 func TestUserRepositoryTest(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 
 func SetEnvironmentVariables() {
 	viper.SetDefault("LOG_LEVEL", "debug")
+	viper.SetDefault("PORT", "8081")
 	viper.SetDefault("ENV", "local")
 
 	viper.SetDefault("POSTGRES_HOST", "localhost")

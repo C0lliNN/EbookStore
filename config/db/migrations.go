@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func LoadMigrations() {
+func LoadMigrations(source string) {
 	host := viper.GetString("POSTGRES_HOST")
 	port := viper.GetString("POSTGRES_PORT")
 	user := viper.GetString("POSTGRES_USERNAME")
@@ -18,7 +18,7 @@ func LoadMigrations() {
 
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, pass, host, port, dbName)
 
-	m, err := migrate.New("file:../migration", dbUrl)
+	m, err := migrate.New(source, dbUrl)
 
 	if err != nil {
 		log.Logger.Fatalw("DB migration has failed", "error", err)

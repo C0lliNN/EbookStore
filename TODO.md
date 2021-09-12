@@ -1,8 +1,7 @@
 # Todo
 
-* Implement tests
-* Add error handling
 * Add validation
+* Add error handling
 * Make email unique
 * Create Login and reset password
 * Add swagoo
