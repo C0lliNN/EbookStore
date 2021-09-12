@@ -3,25 +3,29 @@
 package usecase
 
 import (
+	"fmt"
+	"github.com/bxcodec/faker/v3"
 	"github.com/c0llinn/ebook-store/internal/auth/mock"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/stretchr/testify/assert"
 	mock2 "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 	"testing"
 )
 
 const (
-	saveMethod = "Save"
+	saveMethod          = "Save"
+	findByEmail         = "FindByEmail"
 	generateTokenMethod = "GenerateTokenForUser"
 )
 
 type AuthUseCaseTestSuite struct {
 	suite.Suite
-	jwt *mock.JWTWrapper
-	repo *mock.UserRepository
+	jwt     *mock.JWTWrapper
+	repo    *mock.UserRepository
 	useCase AuthUseCase
 }
 
@@ -72,5 +76,47 @@ func (s *AuthUseCaseTestSuite) TestRegister_WhenNoErrorWasFound() {
 	assert.Equal(s.T(), model.Credentials{Token: "token"}, credentials)
 
 	s.repo.AssertNumberOfCalls(s.T(), saveMethod, 1)
+	s.jwt.AssertNumberOfCalls(s.T(), generateTokenMethod, 1)
+}
+
+func (s *AuthUseCaseTestSuite) TestLogin_WhenUserWasNotFound() {
+	s.repo.On(findByEmail, "email@test.com").Return(model.User{}, fmt.Errorf("some error"))
+
+	_, err := s.useCase.Login("email@test.com", "password")
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
+	s.jwt.AssertNotCalled(s.T(), generateTokenMethod)
+}
+
+func (s *AuthUseCaseTestSuite) TestLogin_WhenPasswordsDontMatch() {
+	user := factory.NewUser()
+
+	s.repo.On(findByEmail, user.Email).Return(user, nil)
+
+	_, err := s.useCase.Login(user.Email, "password")
+
+	assert.IsType(s.T(), &model.ErrWrongPassword{}, err)
+
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
+	s.jwt.AssertNotCalled(s.T(), generateTokenMethod)
+}
+
+func (s *AuthUseCaseTestSuite) TestLogin_Successfully() {
+	password := faker.Password()
+	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(password), 12)
+	user := factory.NewUser()
+	user.Password = string(hashedPassword)
+
+	s.repo.On(findByEmail, user.Email).Return(user, nil)
+	s.jwt.On(generateTokenMethod, user).Return("token", nil)
+
+	credentials, err := s.useCase.Login(user.Email, password)
+
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), model.Credentials{Token: "token"}, credentials)
+
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.jwt.AssertNumberOfCalls(s.T(), generateTokenMethod, 1)
 }

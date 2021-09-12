@@ -17,3 +17,20 @@ type ErrDuplicateKey struct {
 func (e *ErrDuplicateKey) Error() string {
 	return e.Key + " violation: " + e.Err.Error()
 }
+
+type ErrEntityNotFound struct {
+	Entity string
+	Err error
+}
+
+func (e *ErrEntityNotFound) Error() string {
+	return e.Entity + " could not be found: " + e.Err.Error()
+}
+
+type ErrWrongPassword struct {
+	Err error
+}
+
+func (e *ErrWrongPassword) Error() string {
+	return e.Err.Error()
+}

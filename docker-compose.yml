@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   db:
+    container_name: "ebook_db_local"
     image: postgres
     environment:
       - POSTGRES_DB=postgres

@@ -9,6 +9,7 @@ import (
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -43,7 +44,7 @@ func (s *UserRepositoryTestSuite) TestUserRepository_SaveSuccessfully() {
 	assert.Nil(s.T(), err)
 }
 
-func (s *UserRepositoryTestSuite) TestUserRepository_WithDuplicateEmail() {
+func (s *UserRepositoryTestSuite) TestUserRepository_SaveWithDuplicateEmail() {
 	user := factory.NewUser()
 
 	err := s.repo.Save(&user)
@@ -51,4 +52,22 @@ func (s *UserRepositoryTestSuite) TestUserRepository_WithDuplicateEmail() {
 
 	err = s.repo.Save(&user)
 	assert.IsType(s.T(), &model.ErrDuplicateKey{}, err)
+}
+
+func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailSuccessfully() {
+	expected := factory.NewUser()
+
+	err := s.repo.Save(&expected)
+	require.Nil(s.T(), err)
+
+	actual, err := s.repo.FindByEmail(expected.Email)
+
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), expected, actual)
+}
+
+func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailNotFound() {
+	_, err := s.repo.FindByEmail("test@test.com")
+
+	assert.IsType(s.T(), &model.ErrEntityNotFound{}, err)
 }

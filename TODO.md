@@ -1,7 +1,8 @@
 # Todo
 
-* Create Login and reset password
+* Forgot password
 * Add swagoo
+* Create Auth and Admin middleware
 * Start working on features
 
 ## Nice to have

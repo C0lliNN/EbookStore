@@ -29,6 +29,22 @@ func fromDuplicateKey(err *model.ErrDuplicateKey) *Error {
 	}
 }
 
+func fromEntityNotFound(err *model.ErrEntityNotFound) *Error {
+	return &Error{
+		Code:    404,
+		Message: fmt.Sprintf("%s with the provided parameters could not be found", err.Entity),
+		Details: err.Error(),
+	}
+}
+
+func fromWrongPassword(err *model.ErrWrongPassword) *Error {
+	return &Error{
+		Code:    401,
+		Message: "the provided password is invalid",
+		Details: err.Error(),
+	}
+}
+
 func fromGeneric(err error) *Error {
 	return &Error{
 		Code:    500,
@@ -53,6 +69,10 @@ func Errors() gin.HandlerFunc {
 				apiError = fromNotValid(parsed)
 			case *model.ErrDuplicateKey:
 				apiError = fromDuplicateKey(parsed)
+			case *model.ErrEntityNotFound:
+				apiError = fromEntityNotFound(parsed)
+			case *model.ErrWrongPassword:
+				apiError = fromWrongPassword(parsed)
 			default:
 				apiError = fromGeneric(parsed)
 			}

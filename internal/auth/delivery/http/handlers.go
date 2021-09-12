@@ -13,6 +13,7 @@ type IDGenerator interface {
 
 type UseCase interface {
 	Register(user model.User) (model.Credentials, error)
+	Login(email, password string) (model.Credentials, error)
 }
 
 type AuthHandler struct {
@@ -39,4 +40,20 @@ func (h AuthHandler) register(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusCreated, dto.FromCredentials(credentials))
+}
+
+func (h AuthHandler) login(context *gin.Context) {
+	var r dto.LoginRequest
+	if err := context.ShouldBindJSON(&r); err != nil {
+		context.Error(&model.ErrNotValid{Input: "LoginRequest", Err: err})
+		return
+	}
+
+	credentials, err := h.useCase.Login(r.Email, r.Password)
+	if err != nil {
+		context.Error(err)
+		return
+	}
+
+	context.JSON(http.StatusOK, dto.FromCredentials(credentials))
 }
