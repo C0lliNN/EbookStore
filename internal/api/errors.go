@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/gin-gonic/gin"
@@ -16,6 +17,14 @@ func fromNotValid(err *model.ErrNotValid) *Error {
 	return &Error{
 		Code:    400,
 		Message: "The provided payload is not valid",
+		Details: err.Error(),
+	}
+}
+
+func fromDuplicateKey(err *model.ErrDuplicateKey) *Error {
+	return &Error{
+		Code:    409,
+		Message: fmt.Sprintf("this %s is already being used", err.Key),
 		Details: err.Error(),
 	}
 }
@@ -42,6 +51,8 @@ func Errors() gin.HandlerFunc {
 			switch parsed := err.(type) {
 			case *model.ErrNotValid:
 				apiError = fromNotValid(parsed)
+			case *model.ErrDuplicateKey:
+				apiError = fromDuplicateKey(parsed)
 			default:
 				apiError = fromGeneric(parsed)
 			}

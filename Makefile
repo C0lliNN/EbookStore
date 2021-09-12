@@ -15,4 +15,10 @@ docker-up:
 docker-down:
 	@docker-compose --file=docker-compose.test.yml down
 
+migrate-up:
+	@migrate -source file:./migration -database postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable up
+
+migrate-down:
+	@migrate -source file:./migration -database postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable down 1
+
 clear: docker-down
