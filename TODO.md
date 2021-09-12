@@ -1,6 +1,5 @@
 # Todo
 
-* Encrypt password
 * Create Login and reset password
 * Add swagoo
 * Start working on features

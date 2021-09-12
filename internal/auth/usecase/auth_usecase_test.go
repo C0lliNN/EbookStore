@@ -7,6 +7,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/stretchr/testify/assert"
+	mock2 "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 	"testing"
@@ -36,7 +37,8 @@ func TestAuthUseCaseRun(t *testing.T) {
 
 func (s *AuthUseCaseTestSuite) TestRegister_WhenRepositoryFails() {
 	user := factory.NewUser()
-	s.repo.On(saveMethod, &user).Return(gorm.ErrInvalidValue)
+
+	s.repo.On(saveMethod, mock2.AnythingOfType("*model.User")).Return(gorm.ErrInvalidValue)
 
 	_, err := s.useCase.Register(user)
 
@@ -47,8 +49,9 @@ func (s *AuthUseCaseTestSuite) TestRegister_WhenRepositoryFails() {
 
 func (s *AuthUseCaseTestSuite) TestRegister_WhenTokenGenerationFails() {
 	user := factory.NewUser()
-	s.repo.On(saveMethod, &user).Return(nil)
-	s.jwt.On(generateTokenMethod, user).Return("", gorm.ErrInvalidValue)
+
+	s.repo.On(saveMethod, mock2.AnythingOfType("*model.User")).Return(nil)
+	s.jwt.On(generateTokenMethod, mock2.AnythingOfType("model.User")).Return("", gorm.ErrInvalidValue)
 
 	_, err := s.useCase.Register(user)
 
@@ -59,8 +62,9 @@ func (s *AuthUseCaseTestSuite) TestRegister_WhenTokenGenerationFails() {
 
 func (s *AuthUseCaseTestSuite) TestRegister_WhenNoErrorWasFound() {
 	user := factory.NewUser()
-	s.repo.On(saveMethod, &user).Return(nil)
-	s.jwt.On(generateTokenMethod, user).Return("token", nil)
+
+	s.repo.On(saveMethod, mock2.AnythingOfType("*model.User")).Return(nil)
+	s.jwt.On(generateTokenMethod, mock2.AnythingOfType("model.User")).Return("token", nil)
 
 	credentials, err := s.useCase.Register(user)
 

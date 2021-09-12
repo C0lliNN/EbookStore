@@ -1,6 +1,9 @@
 package usecase
 
-import "github.com/c0llinn/ebook-store/internal/auth/model"
+import (
+	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"golang.org/x/crypto/bcrypt"
+)
 
 type Repository interface {
 	Save(user *model.User) error
@@ -21,6 +24,12 @@ func NewAuthUseCase(repo Repository, jwt JWTWrapper) AuthUseCase {
 }
 
 func (u AuthUseCase) Register(user model.User) (credentials model.Credentials, err error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+	if err != nil {
+		return
+	}
+
+	user.Password = string(hashedPassword)
 	if err = u.repo.Save(&user); err != nil {
 		return
 	}

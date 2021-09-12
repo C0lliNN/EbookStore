@@ -1,3 +1,5 @@
+// +build integration
+
 package http
 
 import (
@@ -61,7 +63,7 @@ func TestAuthHandlerRun(t *testing.T) {
 }
 
 func (s *AuthHandlerTestSuite) TestRegisterSuccessfully() {
-	password := faker.Password()
+	password := faker.PASSWORD
 	payload := dto.RegisterRequest{
 		FirstName:            faker.FirstName(),
 		LastName:             faker.LastName(),
