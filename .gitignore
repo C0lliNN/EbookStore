@@ -13,3 +13,6 @@
 
 # Goland
 .idea
+
+# Localstack
+.tmp

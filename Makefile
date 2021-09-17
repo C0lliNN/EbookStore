@@ -10,10 +10,10 @@ unit-test: dependency
 	@go test -tags=unit ./...
 
 docker-up:
-	@docker-compose --file=docker-compose.test.yml up -d
+	@docker-compose --file=docker-compose.test.yml --project-name ebook-store-test up -d
 
 docker-down:
-	@docker-compose --file=docker-compose.test.yml down
+	@docker-compose --file=docker-compose.test.yml --project-name ebook-store-test down
 
 migrate-up:
 	@migrate -source file:./migration -database postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable up

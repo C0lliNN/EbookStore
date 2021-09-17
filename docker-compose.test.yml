@@ -2,7 +2,6 @@ version: "3.8"
 
 services:
   db:
-    container_name: "ebook_db_test"
     image: postgres
     environment:
       - POSTGRES_DB=postgres
@@ -10,3 +9,13 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5433:5432"
+  localstack:
+    image: localstack/localstack
+    ports:
+      - "5566-5599:4566-4599"
+    environment:
+      - DEFAULT_REGION=us-east-2
+      - SERVICES=ses
+      - START_WEB=0
+    volumes:
+      - ./scripts/setup_localstack.sh:/docker-entrypoint-initaws.d/init.sh

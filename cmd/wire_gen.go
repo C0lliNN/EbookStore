@@ -6,9 +6,11 @@
 package main
 
 import (
+	"github.com/c0llinn/ebook-store/config/aws"
 	"github.com/c0llinn/ebook-store/config/db"
 	"github.com/c0llinn/ebook-store/internal/api"
 	http2 "github.com/c0llinn/ebook-store/internal/auth/delivery/http"
+	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
 	"github.com/c0llinn/ebook-store/internal/auth/token"
@@ -24,7 +26,10 @@ func CreateWebServer() *http.Server {
 	userRepository := repository.NewUserRepository(gormDB)
 	hmacSecret := token.NewHMACSecret()
 	jwtWrapper := token.NewJWTWrapper(hmacSecret)
-	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper)
+	ses := aws.NewSNSService()
+	client := email.NewEmailClient(ses)
+	passwordGenerator := helper.NewPasswordGenerator()
+	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator)
 	uuidGenerator := helper.NewUUIDGenerator()
 	authHandler := http2.NewAuthHandler(authUseCase, uuidGenerator)
 	server := api.NewHttpServer(engine, authHandler)

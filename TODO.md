@@ -1,6 +1,6 @@
 # Todo
 
-* Forgot password
+* Maybe add bcrypt wrapper
 * Add swagoo
 * Create Auth and Admin middleware
 * Start working on features

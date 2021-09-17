@@ -19,20 +19,28 @@ import (
 const (
 	saveMethod          = "Save"
 	findByEmail         = "FindByEmail"
+	updateMethod = "Update"
 	generateTokenMethod = "GenerateTokenForUser"
+	newPasswordMethod = "NewPassword"
+	sendEmailMethod = "SendPasswordResetEmail"
 )
 
 type AuthUseCaseTestSuite struct {
 	suite.Suite
-	jwt     *mock.JWTWrapper
-	repo    *mock.UserRepository
-	useCase AuthUseCase
+	jwt               *mock.JWTWrapper
+	repo              *mock.UserRepository
+	emailClient       *mock.EmailClient
+	passwordGenerator *mock.PasswordGenerator
+	useCase           AuthUseCase
 }
 
 func (s *AuthUseCaseTestSuite) SetupTest() {
 	s.jwt = new(mock.JWTWrapper)
 	s.repo = new(mock.UserRepository)
-	s.useCase = AuthUseCase{jwt: s.jwt, repo: s.repo}
+	s.emailClient = new(mock.EmailClient)
+	s.passwordGenerator = new(mock.PasswordGenerator)
+
+	s.useCase = AuthUseCase{jwt: s.jwt, repo: s.repo, emailClient: s.emailClient, passwordGenerator: s.passwordGenerator}
 }
 
 func TestAuthUseCaseRun(t *testing.T) {
@@ -119,4 +127,74 @@ func (s *AuthUseCaseTestSuite) TestLogin_Successfully() {
 
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.jwt.AssertNumberOfCalls(s.T(), generateTokenMethod, 1)
+}
+
+func (s AuthUseCaseTestSuite) TestResetPassword_WhenUserWasNotFound() {
+	email := faker.Email()
+	s.repo.On(findByEmail, email).Return(model.User{}, fmt.Errorf("some error"))
+
+	err := s.useCase.ResetPassword(email)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
+	s.repo.AssertNotCalled(s.T(), updateMethod)
+	s.passwordGenerator.AssertNotCalled(s.T(), newPasswordMethod)
+	s.emailClient.AssertNotCalled(s.T(), sendEmailMethod)
+}
+
+func (s AuthUseCaseTestSuite) TestResetPassword_WhenUpdateFails() {
+	user := factory.NewUser()
+	newPassword := "password"
+
+	s.repo.On(findByEmail, user.Email).Return(user, nil)
+	s.passwordGenerator.On(newPasswordMethod).Return(newPassword)
+	s.repo.On(updateMethod, mock2.Anything).Return(fmt.Errorf("some error"))
+
+	err := s.useCase.ResetPassword(user.Email)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
+	s.repo.AssertNumberOfCalls(s.T(), updateMethod, 1)
+	s.passwordGenerator.AssertNumberOfCalls(s.T(), newPasswordMethod, 1)
+	s.emailClient.AssertNotCalled(s.T(), sendEmailMethod)
+}
+
+func (s AuthUseCaseTestSuite) TestResetPassword_WhenEmailSendingFails() {
+	user := factory.NewUser()
+	newPassword := "password"
+
+	s.repo.On(findByEmail, user.Email).Return(user, nil)
+	s.passwordGenerator.On(newPasswordMethod).Return(newPassword)
+	s.repo.On(updateMethod, mock2.Anything).Return(nil)
+	s.emailClient.On(sendEmailMethod, mock2.Anything, newPassword).Return(fmt.Errorf("some error"))
+
+	err := s.useCase.ResetPassword(user.Email)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
+	s.repo.AssertNumberOfCalls(s.T(), updateMethod, 1)
+	s.passwordGenerator.AssertNumberOfCalls(s.T(), newPasswordMethod, 1)
+	s.emailClient.AssertNumberOfCalls(s.T(), sendEmailMethod, 1)
+}
+
+func (s AuthUseCaseTestSuite) TestResetPassword_Successfully() {
+	user := factory.NewUser()
+	newPassword := "password"
+
+	s.repo.On(findByEmail, user.Email).Return(user, nil)
+	s.passwordGenerator.On(newPasswordMethod).Return(newPassword)
+	s.repo.On(updateMethod, mock2.Anything).Return(nil)
+	s.emailClient.On(sendEmailMethod, mock2.Anything, newPassword).Return(nil)
+
+	err := s.useCase.ResetPassword(user.Email)
+
+	assert.Nil(s.T(), err)
+
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
+	s.repo.AssertNumberOfCalls(s.T(), updateMethod, 1)
+	s.passwordGenerator.AssertNumberOfCalls(s.T(), newPasswordMethod, 1)
+	s.emailClient.AssertNumberOfCalls(s.T(), sendEmailMethod, 1)
 }

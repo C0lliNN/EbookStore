@@ -3,6 +3,7 @@ module github.com/c0llinn/ebook-store
 go 1.16
 
 require (
+	github.com/aws/aws-sdk-go v1.40.43
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-playground/validator/v10 v10.9.0 // indirect

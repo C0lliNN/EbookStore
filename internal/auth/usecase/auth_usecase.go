@@ -5,23 +5,19 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type Repository interface {
-	Save(user *model.User) error
-	FindByEmail(email string) (model.User, error)
-}
-
-type JWTWrapper interface {
-	ExtractUserFromToken(tokenString string) (user model.User, err error)
-	GenerateTokenForUser(user model.User) (string, error)
-}
-
 type AuthUseCase struct {
-	repo Repository
-	jwt JWTWrapper
+	repo              Repository
+	jwt               JWTWrapper
+	emailClient       EmailClient
+	passwordGenerator PasswordGenerator
 }
 
-func NewAuthUseCase(repo Repository, jwt JWTWrapper) AuthUseCase {
-	return AuthUseCase{repo: repo, jwt: jwt}
+func NewAuthUseCase(repo Repository, jwt JWTWrapper, emailClient EmailClient, passwordGenerator PasswordGenerator) AuthUseCase {
+	return AuthUseCase{
+		repo: repo, jwt: jwt,
+		emailClient:       emailClient,
+		passwordGenerator: passwordGenerator,
+	}
 }
 
 func (u AuthUseCase) Register(user model.User) (model.Credentials, error) {
@@ -58,4 +54,24 @@ func (u AuthUseCase) generateCredentialsForUser(user model.User) (model.Credenti
 	}
 
 	return model.Credentials{Token: token}, nil
+}
+
+func (u AuthUseCase) ResetPassword(email string) error {
+	user, err := u.repo.FindByEmail(email)
+	if err != nil {
+		return err
+	}
+
+	newPassword := u.passwordGenerator.NewPassword()
+	hashedNewPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), 12)
+	if err != nil {
+		return err
+	}
+
+	user.Password = string(hashedNewPassword)
+	if err = u.repo.Update(&user); err != nil {
+		return err
+	}
+
+	return u.emailClient.SendPasswordResetEmail(user, newPassword)
 }

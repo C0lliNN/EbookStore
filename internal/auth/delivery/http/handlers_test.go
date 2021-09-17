@@ -7,9 +7,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/bxcodec/faker/v3"
+	"github.com/c0llinn/ebook-store/config/aws"
 	"github.com/c0llinn/ebook-store/config/db"
 	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/c0llinn/ebook-store/internal/auth/delivery/dto"
+	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
@@ -48,7 +50,10 @@ func (s *AuthHandlerTestSuite) SetupTest() {
 
 	userRepository := repository.NewUserRepository(s.db)
 	jwtWrapper := token.NewJWTWrapper(token.NewHMACSecret())
-	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper)
+	ses := aws.NewSNSService()
+	client := email.NewEmailClient(ses)
+	passwordGenerator := helper.NewPasswordGenerator()
+	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator)
 
 	s.handler = NewAuthHandler(authUseCase, helper.NewUUIDGenerator())
 
@@ -257,8 +262,8 @@ func (s *AuthHandlerTestSuite) TestRegister_Successfully() {
 
 func (s *AuthHandlerTestSuite) TestLogin_WithMalFormedEmail() {
 	payload := dto.LoginRequest{
-		Email:                "invalid-email",
-		Password:             "password",
+		Email:    "invalid-email",
+		Password: "password",
 	}
 
 	data, err := json.Marshal(payload)
@@ -274,8 +279,8 @@ func (s *AuthHandlerTestSuite) TestLogin_WithMalFormedEmail() {
 
 func (s *AuthHandlerTestSuite) TestLogin_WithMalFormedPassword() {
 	payload := dto.LoginRequest{
-		Email:                faker.Email(),
-		Password:             "1234",
+		Email:    faker.Email(),
+		Password: "1234",
 	}
 
 	data, err := json.Marshal(payload)
@@ -291,8 +296,8 @@ func (s *AuthHandlerTestSuite) TestLogin_WithMalFormedPassword() {
 
 func (s *AuthHandlerTestSuite) TestLogin_UnknownEmail() {
 	payload := dto.LoginRequest{
-		Email:                faker.Email(),
-		Password:             "password",
+		Email:    faker.Email(),
+		Password: "password",
 	}
 
 	data, err := json.Marshal(payload)
@@ -312,8 +317,8 @@ func (s *AuthHandlerTestSuite) TestLogin_WithInvalidPassword() {
 	require.Nil(s.T(), err)
 
 	payload := dto.LoginRequest{
-		Email:                user.Email,
-		Password:             "wrong-password",
+		Email:    user.Email,
+		Password: "wrong-password",
 	}
 
 	data, err := json.Marshal(payload)
@@ -337,8 +342,8 @@ func (s *AuthHandlerTestSuite) TestLogin_Successfully() {
 	require.Nil(s.T(), err)
 
 	payload := dto.LoginRequest{
-		Email:                user.Email,
-		Password:             password,
+		Email:    user.Email,
+		Password: password,
 	}
 
 	data, err := json.Marshal(payload)
@@ -355,4 +360,63 @@ func (s *AuthHandlerTestSuite) TestLogin_Successfully() {
 
 	assert.Equal(s.T(), http.StatusOK, s.recorder.Code)
 	assert.NotEmpty(s.T(), credentials.Token)
+}
+
+func (s *AuthHandlerTestSuite) TestResetPassword_WithMalformedEmail() {
+	payload := dto.PasswordResetRequest{
+		Email: "invalid-email",
+	}
+
+	data, err := json.Marshal(payload)
+	require.Nil(s.T(), err)
+
+	request := httptest.NewRequest("POST", s.baseURL+"/password-reset", bytes.NewReader(data))
+	s.context.Request = request
+
+	s.handler.resetPassword(s.context)
+
+	assert.NotEmpty(s.T(), s.context.Errors.Errors())
+}
+
+func (s *AuthHandlerTestSuite) TestResetPassword_WithUnknownEmail() {
+	user := factory.NewUser()
+
+	payload := dto.PasswordResetRequest{
+		Email: user.Email,
+	}
+
+	data, err := json.Marshal(payload)
+	require.Nil(s.T(), err)
+
+	request := httptest.NewRequest("POST", s.baseURL+"/password-reset", bytes.NewReader(data))
+	s.context.Request = request
+
+	s.handler.resetPassword(s.context)
+
+	assert.NotEmpty(s.T(), s.context.Errors.Errors())
+}
+
+func (s *AuthHandlerTestSuite) TestResetPassword_Successfully() {
+	user := factory.NewUser()
+	err := s.db.Create(user).Error
+
+	payload := dto.PasswordResetRequest{
+		Email: user.Email,
+	}
+
+	data, err := json.Marshal(payload)
+	require.Nil(s.T(), err)
+
+	request := httptest.NewRequest("POST", s.baseURL+"/password-reset", bytes.NewReader(data))
+	s.context.Request = request
+
+	s.handler.resetPassword(s.context)
+
+	assert.Empty(s.T(), s.context.Errors.Errors())
+
+	var updated model.User
+	err = s.db.First(&updated, "id = ?", user.ID).Error
+	require.Nil(s.T(), err)
+
+	assert.NotEqual(s.T(), updated.Password, user.Password)
 }

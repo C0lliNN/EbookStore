@@ -71,3 +71,28 @@ func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailNotFound() {
 
 	assert.IsType(s.T(), &model.ErrEntityNotFound{}, err)
 }
+
+func (s *UserRepositoryTestSuite) TestUserRepository_UpdateSuccessfully() {
+	user := factory.NewUser()
+
+	err := s.repo.Save(&user)
+	require.Nil(s.T(), err)
+
+	user.FirstName = "new name"
+	user.LastName = "new last name"
+
+	err = s.repo.Update(&user)
+	require.Nil(s.T(), err)
+
+	persisted, err := s.repo.FindByEmail(user.Email)
+	require.Nil(s.T(), err)
+
+	assert.Equal(s.T(), user, persisted)
+}
+
+func (s *UserRepositoryTestSuite) TestUserRepository_UpdateWhenUserDoesNotExist() {
+	user := factory.NewUser()
+
+	err := s.repo.Update(&user)
+	assert.Nil(s.T(), err)
+}

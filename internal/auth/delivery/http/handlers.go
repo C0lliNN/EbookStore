@@ -14,6 +14,7 @@ type IDGenerator interface {
 type UseCase interface {
 	Register(user model.User) (model.Credentials, error)
 	Login(email, password string) (model.Credentials, error)
+	ResetPassword(email string) error
 }
 
 type AuthHandler struct {
@@ -56,4 +57,21 @@ func (h AuthHandler) login(context *gin.Context) {
 	}
 
 	context.JSON(http.StatusOK, dto.FromCredentials(credentials))
+}
+
+func (h AuthHandler) resetPassword(context *gin.Context) {
+	var r dto.PasswordResetRequest
+
+	if err := context.ShouldBindJSON(&r); err != nil {
+		context.Error(&model.ErrNotValid{Input: "PasswordResetRequest", Err: err})
+		return
+	}
+
+	if err := h.useCase.ResetPassword(r.Email); err != nil {
+		context.Error(err)
+		return
+	}
+
+	context.Status(http.StatusNoContent)
+
 }

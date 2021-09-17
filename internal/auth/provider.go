@@ -2,6 +2,7 @@ package auth
 
 import (
 	"github.com/c0llinn/ebook-store/internal/auth/delivery/http"
+	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
 	"github.com/c0llinn/ebook-store/internal/auth/token"
@@ -20,4 +21,8 @@ var Provider = wire.NewSet(
 	helper.NewUUIDGenerator,
 	wire.Bind(new(http.IDGenerator), new(helper.UUIDGenerator)),
 	http.NewAuthHandler,
+	email.NewEmailClient,
+	wire.Bind(new(usecase.EmailClient), new(email.Client)),
+	helper.NewPasswordGenerator,
+	wire.Bind(new(usecase.PasswordGenerator), new(helper.PasswordGenerator)),
 )

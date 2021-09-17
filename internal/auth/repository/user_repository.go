@@ -40,3 +40,13 @@ func (r UserRepository) FindByEmail(email string) (user model.User, err error) {
 
 	return
 }
+
+func (r UserRepository) Update(user *model.User) error {
+	result := r.db.Updates(user).Where("id = ?", user.ID)
+	if err := result.Error; err != nil {
+		log.Logger.Error("error trying to update user", err)
+		return err
+	}
+
+	return nil
+}

@@ -22,6 +22,10 @@ func (r RegisterRequest) ToDomain(id string) model.User {
 }
 
 type LoginRequest struct {
-	Email                string `json:"email" binding:"required,email"`
-	Password             string `json:"password" binding:"required,min=6,max=20"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6,max=20"`
+}
+
+type PasswordResetRequest struct {
+	Email string `json:"email" binding:"required,email"`
 }
