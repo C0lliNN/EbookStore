@@ -1,6 +1,5 @@
 # Todo
 
-* Create Auth and Admin middleware
 * Search about context
 * Add swagoo
 * Start working on features

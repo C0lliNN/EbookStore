@@ -22,3 +22,6 @@ migrate-down:
 	@migrate -source file:./migration -database postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable down 1
 
 clear: docker-down
+
+wire:
+	@cd cmd && wire .

@@ -4,6 +4,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth/delivery/http"
 	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
+	"github.com/c0llinn/ebook-store/internal/auth/middleware"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
 	"github.com/c0llinn/ebook-store/internal/auth/usecase"
 	"github.com/google/wire"
@@ -26,4 +27,7 @@ var Provider = wire.NewSet(
 	wire.Bind(new(usecase.PasswordGenerator), new(helper.PasswordGenerator)),
 	helper.NewBcryptWrapper,
 	wire.Bind(new(usecase.BcryptWrapper), new(helper.BcryptWrapper)),
+	middleware.NewAuthenticationMiddleware,
+	middleware.NewAdminMiddleware,
+	wire.Bind(new(middleware.JWTWrapper), new(helper.JWTWrapper)),
 )

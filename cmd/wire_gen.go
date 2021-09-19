@@ -12,8 +12,10 @@ import (
 	http2 "github.com/c0llinn/ebook-store/internal/auth/delivery/http"
 	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
+	"github.com/c0llinn/ebook-store/internal/auth/middleware"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
 	"github.com/c0llinn/ebook-store/internal/auth/usecase"
+	http3 "github.com/c0llinn/ebook-store/internal/catalog/delivery/http"
 	"net/http"
 )
 
@@ -32,6 +34,8 @@ func CreateWebServer() *http.Server {
 	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator, bcryptWrapper)
 	uuidGenerator := helper.NewUUIDGenerator()
 	authHandler := http2.NewAuthHandler(authUseCase, uuidGenerator)
-	server := api.NewHttpServer(engine, authHandler)
+	catalogHandler := http3.NewCatalogHandler()
+	authenticationMiddleware := middleware.NewAuthenticationMiddleware(jwtWrapper)
+	server := api.NewHttpServer(engine, authHandler, catalogHandler, authenticationMiddleware)
 	return server
 }
