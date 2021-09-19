@@ -25,3 +25,6 @@ clear: docker-down
 
 wire:
 	@cd cmd && wire .
+
+docs:
+	@cd cmd && swag init -g ../internal/api/server.go --dir ../internal --output ../internal/api/docs

@@ -13,12 +13,14 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/jackc/pgconn v1.10.0
 	github.com/jackc/pgx/v4 v4.13.0 // indirect
-	github.com/magiconair/properties v1.8.5 // indirect
+	github.com/magiconair/properties v1.8.5
 	github.com/mattn/go-isatty v0.0.13 // indirect
 	github.com/spf13/viper v1.8.1
 	github.com/stretchr/testify v1.7.0
+	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
+	github.com/swaggo/gin-swagger v1.3.1
+	github.com/swaggo/swag v1.7.1
 	github.com/ugorji/go v1.2.6 // indirect
-	github.com/vektra/mockery/v2 v2.9.0 // indirect
 	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34 // indirect
