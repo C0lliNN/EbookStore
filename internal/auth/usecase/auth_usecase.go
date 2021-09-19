@@ -2,31 +2,33 @@ package usecase
 
 import (
 	"github.com/c0llinn/ebook-store/internal/auth/model"
-	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthUseCase struct {
 	repo              Repository
 	jwt               JWTWrapper
+	bcrypt            BcryptWrapper
 	emailClient       EmailClient
 	passwordGenerator PasswordGenerator
 }
 
-func NewAuthUseCase(repo Repository, jwt JWTWrapper, emailClient EmailClient, passwordGenerator PasswordGenerator) AuthUseCase {
+func NewAuthUseCase(repo Repository, jwt JWTWrapper, emailClient EmailClient, passwordGenerator PasswordGenerator, bcryptWrapper BcryptWrapper) AuthUseCase {
 	return AuthUseCase{
-		repo: repo, jwt: jwt,
+		repo:              repo,
+		jwt:               jwt,
+		bcrypt:            bcryptWrapper,
 		emailClient:       emailClient,
 		passwordGenerator: passwordGenerator,
 	}
 }
 
 func (u AuthUseCase) Register(user model.User) (model.Credentials, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), 12)
+	hashedPassword, err := u.bcrypt.HashPassword(user.Password)
 	if err != nil {
 		return model.Credentials{}, err
 	}
 
-	user.Password = string(hashedPassword)
+	user.Password = hashedPassword
 	if err = u.repo.Save(&user); err != nil {
 		return model.Credentials{}, err
 	}
@@ -40,7 +42,7 @@ func (u AuthUseCase) Login(email, password string) (model.Credentials, error) {
 		return model.Credentials{}, err
 	}
 
-	if err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+	if err = u.bcrypt.CompareHashAndPassword(user.Password, password); err != nil {
 		return model.Credentials{}, &model.ErrWrongPassword{Err: err}
 	}
 
@@ -63,12 +65,12 @@ func (u AuthUseCase) ResetPassword(email string) error {
 	}
 
 	newPassword := u.passwordGenerator.NewPassword()
-	hashedNewPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), 12)
+	hashedNewPassword, err := u.bcrypt.HashPassword(newPassword)
 	if err != nil {
 		return err
 	}
 
-	user.Password = string(hashedNewPassword)
+	user.Password = hashedNewPassword
 	if err = u.repo.Update(&user); err != nil {
 		return err
 	}

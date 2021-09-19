@@ -15,7 +15,6 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
-	"github.com/c0llinn/ebook-store/internal/auth/token"
 	"github.com/c0llinn/ebook-store/internal/auth/usecase"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
@@ -49,11 +48,12 @@ func (s *AuthHandlerTestSuite) SetupTest() {
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
 	userRepository := repository.NewUserRepository(s.db)
-	jwtWrapper := token.NewJWTWrapper(token.NewHMACSecret())
+	jwtWrapper := helper.NewJWTWrapper(helper.NewHMACSecret())
 	ses := aws.NewSNSService()
 	client := email.NewEmailClient(ses)
 	passwordGenerator := helper.NewPasswordGenerator()
-	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator)
+	bcryptWrapper := helper.NewBcryptWrapper()
+	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator, bcryptWrapper)
 
 	s.handler = NewAuthHandler(authUseCase, helper.NewUUIDGenerator())
 

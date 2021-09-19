@@ -17,5 +17,5 @@ func SetEnvironmentVariables() {
 
 	viper.SetDefault("AWS_REGION", "us-east-2")
 	viper.SetDefault("AWS_SES_ENDPOINT", "http://localhost:5566")
-	viper.SetDefault("AWS_SES_SOURCE_EMAIL", "=no-reply-test@ebook_store.com")
+	viper.SetDefault("AWS_SES_SOURCE_EMAIL", "no-reply@ebook_store.com")
 }

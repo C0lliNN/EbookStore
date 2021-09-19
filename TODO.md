@@ -1,8 +1,8 @@
 # Todo
 
-* Maybe add bcrypt wrapper
-* Add swagoo
 * Create Auth and Admin middleware
+* Search about context
+* Add swagoo
 * Start working on features
 
 ## Nice to have

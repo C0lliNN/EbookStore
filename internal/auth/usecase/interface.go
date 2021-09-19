@@ -13,6 +13,11 @@ type JWTWrapper interface {
 	GenerateTokenForUser(user model.User) (string, error)
 }
 
+type BcryptWrapper interface {
+	HashPassword(password string) (string, error)
+	CompareHashAndPassword(hashedPassword, password string) error
+}
+
 type EmailClient interface {
 	SendPasswordResetEmail(user model.User, newPassword string) error
 }

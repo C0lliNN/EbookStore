@@ -13,7 +13,6 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
-	"github.com/c0llinn/ebook-store/internal/auth/token"
 	"github.com/c0llinn/ebook-store/internal/auth/usecase"
 	"net/http"
 )
@@ -24,12 +23,13 @@ func CreateWebServer() *http.Server {
 	engine := api.NewRouter()
 	gormDB := db.NewConnection()
 	userRepository := repository.NewUserRepository(gormDB)
-	hmacSecret := token.NewHMACSecret()
-	jwtWrapper := token.NewJWTWrapper(hmacSecret)
+	hmacSecret := helper.NewHMACSecret()
+	jwtWrapper := helper.NewJWTWrapper(hmacSecret)
 	ses := aws.NewSNSService()
 	client := email.NewEmailClient(ses)
 	passwordGenerator := helper.NewPasswordGenerator()
-	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator)
+	bcryptWrapper := helper.NewBcryptWrapper()
+	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator, bcryptWrapper)
 	uuidGenerator := helper.NewUUIDGenerator()
 	authHandler := http2.NewAuthHandler(authUseCase, uuidGenerator)
 	server := api.NewHttpServer(engine, authHandler)

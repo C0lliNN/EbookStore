@@ -1,6 +1,6 @@
 // +build unit
 
-package token
+package helper
 
 import (
 	"github.com/c0llinn/ebook-store/internal/auth/model"
@@ -11,7 +11,7 @@ import (
 
 type JWTWrapperTestSuite struct {
 	suite.Suite
-	secret []byte
+	secret     []byte
 	jwtWrapper JWTWrapper
 }
 
