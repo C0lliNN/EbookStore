@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/c0llinn/ebook-store/internal/auth/delivery/dto"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -40,7 +41,7 @@ func NewAuthHandler(useCase UseCase, idGenerator IDGenerator) AuthHandler {
 func (h AuthHandler) register(context *gin.Context) {
 	var r dto.RegisterRequest
 	if err := context.ShouldBindJSON(&r); err != nil {
-		context.Error(&model.ErrNotValid{Input: "RegisterRequest", Err: err})
+		context.Error(&common.ErrNotValid{Input: "RegisterRequest", Err: err})
 		return
 	}
 
@@ -68,7 +69,7 @@ func (h AuthHandler) register(context *gin.Context) {
 func (h AuthHandler) login(context *gin.Context) {
 	var r dto.LoginRequest
 	if err := context.ShouldBindJSON(&r); err != nil {
-		context.Error(&model.ErrNotValid{Input: "LoginRequest", Err: err})
+		context.Error(&common.ErrNotValid{Input: "LoginRequest", Err: err})
 		return
 	}
 
@@ -95,7 +96,7 @@ func (h AuthHandler) resetPassword(context *gin.Context) {
 	var r dto.PasswordResetRequest
 
 	if err := context.ShouldBindJSON(&r); err != nil {
-		context.Error(&model.ErrNotValid{Input: "PasswordResetRequest", Err: err})
+		context.Error(&common.ErrNotValid{Input: "PasswordResetRequest", Err: err})
 		return
 	}
 

@@ -3,6 +3,7 @@ package repository
 import (
 	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
 )
@@ -21,7 +22,7 @@ func (r UserRepository) Save(user *model.User) error {
 		log.Logger.Error("error trying to save user: ", err)
 
 		if parsed, ok := err.(*pgconn.PgError); ok && parsed.Code == "23505" {
-			return &model.ErrDuplicateKey{Key: "email", Err: err}
+			return &common.ErrDuplicateKey{Key: "email", Err: err}
 		}
 
 		return err
@@ -35,7 +36,7 @@ func (r UserRepository) FindByEmail(email string) (user model.User, err error) {
 	if err = result.Error; err != nil {
 		log.Logger.Errorf("error trying to find user by email %s: %v", email, err)
 
-		err = &model.ErrEntityNotFound{Entity: "User", Err: err}
+		err = &common.ErrEntityNotFound{Entity: "User", Err: err}
 	}
 
 	return

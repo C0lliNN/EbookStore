@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"github.com/c0llinn/ebook-store/internal/common"
 )
 
 type AuthUseCase struct {
@@ -43,7 +44,7 @@ func (u AuthUseCase) Login(email, password string) (model.Credentials, error) {
 	}
 
 	if err = u.bcrypt.CompareHashAndPassword(user.Password, password); err != nil {
-		return model.Credentials{}, &model.ErrWrongPassword{Err: err}
+		return model.Credentials{}, &common.ErrWrongPassword{Err: err}
 	}
 
 	return u.generateCredentialsForUser(user)

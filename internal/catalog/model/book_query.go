@@ -4,6 +4,8 @@ type BookQuery struct {
 	Title       string
 	Description string
 	AuthorName  string
+	Limit int
+	Offset int
 }
 
 func (q BookQuery) CreateCriteria() []Criteria {

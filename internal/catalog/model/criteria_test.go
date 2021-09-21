@@ -57,6 +57,7 @@ func TestCriteria_IsEmpty(t *testing.T) {
 	} {
 		{"", true},
 		{0, true},
+		{nil, true},
 		{"Clean Code", false},
 		{45.0, false},
 	}

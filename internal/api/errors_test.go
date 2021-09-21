@@ -4,13 +4,13 @@ package api
 
 import (
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestFromNotValid(t *testing.T) {
-	err := &model.ErrNotValid{
+	err := &common.ErrNotValid{
 		Input: "RegisterRequest",
 		Err:   fmt.Errorf("some error"),
 	}
@@ -27,7 +27,7 @@ func TestFromNotValid(t *testing.T) {
 }
 
 func TestFromDuplicateKey(t *testing.T) {
-	err := &model.ErrDuplicateKey{
+	err := &common.ErrDuplicateKey{
 		Key: "email",
 		Err: fmt.Errorf("some error"),
 	}
@@ -44,7 +44,7 @@ func TestFromDuplicateKey(t *testing.T) {
 }
 
 func TestFromEntityNotFound(t *testing.T) {
-	err := &model.ErrEntityNotFound{
+	err := &common.ErrEntityNotFound{
 		Entity: "User",
 		Err:    fmt.Errorf("some error"),
 	}
@@ -61,7 +61,7 @@ func TestFromEntityNotFound(t *testing.T) {
 }
 
 func TestFromWrongPassword(t *testing.T) {
-	err := &model.ErrWrongPassword{Err: fmt.Errorf("some error")}
+	err := &common.ErrWrongPassword{Err: fmt.Errorf("some error")}
 
 	expected := &Error{
 		Code:    401,

@@ -7,6 +7,7 @@ import (
 	"github.com/bxcodec/faker/v3"
 	"github.com/c0llinn/ebook-store/internal/auth/mock"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -130,11 +131,11 @@ func (s *AuthUseCaseTestSuite) TestLogin_WhenPasswordsDontMatch() {
 	user := factory.NewUser()
 
 	s.repo.On(findByEmail, user.Email).Return(user, nil)
-	s.bcrypt.On(compareHashAndPasswordMethod, user.Password, "password").Return(&model.ErrWrongPassword{})
+	s.bcrypt.On(compareHashAndPasswordMethod, user.Password, "password").Return(&common.ErrWrongPassword{})
 
 	_, err := s.useCase.Login(user.Email, "password")
 
-	assert.IsType(s.T(), &model.ErrWrongPassword{}, err)
+	assert.IsType(s.T(), &common.ErrWrongPassword{}, err)
 
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.bcrypt.AssertNumberOfCalls(s.T(), compareHashAndPasswordMethod, 1)

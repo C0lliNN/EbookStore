@@ -1,6 +1,6 @@
 // +build unit
 
-package model
+package common
 
 import (
 	"fmt"

@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/c0llinn/ebook-store/config/log"
-	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +13,7 @@ type Error struct {
 	Details string `json:"details"`
 }
 
-func fromNotValid(err *model.ErrNotValid) *Error {
+func fromNotValid(err *common.ErrNotValid) *Error {
 	return &Error{
 		Code:    400,
 		Message: "The provided payload is not valid",
@@ -21,7 +21,7 @@ func fromNotValid(err *model.ErrNotValid) *Error {
 	}
 }
 
-func fromDuplicateKey(err *model.ErrDuplicateKey) *Error {
+func fromDuplicateKey(err *common.ErrDuplicateKey) *Error {
 	return &Error{
 		Code:    409,
 		Message: fmt.Sprintf("this %s is already being used", err.Key),
@@ -29,7 +29,7 @@ func fromDuplicateKey(err *model.ErrDuplicateKey) *Error {
 	}
 }
 
-func fromEntityNotFound(err *model.ErrEntityNotFound) *Error {
+func fromEntityNotFound(err *common.ErrEntityNotFound) *Error {
 	return &Error{
 		Code:    404,
 		Message: fmt.Sprintf("%s with the provided parameters could not be found", err.Entity),
@@ -37,7 +37,7 @@ func fromEntityNotFound(err *model.ErrEntityNotFound) *Error {
 	}
 }
 
-func fromWrongPassword(err *model.ErrWrongPassword) *Error {
+func fromWrongPassword(err *common.ErrWrongPassword) *Error {
 	return &Error{
 		Code:    401,
 		Message: "the provided password is invalid",
@@ -65,13 +65,13 @@ func Errors() gin.HandlerFunc {
 			err := detectedErrors[0].Err
 
 			switch parsed := err.(type) {
-			case *model.ErrNotValid:
+			case *common.ErrNotValid:
 				apiError = fromNotValid(parsed)
-			case *model.ErrDuplicateKey:
+			case *common.ErrDuplicateKey:
 				apiError = fromDuplicateKey(parsed)
-			case *model.ErrEntityNotFound:
+			case *common.ErrEntityNotFound:
 				apiError = fromEntityNotFound(parsed)
-			case *model.ErrWrongPassword:
+			case *common.ErrWrongPassword:
 				apiError = fromWrongPassword(parsed)
 			default:
 				apiError = fromGeneric(parsed)

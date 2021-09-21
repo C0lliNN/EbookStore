@@ -1,4 +1,4 @@
-package model
+package common
 
 type ErrNotValid struct {
 	Input string

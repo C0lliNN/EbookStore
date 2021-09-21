@@ -6,6 +6,7 @@ import (
 	"github.com/c0llinn/ebook-store/config/db"
 	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/stretchr/testify/assert"
@@ -51,7 +52,7 @@ func (s *UserRepositoryTestSuite) TestUserRepository_SaveWithDuplicateEmail() {
 	assert.Nil(s.T(), err)
 
 	err = s.repo.Save(&user)
-	assert.IsType(s.T(), &model.ErrDuplicateKey{}, err)
+	assert.IsType(s.T(), &common.ErrDuplicateKey{}, err)
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailSuccessfully() {
@@ -69,7 +70,7 @@ func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailSuccessfully() {
 func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailNotFound() {
 	_, err := s.repo.FindByEmail("test@test.com")
 
-	assert.IsType(s.T(), &model.ErrEntityNotFound{}, err)
+	assert.IsType(s.T(), &common.ErrEntityNotFound{}, err)
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_UpdateSuccessfully() {

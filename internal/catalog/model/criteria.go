@@ -1,6 +1,8 @@
 package model
 
-import "reflect"
+import (
+	"reflect"
+)
 
 type Criteria struct {
 	Field string
@@ -9,7 +11,7 @@ type Criteria struct {
 }
 
 func (c Criteria) IsEmpty() bool {
-	return reflect.ValueOf(c.Value).IsZero()
+	return c.Value == nil || reflect.ValueOf(c.Value).IsZero()
 }
 
 func NewEqualCriteria(field string, value interface{}) Criteria {
