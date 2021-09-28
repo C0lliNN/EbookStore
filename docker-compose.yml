@@ -17,7 +17,7 @@ services:
       - "4566-4599:4566-4599"
     environment:
       - DEFAULT_REGION=us-east-2
-      - SERVICES=ses
+      - SERVICES=ses,s3
       - DATA_DIR=/tmp/localstack/data
       - START_WEB=0
     volumes:

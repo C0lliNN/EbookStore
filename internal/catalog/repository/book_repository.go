@@ -53,7 +53,7 @@ func (r BookRepository) createConditionsFromCriteria(criteria []model.Criteria) 
 	return strings.Join(conditions, " AND ")
 }
 
-func (r BookRepository) FindById(id string) (book model.Book, err error) {
+func (r BookRepository) FindByID(id string) (book model.Book, err error) {
 	result := r.db.First(&book, "id = ?", id)
 	if err = result.Error; err != nil {
 		log.Logger.Errorf("error trying to find book by id %s: %v", id, err)

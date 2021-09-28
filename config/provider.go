@@ -9,4 +9,6 @@ import (
 var Provider = wire.NewSet(
 	db.NewConnection,
 	aws.NewSNSService,
+	aws.NewBucket,
+	aws.NewS3Service,
 )

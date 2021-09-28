@@ -152,18 +152,18 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithOffset() {
 	assert.Equal(s.T(), book3.ID, paginatedBooks.Books[1].ID)
 }
 
-func (s *BookRepositoryTestSuite) TestFindById_WithInvalidID() {
+func (s *BookRepositoryTestSuite) TestFindByID_WithInvalidID() {
 	id := uuid.NewString()
 
-	_, err := s.repo.FindById(id)
+	_, err := s.repo.FindByID(id)
 
 	assert.IsType(s.T(), &common.ErrEntityNotFound{}, err)
 }
 
-func (s *BookRepositoryTestSuite) TestFindById_WithValidID() {
+func (s *BookRepositoryTestSuite) TestFindByID_WithValidID() {
 	id := uuid.NewString()
 
-	_, err := s.repo.FindById(id)
+	_, err := s.repo.FindByID(id)
 
 	assert.IsType(s.T(), &common.ErrEntityNotFound{}, err)
 }
@@ -174,7 +174,7 @@ func (s *BookRepositoryTestSuite) TestCreate_Successfully() {
 	err := s.repo.Create(&book)
 	assert.Nil(s.T(), err)
 
-	persisted, err := s.repo.FindById(book.ID)
+	persisted, err := s.repo.FindByID(book.ID)
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), book.ID, persisted.ID)
@@ -189,7 +189,7 @@ func (s *BookRepositoryTestSuite) TestUpdate_Successfully() {
 	book.Title = "new title"
 	err = s.repo.Update(&book)
 
-	persisted, err := s.repo.FindById(book.ID)
+	persisted, err := s.repo.FindByID(book.ID)
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), book.ID, persisted.ID)

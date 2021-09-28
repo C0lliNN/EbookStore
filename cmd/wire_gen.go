@@ -16,6 +16,10 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
 	"github.com/c0llinn/ebook-store/internal/auth/usecase"
 	http3 "github.com/c0llinn/ebook-store/internal/catalog/delivery/http"
+	helper2 "github.com/c0llinn/ebook-store/internal/catalog/helper"
+	repository2 "github.com/c0llinn/ebook-store/internal/catalog/repository"
+	"github.com/c0llinn/ebook-store/internal/catalog/storage"
+	usecase2 "github.com/c0llinn/ebook-store/internal/catalog/usecase"
 	"net/http"
 )
 
@@ -34,7 +38,13 @@ func CreateWebServer() *http.Server {
 	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator, bcryptWrapper)
 	uuidGenerator := helper.NewUUIDGenerator()
 	authHandler := http2.NewAuthHandler(authUseCase, uuidGenerator)
-	catalogHandler := http3.NewCatalogHandler()
+	bookRepository := repository2.NewBookRepository(gormDB)
+	s3 := aws.NewS3Service()
+	bucket := aws.NewBucket()
+	s3Client := storage.NewS3Client(s3, bucket)
+	filenameGenerator := helper2.NewFilenameGenerator()
+	catalogUseCase := usecase2.NewCatalogUseCase(bookRepository, s3Client, filenameGenerator)
+	catalogHandler := http3.NewCatalogHandler(catalogUseCase)
 	authenticationMiddleware := middleware.NewAuthenticationMiddleware(jwtWrapper)
 	server := api.NewHttpServer(engine, authHandler, catalogHandler, authenticationMiddleware)
 	return server

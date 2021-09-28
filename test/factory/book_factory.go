@@ -20,3 +20,12 @@ func NewBook() model.Book {
 		UpdatedAt:            time.Unix(faker.RandomUnixTime(), 0).UTC(),
 	}
 }
+
+func NewPaginatedBooks() model.PaginatedBooks {
+	return model.PaginatedBooks{
+		Books:      []model.Book{NewBook(), NewBook()},
+		Limit:      10,
+		Offset:     0,
+		TotalBooks: 2,
+	}
+}

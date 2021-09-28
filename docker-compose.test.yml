@@ -15,7 +15,7 @@ services:
       - "5566-5599:4566-4599"
     environment:
       - DEFAULT_REGION=us-east-2
-      - SERVICES=ses
+      - SERVICES=ses,s3
       - START_WEB=0
     volumes:
       - ./scripts/setup_localstack.sh:/docker-entrypoint-initaws.d/init.sh

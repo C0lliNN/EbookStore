@@ -1,6 +1,9 @@
 package test
 
 import (
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/spf13/viper"
 )
 
@@ -18,4 +21,25 @@ func SetEnvironmentVariables() {
 	viper.SetDefault("AWS_REGION", "us-east-2")
 	viper.SetDefault("AWS_SES_ENDPOINT", "http://localhost:5566")
 	viper.SetDefault("AWS_SES_SOURCE_EMAIL", "no-reply@ebook_store.com")
+	viper.SetDefault("AWS_S3_BUCKET", "ebook-store")
+	viper.SetDefault("AWS_S3_ENDPOINT", "http://s3.localhost.localstack.cloud:5566")
+}
+
+func NewS3Service () *s3.S3 {
+	var endpoint *string
+	if env := viper.GetString("AWS_S3_ENDPOINT"); env != "" {
+		endpoint = aws.String(env)
+	}
+
+	region := viper.GetString("AWS_REGION")
+	currentSession, err := session.NewSession(&aws.Config{
+		Region:   aws.String(region),
+		Endpoint: endpoint,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	return s3.New(currentSession)
 }

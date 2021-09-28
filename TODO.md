@@ -1,6 +1,6 @@
 # Todo
 
-* Create Catalog Functionality (Create Service/Usecase and Handler)
+* Create Catalog Functionality (Test catalog_usecase and Create Handler)
 * Create Order Functionality
 
 ## Nice to have
