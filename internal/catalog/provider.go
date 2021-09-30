@@ -16,6 +16,8 @@ var Provider = wire.NewSet(
 	wire.Bind(new(usecase.StorageClient), new(storage.S3Client)),
 	helper.NewFilenameGenerator,
 	wire.Bind(new(usecase.FilenameGenerator), new(helper.FilenameGenerator)),
+	helper.NewIDGenerator,
+	wire.Bind(new(http.IDGenerator), new(helper.IDGenerator)),
 	usecase.NewCatalogUseCase,
 	wire.Bind(new(http.Service), new(usecase.CatalogUseCase)),
 	http.NewCatalogHandler,

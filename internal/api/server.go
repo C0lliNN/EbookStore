@@ -29,7 +29,7 @@ import (
 // @query.collection.format multi
 
 func NewHttpServer(router *gin.Engine, authHandler auth.AuthHandler, catalogHandler catalog.CatalogHandler,
-	authMiddleware middleware.AuthenticationMiddleware) *http.Server {
+	authMiddleware middleware.AuthenticationMiddleware, adminMiddleware middleware.AdminMiddleware) *http.Server {
 	router.Use(gin.Recovery())
 	router.Use(Errors())
 
@@ -37,7 +37,12 @@ func NewHttpServer(router *gin.Engine, authHandler auth.AuthHandler, catalogHand
 
 	authorized := router.Group("/")
 	authorized.Use(authMiddleware.Handler())
-	catalogHandler.Routes(authorized)
+
+	admin := router.Group("/")
+	admin.Use(authMiddleware.Handler(), adminMiddleware.Handler())
+
+	catalogHandler.AuthRoutes(authorized)
+	catalogHandler.AdminRoutes(admin)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

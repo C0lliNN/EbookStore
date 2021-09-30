@@ -44,8 +44,10 @@ func CreateWebServer() *http.Server {
 	s3Client := storage.NewS3Client(s3, bucket)
 	filenameGenerator := helper2.NewFilenameGenerator()
 	catalogUseCase := usecase2.NewCatalogUseCase(bookRepository, s3Client, filenameGenerator)
-	catalogHandler := http3.NewCatalogHandler(catalogUseCase)
+	idGenerator := helper2.NewIDGenerator()
+	catalogHandler := http3.NewCatalogHandler(catalogUseCase, idGenerator)
 	authenticationMiddleware := middleware.NewAuthenticationMiddleware(jwtWrapper)
-	server := api.NewHttpServer(engine, authHandler, catalogHandler, authenticationMiddleware)
+	adminMiddleware := middleware.NewAdminMiddleware()
+	server := api.NewHttpServer(engine, authHandler, catalogHandler, authenticationMiddleware, adminMiddleware)
 	return server
 }
