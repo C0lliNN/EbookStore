@@ -8,5 +8,6 @@ CREATE TABLE books (
     release_date DATE NULL,
     price INTEGER NOT NULL,
     created_at TIMESTAMP  NOT NULL,
-    updated_at TIMESTAMP NOT NULL
+    updated_at TIMESTAMP NOT NULL,
+    CONSTRAINT books_pkey PRIMARY KEY (id),
 );
