@@ -33,6 +33,14 @@ func NewCatalogHandler(service Service, idGenerator IDGenerator) CatalogHandler 
 	}
 }
 
+// getBooks godoc
+// @Summary Fetch Books
+// @Tags Catalog
+// @Produce  json
+// @Param payload body dto.SearchBooks true "Filters"
+// @Success 200 {object} dto.PaginatedBooksResponse
+// @Failure 500 {object} api.Error
+// @Router /books [get]
 func (h CatalogHandler) getBooks(context *gin.Context) {
 	var s dto.SearchBooks
 	if err := context.ShouldBindQuery(&s); err != nil {
@@ -49,6 +57,15 @@ func (h CatalogHandler) getBooks(context *gin.Context) {
 	context.JSON(http.StatusOK, dto.FromPaginatedBooks(paginatedBooks))
 }
 
+// getBook godoc
+// @Summary Fetch Book by ID
+// @Tags Catalog
+// @Produce  json
+// @Param id path string true "Book ID"
+// @Success 200 {object} dto.BookResponse
+// @Failure 404 {object} api.Error
+// @Failure 500 {object} api.Error
+// @Router /books/{id} [get]
 func (h CatalogHandler) getBook(context *gin.Context) {
 	book, err := h.service.FindBookByID(context.Param("id"))
 	if err != nil {
@@ -59,6 +76,16 @@ func (h CatalogHandler) getBook(context *gin.Context) {
 	context.JSON(http.StatusOK, dto.FromBook(book))
 }
 
+// createBook godoc
+// @Summary Create a new Book
+// @Tags Catalog
+// @Accept json
+// @Produce  json
+// @Param payload body dto.CreateBook true "Book Payload"
+// @Success 201 {object} dto.BookResponse
+// @Failure 404 {object} api.Error
+// @Failure 500 {object} api.Error
+// @Router /books [post]
 func (h CatalogHandler) createBook(context *gin.Context) {
 	var c dto.CreateBook
 	if err := context.ShouldBind(&c); err != nil {
@@ -98,6 +125,18 @@ func (h CatalogHandler) createBook(context *gin.Context) {
 	context.JSON(http.StatusCreated, dto.FromBook(book))
 }
 
+// updateBook godoc
+// @Summary Update the provided Book
+// @Tags Catalog
+// @Accept json
+// @Produce  json
+// @Param payload body dto.UpdateBook true "Book Payload"
+// @Param id path string true "Book ID"
+// @Success 204 "Success"
+// @Failure 400 {object} api.Error
+// @Failure 404 {object} api.Error
+// @Failure 500 {object} api.Error
+// @Router /books/{id} [patch]
 func (h CatalogHandler) updateBook(context *gin.Context) {
 	var u dto.UpdateBook
 	if err := context.ShouldBindJSON(&u); err != nil {
@@ -120,6 +159,15 @@ func (h CatalogHandler) updateBook(context *gin.Context) {
 	context.Status(http.StatusNoContent)
 }
 
+// deleteBook godoc
+// @Summary Delete a Book
+// @Tags Catalog
+// @Produce  json
+// @Param id path string true "Book ID"
+// @Success 204 "Success"
+// @Failure 404 {object} api.Error
+// @Failure 500 {object} api.Error
+// @Router /books/{id} [delete]
 func (h CatalogHandler) deleteBook(context *gin.Context) {
 	if err := h.service.DeleteBook(context.Param("id")); err != nil {
 		context.Error(err)

@@ -7,6 +7,46 @@ definitions:
       message:
         type: string
     type: object
+  dto.BookResponse:
+    properties:
+      authorName:
+        type: string
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      posterImageLink:
+        type: string
+      price:
+        type: integer
+      releaseDate:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dto.CreateBook:
+    properties:
+      authorName:
+        type: string
+      description:
+        type: string
+      price:
+        type: integer
+      releaseDate:
+        type: string
+      title:
+        type: string
+    required:
+    - authorName
+    - description
+    - price
+    - releaseDate
+    - title
+    type: object
   dto.CredentialsResponse:
     properties:
       token:
@@ -21,6 +61,21 @@ definitions:
     required:
     - email
     - password
+    type: object
+  dto.PaginatedBooksResponse:
+    properties:
+      currentPage:
+        type: integer
+      perPage:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/dto.BookResponse'
+        type: array
+      totalItems:
+        type: integer
+      totalPages:
+        type: integer
     type: object
   dto.PasswordResetRequest:
     properties:
@@ -48,6 +103,28 @@ definitions:
     - password
     - passwordConfirmation
     type: object
+  dto.SearchBooks:
+    properties:
+      authorName:
+        type: string
+      description:
+        type: string
+      page:
+        type: integer
+      perPage:
+        type: integer
+      title:
+        type: string
+    type: object
+  dto.UpdateBook:
+    properties:
+      authorName:
+        type: string
+      description:
+        type: string
+      title:
+        type: string
+    type: object
 host: localhost:8081
 info:
   contact:
@@ -61,6 +138,141 @@ info:
   title: E-book Store
   version: "1.0"
 paths:
+  /books:
+    get:
+      parameters:
+      - description: Filters
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SearchBooks'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.PaginatedBooksResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Error'
+      summary: Fetch Books
+      tags:
+      - Catalog
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Book Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateBook'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dto.BookResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Error'
+      summary: Create a new Book
+      tags:
+      - Catalog
+  /books/{id}:
+    delete:
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Success
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Error'
+      summary: Delete a Book
+      tags:
+      - Catalog
+    get:
+      parameters:
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.BookResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Error'
+      summary: Fetch Book by ID
+      tags:
+      - Catalog
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Book Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateBook'
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: Success
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.Error'
+      summary: Update the provided Book
+      tags:
+      - Catalog
   /login:
     post:
       consumes:
