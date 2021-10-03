@@ -1,8 +1,10 @@
 CREATE TABLE orders (
     id VARCHAR(36) NOT NULL,
     status VARCHAR(36) NOT NULL,
+    total INT NOT NULL,
     payment_method VARCHAR(50),
     payment_intent VARCHAR(50),
+    client_secret VARCHAR(50),
     book_id VARCHAR(36) NOT NULL,
     user_id VARCHAR(36) NOT NULL,
     created_at TIMESTAMP  NOT NULL,

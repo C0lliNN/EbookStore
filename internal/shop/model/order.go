@@ -13,8 +13,10 @@ const (
 type Order struct {
 	ID            string
 	Status        OrderStatus
+	Total         int64
 	PaymentMethod *string
 	PaymentIntent *string
+	ClientSecret  *string
 	BookID        string
 	UserID        string
 	CreatedAt     time.Time
