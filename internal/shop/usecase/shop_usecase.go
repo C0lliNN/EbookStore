@@ -1,6 +1,8 @@
 package usecase
 
-import "github.com/c0llinn/ebook-store/internal/shop/model"
+import (
+	"github.com/c0llinn/ebook-store/internal/shop/model"
+)
 import catalog "github.com/c0llinn/ebook-store/internal/catalog/model"
 
 type Repository interface {
@@ -37,16 +39,15 @@ func (u ShopUseCase) FindOrderByID(id string) (model.Order, error) {
 }
 
 func (u ShopUseCase) CreateOrder(order *model.Order) error {
-	if err := u.paymentClient.CreatePaymentIntentForOrder(order); err != nil {
-		return err
-	}
-
 	book, err := u.catalogService.FindBookByID(order.BookID)
 	if err != nil {
 		return err
 	}
-
 	order.Total = int64(book.Price)
+
+	if err = u.paymentClient.CreatePaymentIntentForOrder(order); err != nil {
+		return err
+	}
 
 	return u.repo.Create(order)
 }

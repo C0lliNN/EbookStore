@@ -20,6 +20,11 @@ import (
 	repository2 "github.com/c0llinn/ebook-store/internal/catalog/repository"
 	"github.com/c0llinn/ebook-store/internal/catalog/storage"
 	usecase2 "github.com/c0llinn/ebook-store/internal/catalog/usecase"
+	"github.com/c0llinn/ebook-store/internal/shop/client"
+	http4 "github.com/c0llinn/ebook-store/internal/shop/delivery/http"
+	helper3 "github.com/c0llinn/ebook-store/internal/shop/helper"
+	repository3 "github.com/c0llinn/ebook-store/internal/shop/repository"
+	usecase3 "github.com/c0llinn/ebook-store/internal/shop/usecase"
 	"net/http"
 )
 
@@ -32,10 +37,10 @@ func CreateWebServer() *http.Server {
 	hmacSecret := helper.NewHMACSecret()
 	jwtWrapper := helper.NewJWTWrapper(hmacSecret)
 	ses := aws.NewSNSService()
-	client := email.NewEmailClient(ses)
+	emailClient := email.NewEmailClient(ses)
 	passwordGenerator := helper.NewPasswordGenerator()
 	bcryptWrapper := helper.NewBcryptWrapper()
-	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, client, passwordGenerator, bcryptWrapper)
+	authUseCase := usecase.NewAuthUseCase(userRepository, jwtWrapper, emailClient, passwordGenerator, bcryptWrapper)
 	uuidGenerator := helper.NewUUIDGenerator()
 	authHandler := http2.NewAuthHandler(authUseCase, uuidGenerator)
 	bookRepository := repository2.NewBookRepository(gormDB)
@@ -46,8 +51,13 @@ func CreateWebServer() *http.Server {
 	catalogUseCase := usecase2.NewCatalogUseCase(bookRepository, s3Client, filenameGenerator)
 	idGenerator := helper2.NewIDGenerator()
 	catalogHandler := http3.NewCatalogHandler(catalogUseCase, idGenerator)
+	orderRepository := repository3.NewOrderRepository(gormDB)
+	stripeClient := client.NewStripeClient()
+	shopUseCase := usecase3.NewShopUseCase(orderRepository, stripeClient, catalogUseCase)
+	helperIDGenerator := helper3.NewIDGenerator()
+	shopHandler := http4.NewShopHandler(shopUseCase, helperIDGenerator)
 	authenticationMiddleware := middleware.NewAuthenticationMiddleware(jwtWrapper)
 	adminMiddleware := middleware.NewAdminMiddleware()
-	server := api.NewHttpServer(engine, authHandler, catalogHandler, authenticationMiddleware, adminMiddleware)
+	server := api.NewHttpServer(engine, authHandler, catalogHandler, shopHandler, authenticationMiddleware, adminMiddleware)
 	return server
 }

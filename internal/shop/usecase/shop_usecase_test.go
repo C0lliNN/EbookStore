@@ -1,3 +1,5 @@
+// +build unit
+
 package usecase
 
 import (
@@ -82,8 +84,23 @@ func (s *ShopUseCaseTestSuite) TestFindOrderByID_WithError() {
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, id)
 }
 
+func (s *ShopUseCaseTestSuite) TestCreateOrder_WhenCatalogServiceFails() {
+	order := factory.NewOrder()
+	s.catalogService.On(findBookByIDMethod, order.BookID).Return(catalog.Book{}, fmt.Errorf("some error"))
+
+	err := s.useCase.CreateOrder(&order)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, order.BookID)
+	s.paymentClient.AssertNotCalled(s.T(), createPaymentIntentMethod, &order)
+	s.repo.AssertNotCalled(s.T(), createOrderMethod, &order)
+}
+
 func (s *ShopUseCaseTestSuite) TestCreateOrder_WhenPaymentClientFails() {
 	order := factory.NewOrder()
+	book := factory.NewBook()
+	s.catalogService.On(findBookByIDMethod, order.BookID).Return(book, nil)
 	s.paymentClient.On(createPaymentIntentMethod, &order).Return(fmt.Errorf("some error"))
 
 	err := s.useCase.CreateOrder(&order)
@@ -92,20 +109,6 @@ func (s *ShopUseCaseTestSuite) TestCreateOrder_WhenPaymentClientFails() {
 
 	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, &order)
 	s.catalogService.AssertNotCalled(s.T(), findBookByIDMethod, order.ID)
-	s.repo.AssertNotCalled(s.T(), createOrderMethod, &order)
-}
-
-func (s *ShopUseCaseTestSuite) TestCreateOrder_WhenCatalogServiceFails() {
-	order := factory.NewOrder()
-	s.paymentClient.On(createPaymentIntentMethod, &order).Return(nil)
-	s.catalogService.On(findBookByIDMethod, order.BookID).Return(catalog.Book{}, fmt.Errorf("some error"))
-
-	err := s.useCase.CreateOrder(&order)
-
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
-
-	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, &order)
-	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, order.BookID)
 	s.repo.AssertNotCalled(s.T(), createOrderMethod, &order)
 }
 

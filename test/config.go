@@ -23,6 +23,8 @@ func SetEnvironmentVariables() {
 	viper.SetDefault("AWS_SES_SOURCE_EMAIL", "no-reply@ebook_store.com")
 	viper.SetDefault("AWS_S3_BUCKET", "ebook-store")
 	viper.SetDefault("AWS_S3_ENDPOINT", "http://s3.localhost.localstack.cloud:5566")
+
+	viper.SetDefault("STRIPE_API_KEY", "sk_test_51HAKIGHKmAtjDhlfifsr2lIoY8nQZXkQTE2RvqFfa4ASe6Rlk4YRfVxp44Rr9eeSrPivk55dloy9KFv5Zal3sWQz009q9hiu1u")
 }
 
 func NewS3Service () *s3.S3 {

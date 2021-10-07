@@ -9,5 +9,5 @@ CREATE TABLE books (
     price INTEGER NOT NULL,
     created_at TIMESTAMP  NOT NULL,
     updated_at TIMESTAMP NOT NULL,
-    CONSTRAINT books_pkey PRIMARY KEY (id),
+    CONSTRAINT books_pkey PRIMARY KEY (id)
 );

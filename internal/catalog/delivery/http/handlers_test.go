@@ -59,6 +59,10 @@ func (s *CatalogHandlerTestSuite) SetupTest() {
 	s.context, _ = gin.CreateTestContext(s.recorder)
 }
 
+func (s *CatalogHandlerTestSuite) TearDownTest() {
+	s.db.Delete(&model.Book{}, "1 = 1")
+}
+
 func TestCatalogHandlerRun(t *testing.T) {
 	suite.Run(t, new(CatalogHandlerTestSuite))
 }

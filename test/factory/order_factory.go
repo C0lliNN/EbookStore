@@ -7,21 +7,19 @@ import (
 )
 
 func NewOrder() model.Order {
-	paymentMethod := faker.UUIDHyphenated()
-	paymentIntent := faker.UUIDHyphenated()
+	paymentIntentId := faker.UUIDHyphenated()
 	clientSecret := faker.UUIDHyphenated()
 
 	return model.Order{
-		ID:            faker.UUIDHyphenated(),
-		Status:        model.Pending,
-		Total:         1000,
-		PaymentMethod: &paymentMethod,
-		PaymentIntent: &paymentIntent,
-		ClientSecret:  &clientSecret,
-		BookID:        faker.UUIDHyphenated(),
-		UserID:        faker.UUIDHyphenated(),
-		CreatedAt:     time.Now(),
-		UpdatedAt:     time.Now(),
+		ID:              faker.UUIDHyphenated(),
+		Status:          model.Pending,
+		Total:           1000,
+		PaymentIntentID: &paymentIntentId,
+		ClientSecret:    &clientSecret,
+		BookID:          faker.UUIDHyphenated(),
+		UserID:          faker.UUIDHyphenated(),
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
 	}
 }
 

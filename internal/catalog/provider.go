@@ -6,6 +6,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/catalog/repository"
 	"github.com/c0llinn/ebook-store/internal/catalog/storage"
 	"github.com/c0llinn/ebook-store/internal/catalog/usecase"
+	shop "github.com/c0llinn/ebook-store/internal/shop/usecase"
 	"github.com/google/wire"
 )
 
@@ -20,5 +21,6 @@ var Provider = wire.NewSet(
 	wire.Bind(new(http.IDGenerator), new(helper.IDGenerator)),
 	usecase.NewCatalogUseCase,
 	wire.Bind(new(http.Service), new(usecase.CatalogUseCase)),
+	wire.Bind(new(shop.CatalogService), new(usecase.CatalogUseCase)),
 	http.NewCatalogHandler,
 )

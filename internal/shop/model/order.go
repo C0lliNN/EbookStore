@@ -11,14 +11,13 @@ const (
 )
 
 type Order struct {
-	ID            string
-	Status        OrderStatus
-	Total         int64
-	PaymentMethod *string
-	PaymentIntent *string
-	ClientSecret  *string
-	BookID        string
-	UserID        string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID              string
+	Status          OrderStatus
+	Total           int64
+	PaymentIntentID *string
+	ClientSecret    *string
+	BookID          string
+	UserID          string
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }

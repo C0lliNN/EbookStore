@@ -15,7 +15,7 @@ var statusMap = map[stripe.PaymentIntentStatus]model.OrderStatus{
 	stripe.PaymentIntentStatusRequiresCapture:       model.Pending,
 	stripe.PaymentIntentStatusRequiresConfirmation:  model.Pending,
 	stripe.PaymentIntentStatusRequiresPaymentMethod: model.Pending,
-	stripe.PaymentIntentStatusSucceeded:             model.Pending,
+	stripe.PaymentIntentStatusSucceeded:             model.Paid,
 }
 
 type StripeClient byte
@@ -42,7 +42,7 @@ func (c StripeClient) CreatePaymentIntentForOrder(order *model.Order) error {
 		return err
 	}
 
-	order.PaymentIntent = &pi.ID
+	order.PaymentIntentID = &pi.ID
 	order.Status = statusMap[pi.Status]
 	order.ClientSecret = &pi.ClientSecret
 
