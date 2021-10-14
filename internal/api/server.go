@@ -32,6 +32,7 @@ import (
 func NewHttpServer(router *gin.Engine, authHandler auth.AuthHandler, catalogHandler catalog.CatalogHandler,
 	shopHandler shop.ShopHandler, authMiddleware middleware.AuthenticationMiddleware,
 	adminMiddleware middleware.AdminMiddleware) *http.Server {
+
 	router.Use(gin.Recovery())
 	router.Use(Errors())
 
@@ -46,7 +47,10 @@ func NewHttpServer(router *gin.Engine, authHandler auth.AuthHandler, catalogHand
 	catalogHandler.AuthRoutes(authorized)
 	catalogHandler.AdminRoutes(admin)
 
-	shopHandler.Routes(authorized)
+	unAuthorized := router.Group("/")
+
+	shopHandler.AuthRoutes(authorized)
+	shopHandler.UnAuthRoutes(unAuthorized)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

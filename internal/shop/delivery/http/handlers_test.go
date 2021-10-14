@@ -1,5 +1,3 @@
-// +build integration
-
 package http
 
 import (
@@ -224,7 +222,7 @@ func (s *ShopHandlerTestSuite) TestCreateOrder_WithInvalidData() {
 	require.Nil(s.T(), err)
 
 	s.context.Set("user", user)
-	s.context.Request = httptest.NewRequest("POST", s.baseURL + "/orders", bytes.NewReader(data))
+	s.context.Request = httptest.NewRequest("POST", s.baseURL+"/orders", bytes.NewReader(data))
 
 	s.handler.createOrder(s.context)
 
@@ -246,7 +244,7 @@ func (s *ShopHandlerTestSuite) TestCreateOrder_Successfully() {
 	require.Nil(s.T(), err)
 
 	s.context.Set("user", user)
-	s.context.Request = httptest.NewRequest("POST", s.baseURL + "/orders", bytes.NewReader(data))
+	s.context.Request = httptest.NewRequest("POST", s.baseURL+"/orders", bytes.NewReader(data))
 
 	s.handler.createOrder(s.context)
 
@@ -259,4 +257,75 @@ func (s *ShopHandlerTestSuite) TestCreateOrder_Successfully() {
 	assert.Equal(s.T(), book.ID, response.BookID)
 	assert.Equal(s.T(), user.ID, response.UserID)
 	assert.Equal(s.T(), int64(book.Price), response.Total)
+}
+
+func (s *ShopHandlerTestSuite) TestCompleteOrder_WithInvalidPayload() {
+	payload := map[string]interface{}{
+		"data": map[string]interface{}{},
+		"type": "payment_intent.succeeded",
+	}
+
+	data, err := json.Marshal(payload)
+	require.Nil(s.T(), err)
+
+	s.context.Request = httptest.NewRequest("POST", s.baseURL+"/stripe/webhook", bytes.NewReader(data))
+
+	assert.Panics(s.T(), func() {
+		s.handler.handleStripeWebhook(s.context)
+	})
+}
+
+func (s *ShopHandlerTestSuite) TestCompleteOrder_WithUnknownOrderId() {
+	payload := map[string]interface{}{
+		"data": map[string]interface{}{
+			"object": map[string]interface{}{
+				"metadata": map[string]string{
+					"orderID": "some-id",
+				},
+			},
+		},
+		"type": "payment_intent.succeeded",
+	}
+
+	data, err := json.Marshal(payload)
+	require.Nil(s.T(), err)
+
+	s.context.Request = httptest.NewRequest("POST", s.baseURL+"/stripe/webhook", bytes.NewReader(data))
+
+	s.handler.handleStripeWebhook(s.context)
+
+	assert.IsType(s.T(), &common.ErrEntityNotFound{}, s.context.Errors.Last().Err)
+}
+
+func (s *ShopHandlerTestSuite) TestCompleteOrder_Successfully() {
+	order := factory.NewOrder()
+
+	err := s.db.Create(order).Error
+	require.Nil(s.T(), err)
+
+	payload := map[string]interface{}{
+		"data": map[string]interface{}{
+			"object": map[string]interface{}{
+				"metadata": map[string]string{
+					"orderID": order.ID,
+				},
+			},
+		},
+		"type": "payment_intent.succeeded",
+	}
+
+	data, err := json.Marshal(payload)
+	require.Nil(s.T(), err)
+
+	s.context.Request = httptest.NewRequest("POST", s.baseURL+"/stripe/webhook", bytes.NewReader(data))
+
+	s.handler.handleStripeWebhook(s.context)
+
+	assert.Empty(s.T(), s.context.Errors.Errors())
+
+	var updated model.Order
+	err = s.db.First(&updated, "id = ?", order.ID).Error
+	require.Nil(s.T(), err)
+
+	assert.Equal(s.T(), model.Paid, updated.Status)
 }

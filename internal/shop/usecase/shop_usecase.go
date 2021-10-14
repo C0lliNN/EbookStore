@@ -55,3 +55,13 @@ func (u ShopUseCase) CreateOrder(order *model.Order) error {
 func (u ShopUseCase) UpdateOrder(order *model.Order) error {
 	return u.repo.Update(order)
 }
+
+func (u ShopUseCase) CompleteOrder(orderID string) error {
+	order, err := u.repo.FindByID(orderID)
+	if err != nil {
+		return err
+	}
+
+	order.Complete()
+	return u.repo.Update(&order)
+}

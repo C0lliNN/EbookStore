@@ -15,6 +15,7 @@ type ShopService interface {
 	FindOrderByID(id string) (model.Order, error)
 	CreateOrder(order *model.Order) error
 	UpdateOrder(order *model.Order) error
+	CompleteOrder(orderID string) error
 }
 
 type IDGenerator interface {
@@ -22,7 +23,7 @@ type IDGenerator interface {
 }
 
 type ShopHandler struct {
-	service ShopService
+	service     ShopService
 	idGenerator IDGenerator
 }
 
@@ -110,4 +111,22 @@ func (h ShopHandler) getUserFromContext(context *gin.Context) (user auth.User, e
 
 	user = value.(auth.User)
 	return
+}
+
+func (h ShopHandler) handleStripeWebhook(context *gin.Context) {
+	var w dto.HandleStripeWebhook
+	if err := context.ShouldBindJSON(&w); err != nil {
+		context.Error(err)
+		return
+	}
+
+	if w.Type == "payment_intent.succeeded" {
+		orderID := w.Data["object"].(map[string]interface{})["metadata"].(map[string]interface{})["orderID"].(string)
+		if err := h.service.CompleteOrder(orderID); err != nil {
+			context.Error(err)
+			return
+		}
+	}
+
+	context.Status(http.StatusOK)
 }

@@ -21,3 +21,7 @@ type Order struct {
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 }
+
+func (o *Order) Complete() {
+	o.Status = Paid
+}

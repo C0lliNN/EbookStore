@@ -37,3 +37,12 @@ func (c CreateOrder) ToDomain(orderId, userId string) model.Order {
 		UserID: userId,
 	}
 }
+
+type HandleStripeWebhook struct {
+	ID       string                 `json:"id"`
+	Type     string                 `json:"type"`
+	Data     map[string]interface{} `json:"data"`
+	Request  map[string]interface{} `json:"request"`
+	Livemode bool                   `json:"livemode"`
+	Created  int                    `json:"created"`
+}

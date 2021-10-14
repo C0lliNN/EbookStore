@@ -22,6 +22,7 @@ require (
 	github.com/swaggo/gin-swagger v1.3.1
 	github.com/swaggo/swag v1.7.1
 	github.com/ugorji/go v1.2.6 // indirect
+	github.com/vektra/mockery/v2 v2.9.4 // indirect
 	go.uber.org/zap v1.17.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34 // indirect

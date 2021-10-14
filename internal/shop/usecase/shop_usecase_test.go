@@ -169,3 +169,42 @@ func (s *ShopUseCaseTestSuite) TestUpdateOrder_WithError() {
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 	s.repo.AssertCalled(s.T(), updateOrderMethod, &order)
 }
+
+func (s *ShopUseCaseTestSuite) TestCompleteOrder_WhenOrderCouldNotBeFound() {
+	id := uuid.NewString()
+	s.repo.On(findOrderByIDMethod, id).Return(model.Order{}, fmt.Errorf("some error"))
+
+	err := s.useCase.CompleteOrder(id)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, id)
+	s.repo.AssertNumberOfCalls(s.T(), updateOrderMethod, 0)
+}
+
+func (s *ShopUseCaseTestSuite) TestCompleteOrder_WhenUpdateFails() {
+	order := factory.NewOrder()
+	s.repo.On(findOrderByIDMethod, order.ID).Return(order, nil)
+
+	order.Complete()
+	s.repo.On(updateOrderMethod, &order).Return(fmt.Errorf("some error"))
+
+	err := s.useCase.CompleteOrder(order.ID)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, order.ID)
+	s.repo.AssertCalled(s.T(), updateOrderMethod, &order)
+}
+
+func (s *ShopUseCaseTestSuite) TestCompleteOrder_Successfully() {
+	order := factory.NewOrder()
+	s.repo.On(findOrderByIDMethod, order.ID).Return(order, nil)
+
+	order.Complete()
+	s.repo.On(updateOrderMethod, &order).Return(nil)
+
+	err := s.useCase.CompleteOrder(order.ID)
+
+	assert.Nil(s.T(), err)
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, order.ID)
+	s.repo.AssertCalled(s.T(), updateOrderMethod, &order)
+}
