@@ -3,6 +3,8 @@
 dependency:
 	@go get -v ./...
 
+integration-test: export AWS_ACCESS_KEY_ID=test
+integration-test: export AWS_SECRET_ACCESS_KEY=test
 integration-test: docker-up dependency
 	@go test -tags=integration ./...
 
