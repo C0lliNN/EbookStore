@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package dto
@@ -26,12 +27,12 @@ func TestRegisterRequest_ToDomain(t *testing.T) {
 	}
 
 	expected := model.User{
-		ID: id,
+		ID:        id,
 		FirstName: firstName,
-		LastName: lastName,
-		Role: model.Customer,
-		Email: email,
-		Password: password,
+		LastName:  lastName,
+		Role:      model.Customer,
+		Email:     email,
+		Password:  password,
 	}
 
 	actual := registerRequest.ToDomain(id)

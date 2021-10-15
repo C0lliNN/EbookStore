@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package usecase
@@ -16,13 +17,13 @@ import (
 )
 
 const (
-	saveMethod          = "Save"
-	findByEmail         = "FindByEmail"
-	updateMethod        = "Update"
-	generateTokenMethod = "GenerateTokenForUser"
-	newPasswordMethod   = "NewPassword"
-	sendEmailMethod     = "SendPasswordResetEmail"
-	hashPasswordMethod = "HashPassword"
+	saveMethod                   = "Save"
+	findByEmail                  = "FindByEmail"
+	updateMethod                 = "Update"
+	generateTokenMethod          = "GenerateTokenForUser"
+	newPasswordMethod            = "NewPassword"
+	sendEmailMethod              = "SendPasswordResetEmail"
+	hashPasswordMethod           = "HashPassword"
 	compareHashAndPasswordMethod = "CompareHashAndPassword"
 )
 

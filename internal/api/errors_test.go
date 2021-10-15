@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package api
@@ -70,6 +71,20 @@ func TestFromWrongPassword(t *testing.T) {
 	}
 
 	actual := fromWrongPassword(err)
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestFromOrderNotPaid(t *testing.T) {
+	err := &common.ErrOrderNotPaid{Err: fmt.Errorf("some error")}
+
+	expected := &Error{
+		Code:    402,
+		Message: "you are allowed to download unpaid orders",
+		Details: err.Error(),
+	}
+
+	actual := fromOrderNotPaid(err)
 
 	assert.Equal(t, expected, actual)
 }

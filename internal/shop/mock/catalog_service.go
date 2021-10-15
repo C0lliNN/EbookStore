@@ -3,6 +3,8 @@
 package mock
 
 import (
+	io "io"
+
 	model "github.com/c0llinn/ebook-store/internal/catalog/model"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -21,6 +23,29 @@ func (_m *CatalogService) FindBookByID(bookId string) (model.Book, error) {
 		r0 = rf(bookId)
 	} else {
 		r0 = ret.Get(0).(model.Book)
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(string) error); ok {
+		r1 = rf(bookId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
+// GetBookContent provides a mock function with given fields: bookId
+func (_m *CatalogService) GetBookContent(bookId string) (io.ReadCloser, error) {
+	ret := _m.Called(bookId)
+
+	var r0 io.ReadCloser
+	if rf, ok := ret.Get(0).(func(string) io.ReadCloser); ok {
+		r0 = rf(bookId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(io.ReadCloser)
+		}
 	}
 
 	var r1 error

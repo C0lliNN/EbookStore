@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type PasswordGenerator struct {}
+type PasswordGenerator struct{}
 
 func NewPasswordGenerator() PasswordGenerator {
 	return PasswordGenerator{}

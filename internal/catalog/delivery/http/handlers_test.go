@@ -1,3 +1,4 @@
+//go:build integration
 // +build integration
 
 package http
@@ -134,7 +135,7 @@ func (s *CatalogHandlerTestSuite) TestCreateBook_WithMalformedPayload() {
 
 func (s *CatalogHandlerTestSuite) TestCreateBook_WithInvalidPayload() {
 	payload := dto.CreateBook{
-		Title:       "title",
+		Title: "title",
 	}
 
 	data, err := json.Marshal(payload)

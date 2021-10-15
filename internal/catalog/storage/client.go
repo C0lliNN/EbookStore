@@ -35,9 +35,9 @@ func (c S3Client) GeneratePreSignedUrl(key string) (string, error) {
 
 func (c S3Client) SaveFile(key string, content io.ReadSeeker) error {
 	_, err := c.service.PutObject(&s3.PutObjectInput{
-		Key: aws.String(key),
+		Key:    aws.String(key),
 		Bucket: aws.String(string(c.bucket)),
-		Body: content,
+		Body:   content,
 	})
 
 	if err != nil {
@@ -45,4 +45,17 @@ func (c S3Client) SaveFile(key string, content io.ReadSeeker) error {
 	}
 
 	return nil
+}
+
+func (c S3Client) RetrieveFile(key string) (io.ReadCloser, error) {
+	output, err := c.service.GetObject(&s3.GetObjectInput{
+		Key:    aws.String(key),
+		Bucket: aws.String(string(c.bucket)),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return output.Body, nil
 }

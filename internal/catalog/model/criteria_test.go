@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package model
@@ -11,7 +12,7 @@ func TestNewEqualCriteria(t *testing.T) {
 	tests := []struct {
 		field string
 		value interface{}
-	} {
+	}{
 		{"title", "Clean Code"},
 		{"price", 45.99},
 		{"active", true},
@@ -51,10 +52,10 @@ func TestNewILikeCriteria_WhenValueIsNotEmpty(t *testing.T) {
 }
 
 func TestCriteria_IsEmpty(t *testing.T) {
-	tests := []struct{
-		value interface{}
+	tests := []struct {
+		value    interface{}
 		expected bool
-	} {
+	}{
 		{"", true},
 		{0, true},
 		{nil, true},

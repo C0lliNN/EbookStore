@@ -6,7 +6,7 @@ const (
 	cost = 12
 )
 
-type BcryptWrapper struct {}
+type BcryptWrapper struct{}
 
 func NewBcryptWrapper() BcryptWrapper {
 	return BcryptWrapper{}

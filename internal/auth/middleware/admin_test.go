@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package middleware
@@ -14,7 +15,7 @@ import (
 
 type AdminMiddlewareTestSuite struct {
 	suite.Suite
-	context *gin.Context
+	context    *gin.Context
 	middleware AdminMiddleware
 }
 

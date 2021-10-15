@@ -41,11 +41,11 @@ definitions:
       title:
         type: string
     required:
-    - authorName
-    - description
-    - price
-    - releaseDate
-    - title
+      - authorName
+      - description
+      - price
+      - releaseDate
+      - title
     type: object
   dto.CredentialsResponse:
     properties:
@@ -59,8 +59,8 @@ definitions:
       password:
         type: string
     required:
-    - email
-    - password
+      - email
+      - password
     type: object
   dto.PaginatedBooksResponse:
     properties:
@@ -82,7 +82,7 @@ definitions:
       email:
         type: string
     required:
-    - email
+      - email
     type: object
   dto.RegisterRequest:
     properties:
@@ -97,11 +97,11 @@ definitions:
       passwordConfirmation:
         type: string
     required:
-    - email
-    - firstName
-    - lastName
-    - password
-    - passwordConfirmation
+      - email
+      - firstName
+      - lastName
+      - password
+      - passwordConfirmation
     type: object
   dto.SearchBooks:
     properties:
@@ -141,14 +141,14 @@ paths:
   /books:
     get:
       parameters:
-      - description: Filters
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.SearchBooks'
+        - description: Filters
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: '#/definitions/dto.SearchBooks'
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -160,19 +160,19 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Fetch Books
       tags:
-      - Catalog
+        - Catalog
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Book Payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.CreateBook'
+        - description: Book Payload
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: '#/definitions/dto.CreateBook'
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
@@ -188,17 +188,17 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Create a new Book
       tags:
-      - Catalog
+        - Catalog
   /books/{id}:
     delete:
       parameters:
-      - description: Book ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Book ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "204":
           description: Success
@@ -212,16 +212,16 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Delete a Book
       tags:
-      - Catalog
+        - Catalog
     get:
       parameters:
-      - description: Book ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Book ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
@@ -237,24 +237,24 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Fetch Book by ID
       tags:
-      - Catalog
+        - Catalog
     patch:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Book Payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateBook'
-      - description: Book ID
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Book Payload
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: '#/definitions/dto.UpdateBook'
+        - description: Book ID
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "204":
           description: Success
@@ -272,20 +272,20 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Update the provided Book
       tags:
-      - Catalog
+        - Catalog
   /login:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Register Payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.LoginRequest'
+        - description: Register Payload
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: '#/definitions/dto.LoginRequest'
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
@@ -305,20 +305,20 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Login using email and password
       tags:
-      - Auth
+        - Auth
   /password-reset:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Register Payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.PasswordResetRequest'
+        - description: Register Payload
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: '#/definitions/dto.PasswordResetRequest'
       produces:
-      - application/json
+        - application/json
       responses:
         "204":
           description: success
@@ -332,20 +332,20 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Reset the password for the given email
       tags:
-      - Auth
+        - Auth
   /register:
     post:
       consumes:
-      - application/json
+        - application/json
       parameters:
-      - description: Register Payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/dto.RegisterRequest'
+        - description: Register Payload
+          in: body
+          name: payload
+          required: true
+          schema:
+            $ref: '#/definitions/dto.RegisterRequest'
       produces:
-      - application/json
+        - application/json
       responses:
         "201":
           description: Created
@@ -365,5 +365,5 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Register a new user
       tags:
-      - Auth
+        - Auth
 swagger: "2.0"

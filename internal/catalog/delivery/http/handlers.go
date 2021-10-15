@@ -22,13 +22,13 @@ type IDGenerator interface {
 }
 
 type CatalogHandler struct {
-	service Service
+	service     Service
 	idGenerator IDGenerator
 }
 
 func NewCatalogHandler(service Service, idGenerator IDGenerator) CatalogHandler {
 	return CatalogHandler{
-		service: service,
+		service:     service,
 		idGenerator: idGenerator,
 	}
 }

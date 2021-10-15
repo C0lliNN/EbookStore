@@ -27,7 +27,7 @@ func SetEnvironmentVariables() {
 	viper.SetDefault("STRIPE_API_KEY", "sk_test_51HAKIGHKmAtjDhlfifsr2lIoY8nQZXkQTE2RvqFfa4ASe6Rlk4YRfVxp44Rr9eeSrPivk55dloy9KFv5Zal3sWQz009q9hiu1u")
 }
 
-func NewS3Service () *s3.S3 {
+func NewS3Service() *s3.S3 {
 	var endpoint *string
 	if env := viper.GetString("AWS_S3_ENDPOINT"); env != "" {
 		endpoint = aws.String(env)

@@ -1,4 +1,4 @@
-# E-book Store 
+# E-book Store
 
 ## Functional Requirements
 
@@ -13,7 +13,6 @@
 * As an administrator, I should be able to list the registered users
 * As an administrator, I should be able to list and register books
 * As an administrator, I should be able to list all the orders
-
 
 ## Non-functional Requirements
 

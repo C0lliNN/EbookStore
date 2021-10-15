@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package common
@@ -37,7 +38,15 @@ func TestErrEntityNotFound_Error(t *testing.T) {
 
 func TestErrWrongPassword_Error(t *testing.T) {
 	err := ErrWrongPassword{
-		Err:    fmt.Errorf("some error"),
+		Err: fmt.Errorf("some error"),
+	}
+
+	assert.Equal(t, "some error", err.Error())
+}
+
+func TestErrOrderNotPaid_Error(t *testing.T) {
+	err := ErrOrderNotPaid{
+		Err: fmt.Errorf("some error"),
 	}
 
 	assert.Equal(t, "some error", err.Error())

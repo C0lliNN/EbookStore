@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package usecase
@@ -5,22 +6,26 @@ package usecase
 import (
 	"fmt"
 	catalog "github.com/c0llinn/ebook-store/internal/catalog/model"
+	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/shop/mock"
 	"github.com/c0llinn/ebook-store/internal/shop/model"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"io"
+	"strings"
 	"testing"
 )
 
 const (
-	findOrdersByQueryMethod = "FindByQuery"
-	findOrderByIDMethod     = "FindByID"
+	findOrdersByQueryMethod   = "FindByQuery"
+	findOrderByIDMethod       = "FindByID"
 	createOrderMethod         = "Create"
 	updateOrderMethod         = "Update"
 	findBookByIDMethod        = "FindBookByID"
 	createPaymentIntentMethod = "CreatePaymentIntentForOrder"
+	getBookContent            = "GetBookContent"
 )
 
 type ShopUseCaseTestSuite struct {
@@ -207,4 +212,58 @@ func (s *ShopUseCaseTestSuite) TestCompleteOrder_Successfully() {
 	assert.Nil(s.T(), err)
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, order.ID)
 	s.repo.AssertCalled(s.T(), updateOrderMethod, &order)
+}
+
+func (s *ShopUseCaseTestSuite) TestDownloadOrder_WhenOrderCouldNotBeFound() {
+	order := factory.NewOrder()
+	s.repo.On(findOrderByIDMethod, order.ID).Return(model.Order{}, fmt.Errorf("some error"))
+
+	_, err := s.useCase.DownloadOrder(order.ID)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, order.ID)
+	s.catalogService.AssertNotCalled(s.T(), getBookContent, order.BookID)
+}
+
+func (s *ShopUseCaseTestSuite) TestDownloadOrder_WhenOrderIsNotPaid() {
+	order := factory.NewOrder()
+	order.Status = model.Pending
+	s.repo.On(findOrderByIDMethod, order.ID).Return(order, nil)
+
+	_, err := s.useCase.DownloadOrder(order.ID)
+
+	assert.Equal(s.T(), &common.ErrOrderNotPaid{Err: fmt.Errorf("only books from paid order can be downloaded")}, err)
+
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, order.ID)
+	s.catalogService.AssertNotCalled(s.T(), getBookContent, order.BookID)
+}
+
+func (s *ShopUseCaseTestSuite) TestDownloadOrder_WithError() {
+	order := factory.NewOrder()
+	order.Status = model.Paid
+	s.repo.On(findOrderByIDMethod, order.ID).Return(order, nil)
+	s.catalogService.On(getBookContent, order.BookID).Return(nil, fmt.Errorf("some error"))
+
+	_, err := s.useCase.DownloadOrder(order.ID)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, order.ID)
+	s.catalogService.AssertCalled(s.T(), getBookContent, order.BookID)
+}
+
+func (s *ShopUseCaseTestSuite) TestDownloadOrder_Successfully() {
+	order := factory.NewOrder()
+	order.Status = model.Paid
+	s.repo.On(findOrderByIDMethod, order.ID).Return(order, nil)
+	s.catalogService.On(getBookContent, order.BookID).Return(io.NopCloser(strings.NewReader("test")), nil)
+
+	actual, err := s.useCase.DownloadOrder(order.ID)
+
+	assert.NotNil(s.T(), actual)
+	assert.Nil(s.T(), err)
+
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, order.ID)
+	s.catalogService.AssertCalled(s.T(), getBookContent, order.BookID)
 }

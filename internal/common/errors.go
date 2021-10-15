@@ -2,7 +2,7 @@ package common
 
 type ErrNotValid struct {
 	Input string
-	Err error
+	Err   error
 }
 
 func (e *ErrNotValid) Error() string {
@@ -20,7 +20,7 @@ func (e *ErrDuplicateKey) Error() string {
 
 type ErrEntityNotFound struct {
 	Entity string
-	Err error
+	Err    error
 }
 
 func (e *ErrEntityNotFound) Error() string {
@@ -32,5 +32,13 @@ type ErrWrongPassword struct {
 }
 
 func (e *ErrWrongPassword) Error() string {
+	return e.Err.Error()
+}
+
+type ErrOrderNotPaid struct {
+	Err error
+}
+
+func (e *ErrOrderNotPaid) Error() string {
 	return e.Err.Error()
 }

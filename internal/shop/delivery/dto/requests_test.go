@@ -10,7 +10,7 @@ func TestSearchOrders_ToDomain_WithEmptyData(t *testing.T) {
 	dto := SearchOrders{}
 
 	expected := model.OrderQuery{
-		Limit:  10,
+		Limit: 10,
 	}
 	actual := dto.ToDomain()
 
@@ -39,9 +39,9 @@ func TestCreateOrder_ToDomain(t *testing.T) {
 	dto := CreateOrder{BookID: "some-book-id"}
 
 	expected := model.Order{
-		ID:              "some-order-id",
-		BookID:          "some-book-id",
-		UserID:          "some-user-id",
+		ID:     "some-order-id",
+		BookID: "some-book-id",
+		UserID: "some-user-id",
 	}
 
 	actual := dto.ToDomain("some-order-id", "some-user-id")

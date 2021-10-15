@@ -1,7 +1,10 @@
 package usecase
 
 import (
+	"fmt"
+	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/shop/model"
+	"io"
 )
 import catalog "github.com/c0llinn/ebook-store/internal/catalog/model"
 
@@ -18,11 +21,12 @@ type PaymentClient interface {
 
 type CatalogService interface {
 	FindBookByID(bookId string) (catalog.Book, error)
+	GetBookContent(bookId string) (io.ReadCloser, error)
 }
 
 type ShopUseCase struct {
-	repo Repository
-	paymentClient PaymentClient
+	repo           Repository
+	paymentClient  PaymentClient
 	catalogService CatalogService
 }
 
@@ -64,4 +68,17 @@ func (u ShopUseCase) CompleteOrder(orderID string) error {
 
 	order.Complete()
 	return u.repo.Update(&order)
+}
+
+func (u ShopUseCase) DownloadOrder(orderID string) (io.ReadCloser, error) {
+	order, err := u.repo.FindByID(orderID)
+	if err != nil {
+		return nil, err
+	}
+
+	if order.Status != model.Paid {
+		return nil, &common.ErrOrderNotPaid{Err: fmt.Errorf("only books from paid order can be downloaded")}
+	}
+
+	return u.catalogService.GetBookContent(order.BookID)
 }

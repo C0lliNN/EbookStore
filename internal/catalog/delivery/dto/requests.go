@@ -51,9 +51,9 @@ func (c CreateBook) ToDomain(id string) model.Book {
 }
 
 type UpdateBook struct {
-	Title       *string    `form:"title" binding:"omitempty,max=100"`
-	Description *string    `form:"description" binding:"omitempty"`
-	AuthorName  *string    `form:"authorName" binding:"omitempty,max=100"`
+	Title       *string `form:"title" binding:"omitempty,max=100"`
+	Description *string `form:"description" binding:"omitempty"`
+	AuthorName  *string `form:"authorName" binding:"omitempty,max=100"`
 }
 
 func (u UpdateBook) ToDomain(existing model.Book) model.Book {

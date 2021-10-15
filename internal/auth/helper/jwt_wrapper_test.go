@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package helper
@@ -26,11 +27,11 @@ func TestJWTWrapperRun(t *testing.T) {
 
 func (s *JWTWrapperTestSuite) TestGenerateTokenForUser() {
 	user := model.User{
-		ID: "some-id",
-		Email: "test@test.com",
+		ID:        "some-id",
+		Email:     "test@test.com",
 		FirstName: "first",
-		LastName: "last",
-		Role: model.Admin,
+		LastName:  "last",
+		Role:      model.Admin,
 	}
 
 	expected := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbiI6dHJ1ZSwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwiaWQiOiJzb21lLWlkIiwibmFtZSI6ImZpcnN0IGxhc3QifQ.OLYJtZCJzlKbzJ9jXRrY9cjndGMItSrYIWij2bFnevI"
@@ -44,11 +45,11 @@ func (s *JWTWrapperTestSuite) TestExtractUserFromToken() {
 	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbiI6dHJ1ZSwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwiaWQiOiJzb21lLWlkIiwibmFtZSI6ImZpcnN0IGxhc3QifQ.OLYJtZCJzlKbzJ9jXRrY9cjndGMItSrYIWij2bFnevI"
 
 	expected := model.User{
-		ID: "some-id",
-		Email: "test@test.com",
+		ID:        "some-id",
+		Email:     "test@test.com",
 		FirstName: "first",
-		LastName: "last",
-		Role: model.Admin,
+		LastName:  "last",
+		Role:      model.Admin,
 	}
 	actual, err := s.jwtWrapper.ExtractUserFromToken(token)
 

@@ -1,3 +1,6 @@
+//go:build integration
+// +build integration
+
 package http
 
 import (
@@ -29,6 +32,7 @@ import (
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 	"net/http/httptest"
+	"strings"
 	"testing"
 )
 
@@ -38,6 +42,7 @@ type ShopHandlerTestSuite struct {
 	context  *gin.Context
 	recorder *httptest.ResponseRecorder
 	db       *gorm.DB
+	s3Client storage.S3Client
 	handler  ShopHandler
 }
 
@@ -54,9 +59,9 @@ func (s *ShopHandlerTestSuite) SetupTest() {
 	bucket := aws.NewBucket()
 	bookRepository := repository.NewBookRepository(s.db)
 	s3 := aws.NewS3Service()
-	s3Client := storage.NewS3Client(s3, bucket)
+	s.s3Client = storage.NewS3Client(s3, bucket)
 	filenameGenerator := helper.NewFilenameGenerator()
-	catalogUseCase := usecase.NewCatalogUseCase(bookRepository, s3Client, filenameGenerator)
+	catalogUseCase := usecase.NewCatalogUseCase(bookRepository, s.s3Client, filenameGenerator)
 	shopUseCase := usecase3.NewShopUseCase(orderRepository, stripeClient, catalogUseCase)
 	helperIDGenerator := helper3.NewIDGenerator()
 	s.handler = NewShopHandler(shopUseCase, helperIDGenerator)
@@ -328,4 +333,48 @@ func (s *ShopHandlerTestSuite) TestCompleteOrder_Successfully() {
 	require.Nil(s.T(), err)
 
 	assert.Equal(s.T(), model.Paid, updated.Status)
+}
+
+func (s *ShopHandlerTestSuite) TestDownloadOrder_WhenOrderIsNotFound() {
+	s.context.Params = []gin.Param{{Key: "id", Value: "invalid-order-id"}}
+
+	s.handler.downloadOrder(s.context)
+
+	assert.IsType(s.T(), &common.ErrEntityNotFound{}, s.context.Errors.Last().Err)
+}
+
+func (s *ShopHandlerTestSuite) TestDownloadOrder_WhenOrderIsNotPaid() {
+	order := factory.NewOrder()
+	order.Status = model.Pending
+
+	err := s.db.Create(order).Error
+	require.Nil(s.T(), err)
+
+	s.context.Params = []gin.Param{{Key: "id", Value: order.ID}}
+
+	s.handler.downloadOrder(s.context)
+
+	assert.IsType(s.T(), &common.ErrOrderNotPaid{}, s.context.Errors.Last().Err)
+}
+
+func (s *ShopHandlerTestSuite) TestDownloadOrder_Successfully() {
+	book := factory.NewBook()
+	err := s.db.Create(book).Error
+	require.Nil(s.T(), err)
+
+	err = s.s3Client.SaveFile(book.ContentBucketKey, strings.NewReader("something"))
+	require.Nil(s.T(), err)
+
+	order := factory.NewOrder()
+	order.Status = model.Paid
+	order.BookID = book.ID
+
+	err = s.db.Create(order).Error
+	require.Nil(s.T(), err)
+
+	s.context.Params = []gin.Param{{Key: "id", Value: order.ID}}
+
+	s.handler.downloadOrder(s.context)
+
+	assert.Empty(s.T(), s.context.Errors.Errors())
 }

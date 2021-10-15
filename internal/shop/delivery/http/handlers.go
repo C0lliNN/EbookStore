@@ -1,12 +1,14 @@
 package http
 
 import (
+	"bytes"
 	"fmt"
 	auth "github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/shop/delivery/dto"
 	"github.com/c0llinn/ebook-store/internal/shop/model"
 	"github.com/gin-gonic/gin"
+	"io"
 	"net/http"
 )
 
@@ -16,6 +18,7 @@ type ShopService interface {
 	CreateOrder(order *model.Order) error
 	UpdateOrder(order *model.Order) error
 	CompleteOrder(orderID string) error
+	DownloadOrder(orderID string) (io.ReadCloser, error)
 }
 
 type IDGenerator interface {
@@ -111,6 +114,22 @@ func (h ShopHandler) getUserFromContext(context *gin.Context) (user auth.User, e
 
 	user = value.(auth.User)
 	return
+}
+
+func (h ShopHandler) downloadOrder(context *gin.Context) {
+	content, err := h.service.DownloadOrder(context.Param("id"))
+	if err != nil {
+		context.Error(err)
+		return
+	}
+
+	buffer := new(bytes.Buffer)
+	if _, err = buffer.ReadFrom(content); err != nil {
+		context.Error(err)
+		return
+	}
+
+	context.DataFromReader(http.StatusOK, int64(buffer.Len()), "application/pdf", buffer, nil)
 }
 
 func (h ShopHandler) handleStripeWebhook(context *gin.Context) {

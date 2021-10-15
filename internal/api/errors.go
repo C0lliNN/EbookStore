@@ -45,6 +45,14 @@ func fromWrongPassword(err *common.ErrWrongPassword) *Error {
 	}
 }
 
+func fromOrderNotPaid(err *common.ErrOrderNotPaid) *Error {
+	return &Error{
+		Code:    402,
+		Message: "you are allowed to download unpaid orders",
+		Details: err.Error(),
+	}
+}
+
 func fromGeneric(err error) *Error {
 	return &Error{
 		Code:    500,
@@ -73,6 +81,8 @@ func Errors() gin.HandlerFunc {
 				apiError = fromEntityNotFound(parsed)
 			case *common.ErrWrongPassword:
 				apiError = fromWrongPassword(parsed)
+			case *common.ErrOrderNotPaid:
+				apiError = fromOrderNotPaid(parsed)
 			default:
 				apiError = fromGeneric(parsed)
 			}

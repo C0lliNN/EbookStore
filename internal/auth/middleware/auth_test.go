@@ -17,8 +17,8 @@ const extractUserFromTokenMethod = "ExtractUserFromToken"
 
 type AuthMiddlewareTestSuite struct {
 	suite.Suite
-	context *gin.Context
-	jwt *mock.JWTWrapper
+	context    *gin.Context
+	jwt        *mock.JWTWrapper
 	middleware AuthenticationMiddleware
 }
 

@@ -1,5 +1,3 @@
-// +build unit
-
 package usecase
 
 import (
@@ -11,26 +9,29 @@ import (
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"io"
+	"strings"
 	"testing"
 )
 
 const (
-	findByQueryMethod = "FindByQuery"
-	findByIdMethod = "FindByID"
+	findByQueryMethod          = "FindByQuery"
+	findByIdMethod             = "FindByID"
 	generatePreSignedUrlMethod = "GeneratePreSignedUrl"
-	newUniqueNameMethod = "NewUniqueName"
-	saveFileMethod   = "SaveFile"
-	createBookMethod = "Create"
-	updateBookMethod = "Update"
-	deleteBookMethod = "Delete"
+	newUniqueNameMethod        = "NewUniqueName"
+	saveFileMethod             = "SaveFile"
+	retrieveFileMethod         = "RetrieveFile"
+	createBookMethod           = "Create"
+	updateBookMethod           = "Update"
+	deleteBookMethod           = "Delete"
 )
 
 type CatalogUseCaseTestSuite struct {
 	suite.Suite
-	repo *mock.BookRepository
-	storageClient *mock.StorageClient
+	repo              *mock.BookRepository
+	storageClient     *mock.StorageClient
 	filenameGenerator *mock.FilenameGenerator
-	useCase CatalogUseCase
+	useCase           CatalogUseCase
 }
 
 func (s *CatalogUseCaseTestSuite) SetupTest() {
@@ -127,10 +128,49 @@ func (s *CatalogUseCaseTestSuite) TestFindBookByID_Successfully() {
 	s.storageClient.AssertCalled(s.T(), generatePreSignedUrlMethod, book.PosterImageBucketKey)
 }
 
+func (s *CatalogUseCaseTestSuite) TestGetBookContent_WhenBookCouldNotBeFound() {
+	id := uuid.NewString()
+	s.repo.On(findByIdMethod, id).Return(model.Book{}, fmt.Errorf("some error"))
+
+	_, err := s.useCase.GetBookContent(id)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.repo.AssertCalled(s.T(), findByIdMethod, id)
+	s.storageClient.AssertNumberOfCalls(s.T(), retrieveFileMethod, 0)
+}
+
+func (s *CatalogUseCaseTestSuite) TestGetBookContent_WithError() {
+	book := factory.NewBook()
+	s.repo.On(findByIdMethod, book.ID).Return(book, nil)
+	s.storageClient.On(retrieveFileMethod, book.ContentBucketKey).Return(nil, fmt.Errorf("some error"))
+
+	_, err := s.useCase.GetBookContent(book.ID)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.repo.AssertCalled(s.T(), findByIdMethod, book.ID)
+	s.storageClient.AssertCalled(s.T(), retrieveFileMethod, book.ContentBucketKey)
+}
+
+func (s *CatalogUseCaseTestSuite) TestGetBookContent_Successfully() {
+	book := factory.NewBook()
+	s.repo.On(findByIdMethod, book.ID).Return(book, nil)
+	s.storageClient.On(retrieveFileMethod, book.ContentBucketKey).Return(io.NopCloser(strings.NewReader("test")), nil)
+
+	reader, err := s.useCase.GetBookContent(book.ID)
+
+	assert.Nil(s.T(), err)
+	assert.NotNil(s.T(), reader)
+
+	s.repo.AssertCalled(s.T(), findByIdMethod, book.ID)
+	s.storageClient.AssertCalled(s.T(), retrieveFileMethod, book.ContentBucketKey)
+}
+
 func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenPosterStorageFails() {
 	book := factory.NewBook()
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_" + book.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_" + book.Title).Return("content_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
 
 	posterImage := bytes.NewReader([]byte("some content"))
 
@@ -148,8 +188,8 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenPosterStorageFails() {
 
 func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenContentStorageFails() {
 	book := factory.NewBook()
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_" + book.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_" + book.Title).Return("content_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
 
 	posterImage := bytes.NewReader([]byte("some content"))
 	bookContent := bytes.NewReader([]byte("some book content"))
@@ -169,8 +209,8 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenContentStorageFails() {
 
 func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenPreSigningFails() {
 	book := factory.NewBook()
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_" + book.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_" + book.Title).Return("content_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
 
 	posterImage := bytes.NewReader([]byte("some content"))
 	bookContent := bytes.NewReader([]byte("some book content"))
@@ -191,8 +231,8 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenPreSigningFails() {
 
 func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenRepositoryFails() {
 	book := factory.NewBook()
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_" + book.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_" + book.Title).Return("content_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
 
 	posterImage := bytes.NewReader([]byte("some content"))
 	bookContent := bytes.NewReader([]byte("some book content"))
@@ -220,8 +260,8 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenRepositoryFails() {
 
 func (s *CatalogUseCaseTestSuite) TestCreateBook_Successfully() {
 	book := factory.NewBook()
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_" + book.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_" + book.Title).Return("content_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
+	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
 
 	posterImage := bytes.NewReader([]byte("some content"))
 	bookContent := bytes.NewReader([]byte("some book content"))

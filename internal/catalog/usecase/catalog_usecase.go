@@ -16,6 +16,7 @@ type Repository interface {
 type StorageClient interface {
 	GeneratePreSignedUrl(key string) (string, error)
 	SaveFile(key string, content io.ReadSeeker) error
+	RetrieveFile(key string) (io.ReadCloser, error)
 }
 
 type FilenameGenerator interface {
@@ -23,8 +24,8 @@ type FilenameGenerator interface {
 }
 
 type CatalogUseCase struct {
-	repo Repository
-	storageClient StorageClient
+	repo              Repository
+	storageClient     StorageClient
 	filenameGenerator FilenameGenerator
 }
 
@@ -67,6 +68,15 @@ func (u CatalogUseCase) FindBookByID(id string) (book model.Book, err error) {
 
 	book.SetPosterImageLink(url)
 	return
+}
+
+func (u CatalogUseCase) GetBookContent(id string) (io.ReadCloser, error) {
+	book, err := u.repo.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return u.storageClient.RetrieveFile(book.ContentBucketKey)
 }
 
 func (u CatalogUseCase) CreateBook(book *model.Book, posterImage io.ReadSeeker, bookContent io.ReadSeeker) error {

@@ -19,7 +19,7 @@ type UseCase interface {
 }
 
 type AuthHandler struct {
-	useCase UseCase
+	useCase     UseCase
 	idGenerator IDGenerator
 }
 

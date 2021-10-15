@@ -5,9 +5,9 @@ import (
 )
 
 type Criteria struct {
-	Field string
+	Field    string
 	Operator string
-	Value interface{}
+	Value    interface{}
 }
 
 func (c Criteria) IsEmpty() bool {

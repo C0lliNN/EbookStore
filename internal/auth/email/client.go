@@ -67,7 +67,7 @@ func getMessageBody(user model.User, newPassword string) (string, error) {
 
 	tmpl := template.Must(template.New("Password Request Template").Parse(emailBodyTemplate))
 	err := tmpl.Execute(messageBody, struct {
-		FirstName string
+		FirstName   string
 		NewPassword string
 	}{
 		FirstName:   user.FirstName,

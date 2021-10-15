@@ -1,15 +1,16 @@
+//go:build integration
 // +build integration
 
 package storage
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
+	"io/ioutil"
 	"testing"
 )
 
@@ -44,6 +45,22 @@ func (s *StorageClientTestSuite) TestSaveFile() {
 
 	err := s.client.SaveFile(key, content)
 
-	fmt.Println(err)
 	assert.Nil(s.T(), err)
+}
+
+func (s *StorageClientTestSuite) TestRetrieveFile() {
+	key := "some-key"
+	byts := []byte("this is the content of a book")
+	content := bytes.NewReader(byts)
+
+	err := s.client.SaveFile(key, content)
+	assert.Nil(s.T(), err)
+
+	reader, err := s.client.RetrieveFile(key)
+	assert.Nil(s.T(), err)
+
+	actual, err := ioutil.ReadAll(reader)
+	assert.Nil(s.T(), err)
+
+	assert.Equal(s.T(), byts, actual)
 }

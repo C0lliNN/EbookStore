@@ -1,3 +1,4 @@
+//go:build unit
 // +build unit
 
 package dto
@@ -48,7 +49,7 @@ func (s *SearchBooksTestSuite) TestToDomain_WithDescription() {
 
 	expected := model.BookQuery{
 		Description: "some-description",
-		Limit: 10,
+		Limit:       10,
 	}
 	actual := dto.ToDomain()
 
@@ -60,7 +61,7 @@ func (s *SearchBooksTestSuite) TestToDomain_WithAuthorName() {
 
 	expected := model.BookQuery{
 		AuthorName: "some-name",
-		Limit: 10,
+		Limit:      10,
 	}
 	actual := dto.ToDomain()
 
@@ -71,7 +72,7 @@ func (s *SearchBooksTestSuite) TestToDomain_WithPage() {
 	dto := SearchBooks{Page: 4}
 
 	expected := model.BookQuery{
-		Limit: 10,
+		Limit:  10,
 		Offset: 30,
 	}
 	actual := dto.ToDomain()
@@ -94,9 +95,9 @@ func (s *SearchBooksTestSuite) TestToDomain_WithMultipleFields() {
 	dto := SearchBooks{Page: 3, PerPage: 20, Title: "some-title"}
 
 	expected := model.BookQuery{
-		Limit: 20,
+		Limit:  20,
 		Offset: 40,
-		Title: "some-title",
+		Title:  "some-title",
 	}
 	actual := dto.ToDomain()
 
@@ -122,12 +123,12 @@ func (s *CreateBookTestSuite) TestToDomain() {
 	}
 
 	expected := model.Book{
-		ID:                   id,
-		Title:                "some-title",
-		Description:          "description",
-		AuthorName:           "fake name",
-		Price:                10000,
-		ReleaseDate:          time.Date(2021, time.September, 29, 17, 28, 0, 0, time.UTC),
+		ID:          id,
+		Title:       "some-title",
+		Description: "description",
+		AuthorName:  "fake name",
+		Price:       10000,
+		ReleaseDate: time.Date(2021, time.September, 29, 17, 28, 0, 0, time.UTC),
 	}
 
 	actual := dto.ToDomain(id)
