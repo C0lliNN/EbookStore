@@ -57,13 +57,13 @@ func (_m *StorageClient) RetrieveFile(key string) (io.ReadCloser, error) {
 	return r0, r1
 }
 
-// SaveFile provides a mock function with given fields: key, content
-func (_m *StorageClient) SaveFile(key string, content io.ReadSeeker) error {
-	ret := _m.Called(key, content)
+// SaveFile provides a mock function with given fields: key, contentType, content
+func (_m *StorageClient) SaveFile(key string, contentType string, content io.ReadSeeker) error {
+	ret := _m.Called(key, contentType, content)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(string, io.ReadSeeker) error); ok {
-		r0 = rf(key, content)
+	if rf, ok := ret.Get(0).(func(string, string, io.ReadSeeker) error); ok {
+		r0 = rf(key, contentType, content)
 	} else {
 		r0 = ret.Error(0)
 	}

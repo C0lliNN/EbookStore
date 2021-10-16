@@ -1,3 +1,5 @@
+// +build unit
+
 package usecase
 
 import (
@@ -174,7 +176,7 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenPosterStorageFails() {
 
 	posterImage := bytes.NewReader([]byte("some content"))
 
-	s.storageClient.On(saveFileMethod, "poster_name", posterImage).Return(fmt.Errorf("some error"))
+	s.storageClient.On(saveFileMethod, "poster_name", "image/jpeg", posterImage).Return(fmt.Errorf("some error"))
 
 	err := s.useCase.CreateBook(&book, posterImage, nil)
 
@@ -194,8 +196,8 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenContentStorageFails() {
 	posterImage := bytes.NewReader([]byte("some content"))
 	bookContent := bytes.NewReader([]byte("some book content"))
 
-	s.storageClient.On(saveFileMethod, "poster_name", posterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, "content_name", bookContent).Return(fmt.Errorf("some error"))
+	s.storageClient.On(saveFileMethod, "poster_name", "image/jpeg", posterImage).Return(nil)
+	s.storageClient.On(saveFileMethod, "content_name", "application/pdf", bookContent).Return(fmt.Errorf("some error"))
 
 	err := s.useCase.CreateBook(&book, posterImage, bookContent)
 
@@ -215,8 +217,8 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenPreSigningFails() {
 	posterImage := bytes.NewReader([]byte("some content"))
 	bookContent := bytes.NewReader([]byte("some book content"))
 
-	s.storageClient.On(saveFileMethod, "poster_name", posterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, "content_name", bookContent).Return(nil)
+	s.storageClient.On(saveFileMethod, "poster_name", "image/jpeg", posterImage).Return(nil)
+	s.storageClient.On(saveFileMethod, "content_name", "application/pdf", bookContent).Return(nil)
 	s.storageClient.On(generatePreSignedUrlMethod, "poster_name").Return("", fmt.Errorf("some error"))
 
 	err := s.useCase.CreateBook(&book, posterImage, bookContent)
@@ -237,8 +239,8 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_WhenRepositoryFails() {
 	posterImage := bytes.NewReader([]byte("some content"))
 	bookContent := bytes.NewReader([]byte("some book content"))
 
-	s.storageClient.On(saveFileMethod, "poster_name", posterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, "content_name", bookContent).Return(nil)
+	s.storageClient.On(saveFileMethod, "poster_name", "image/jpeg", posterImage).Return(nil)
+	s.storageClient.On(saveFileMethod, "content_name", "application/pdf", bookContent).Return(nil)
 	s.storageClient.On(generatePreSignedUrlMethod, "poster_name").Return("some-link", nil)
 
 	newBook := book
@@ -266,8 +268,8 @@ func (s *CatalogUseCaseTestSuite) TestCreateBook_Successfully() {
 	posterImage := bytes.NewReader([]byte("some content"))
 	bookContent := bytes.NewReader([]byte("some book content"))
 
-	s.storageClient.On(saveFileMethod, "poster_name", posterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, "content_name", bookContent).Return(nil)
+	s.storageClient.On(saveFileMethod, "poster_name", "image/jpeg", posterImage).Return(nil)
+	s.storageClient.On(saveFileMethod, "content_name", "application/pdf", bookContent).Return(nil)
 	s.storageClient.On(generatePreSignedUrlMethod, "poster_name").Return("some-link", nil)
 
 	newBook := book

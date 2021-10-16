@@ -1,9 +1,7 @@
 # Todo
 
-* Specify MIME type when saving files (Validate that in request)
-* Commit
-* Format code and check file to file
 * Maybe check (Refactor route declaration)
+* Format code and check file to file
 * Deploy code
 * Create a Nice README.md (Include the whole thing there)
 * Commit

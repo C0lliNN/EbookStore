@@ -362,7 +362,7 @@ func (s *ShopHandlerTestSuite) TestDownloadOrder_Successfully() {
 	err := s.db.Create(book).Error
 	require.Nil(s.T(), err)
 
-	err = s.s3Client.SaveFile(book.ContentBucketKey, strings.NewReader("something"))
+	err = s.s3Client.SaveFile(book.ContentBucketKey, "text/plain", strings.NewReader("something"))
 	require.Nil(s.T(), err)
 
 	order := factory.NewOrder()

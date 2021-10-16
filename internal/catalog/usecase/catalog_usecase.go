@@ -15,7 +15,7 @@ type Repository interface {
 
 type StorageClient interface {
 	GeneratePreSignedUrl(key string) (string, error)
-	SaveFile(key string, content io.ReadSeeker) error
+	SaveFile(key string, contentType string, content io.ReadSeeker) error
 	RetrieveFile(key string) (io.ReadCloser, error)
 }
 
@@ -83,11 +83,11 @@ func (u CatalogUseCase) CreateBook(book *model.Book, posterImage io.ReadSeeker, 
 	posterImageKey := u.filenameGenerator.NewUniqueName("poster_" + book.Title)
 	contentKey := u.filenameGenerator.NewUniqueName("content_" + book.Title)
 
-	if err := u.storageClient.SaveFile(posterImageKey, posterImage); err != nil {
+	if err := u.storageClient.SaveFile(posterImageKey, "image/jpeg", posterImage); err != nil {
 		return err
 	}
 
-	if err := u.storageClient.SaveFile(contentKey, bookContent); err != nil {
+	if err := u.storageClient.SaveFile(contentKey, "application/pdf", bookContent); err != nil {
 		return err
 	}
 

@@ -33,11 +33,12 @@ func (c S3Client) GeneratePreSignedUrl(key string) (string, error) {
 	return url, err
 }
 
-func (c S3Client) SaveFile(key string, content io.ReadSeeker) error {
+func (c S3Client) SaveFile(key string, contentType string, content io.ReadSeeker) error {
 	_, err := c.service.PutObject(&s3.PutObjectInput{
-		Key:    aws.String(key),
-		Bucket: aws.String(string(c.bucket)),
-		Body:   content,
+		Key:         aws.String(key),
+		Bucket:      aws.String(string(c.bucket)),
+		ContentType: aws.String(contentType),
+		Body:        content,
 	})
 
 	if err != nil {

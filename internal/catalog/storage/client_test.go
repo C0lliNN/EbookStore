@@ -43,7 +43,7 @@ func (s *StorageClientTestSuite) TestSaveFile() {
 	key := "some-key"
 	content := bytes.NewReader([]byte("this is the content of a book"))
 
-	err := s.client.SaveFile(key, content)
+	err := s.client.SaveFile(key, "text/plain", content)
 
 	assert.Nil(s.T(), err)
 }
@@ -53,7 +53,7 @@ func (s *StorageClientTestSuite) TestRetrieveFile() {
 	byts := []byte("this is the content of a book")
 	content := bytes.NewReader(byts)
 
-	err := s.client.SaveFile(key, content)
+	err := s.client.SaveFile(key, "text/plain", content)
 	assert.Nil(s.T(), err)
 
 	reader, err := s.client.RetrieveFile(key)
