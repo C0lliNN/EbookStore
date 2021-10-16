@@ -1,6 +1,5 @@
 # Todo
-
-* Format code and check file to file
+* 
 * Deploy code
 * Create a Nice README.md (Include the whole thing there)
 * Commit
