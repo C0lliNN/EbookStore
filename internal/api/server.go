@@ -35,24 +35,24 @@ func NewHttpServer(router *gin.Engine, authHandler auth.AuthHandler, catalogHand
 
 	router.Use(gin.Recovery())
 	router.Use(Errors())
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	authHandler.Routes(router)
+	shopHandler.Routes(router)
 
-	authorized := router.Group("/")
-	authorized.Use(authMiddleware.Handler())
+	{
+		authorized := router.Group("/")
+		authorized.Use(authMiddleware.Handler())
 
-	admin := router.Group("/")
-	admin.Use(authMiddleware.Handler(), adminMiddleware.Handler())
+		catalogHandler.AuthRoutes(authorized)
+		shopHandler.AuthRoutes(authorized)
+	}
+	{
+		admin := router.Group("/")
+		admin.Use(authMiddleware.Handler(), adminMiddleware.Handler())
 
-	catalogHandler.AuthRoutes(authorized)
-	catalogHandler.AdminRoutes(admin)
-
-	unAuthorized := router.Group("/")
-
-	shopHandler.AuthRoutes(authorized)
-	shopHandler.UnAuthRoutes(unAuthorized)
-
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		catalogHandler.AdminRoutes(admin)
+	}
 
 	port := viper.GetString("PORT")
 	if port == "" {

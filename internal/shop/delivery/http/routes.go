@@ -9,6 +9,6 @@ func (h ShopHandler) AuthRoutes(r *gin.RouterGroup) {
 	r.POST("/orders", h.createOrder)
 }
 
-func (h ShopHandler) UnAuthRoutes(r *gin.RouterGroup) {
+func (h ShopHandler) Routes(r *gin.Engine) {
 	r.POST("/stripe/webhook", h.handleStripeWebhook)
 }
