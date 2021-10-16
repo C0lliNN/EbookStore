@@ -79,9 +79,11 @@ func (h CatalogHandler) getBook(context *gin.Context) {
 // createBook godoc
 // @Summary Create a new Book
 // @Tags Catalog
-// @Accept json
+// @Accept mpfd
 // @Produce  json
-// @Param payload body dto.CreateBook true "Book Payload"
+// @Param payload formData dto.CreateBook true "Book Payload"
+// @Param poster formData file true "Book Poster"
+// @Param content formData file true "Book Content in PDF"
 // @Success 201 {object} dto.BookResponse
 // @Failure 404 {object} api.Error
 // @Failure 500 {object} api.Error

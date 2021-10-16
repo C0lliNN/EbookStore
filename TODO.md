@@ -1,11 +1,9 @@
 # Todo
 
-* Update swagger docs comments
-* Commit
 * Specify MIME type when saving files (Validate that in request)
 * Commit
 * Format code and check file to file
-* Maybe check
+* Maybe check (Refactor route declaration)
 * Deploy code
 * Create a Nice README.md (Include the whole thing there)
 * Commit
