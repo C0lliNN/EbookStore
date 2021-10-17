@@ -4,7 +4,6 @@
 A fully-featured REST API developed in Golang for an online book store.
 
 ##### [API Documentation](https://ebook-store2.herokuapp.com/swagger/index.html)
-##### [Live Endpoint](https://ebook-store2.herokuapp.com/books)
 
 ## Features
 * Authentication (Sign up, Login and Reset Password)
