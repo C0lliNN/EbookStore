@@ -1,1 +1,1 @@
-web: ebook_store
+web: ./ebook_store
