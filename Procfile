@@ -1,1 +1,1 @@
-web: cmd/ebook_store
+web: ebook_store
