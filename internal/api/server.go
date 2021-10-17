@@ -25,7 +25,7 @@ import (
 // @license.name Apache 2.0
 // @license.url https://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host localhost:8081
+// @host https://ebook-store2.herokuapp.com
 // @BasePath /
 // @query.collection.format multi
 

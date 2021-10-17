@@ -33,7 +33,7 @@ definitions:
       bookId:
         type: string
     required:
-      - bookId
+    - bookId
     type: object
   dto.CredentialsResponse:
     properties:
@@ -47,8 +47,8 @@ definitions:
       password:
         type: string
     required:
-      - email
-      - password
+    - email
+    - password
     type: object
   dto.OrderResponse:
     properties:
@@ -106,7 +106,7 @@ definitions:
       email:
         type: string
     required:
-      - email
+    - email
     type: object
   dto.RegisterRequest:
     properties:
@@ -121,11 +121,11 @@ definitions:
       passwordConfirmation:
         type: string
     required:
-      - email
-      - firstName
-      - lastName
-      - password
-      - passwordConfirmation
+    - email
+    - firstName
+    - lastName
+    - password
+    - passwordConfirmation
     type: object
   dto.SearchBooks:
     properties:
@@ -158,7 +158,7 @@ definitions:
       title:
         type: string
     type: object
-host: localhost:8081
+host: https://ebook-store2.herokuapp.com
 info:
   contact:
     email: raphael_professional@yahoo.com
@@ -174,14 +174,14 @@ paths:
   /books:
     get:
       parameters:
-        - description: Filters
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: '#/definitions/dto.SearchBooks'
+      - description: Filters
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SearchBooks'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -193,43 +193,43 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Fetch Books
       tags:
-        - Catalog
+      - Catalog
     post:
       consumes:
-        - multipart/form-data
+      - multipart/form-data
       parameters:
-        - in: formData
-          name: authorName
-          required: true
-          type: string
-        - in: formData
-          name: description
-          required: true
-          type: string
-        - in: formData
-          name: price
-          required: true
-          type: integer
-        - in: formData
-          name: releaseDate
-          required: true
-          type: string
-        - in: formData
-          name: title
-          required: true
-          type: string
-        - description: Book Poster
-          in: formData
-          name: poster
-          required: true
-          type: file
-        - description: Book Content in PDF
-          in: formData
-          name: content
-          required: true
-          type: file
+      - in: formData
+        name: authorName
+        required: true
+        type: string
+      - in: formData
+        name: description
+        required: true
+        type: string
+      - in: formData
+        name: price
+        required: true
+        type: integer
+      - in: formData
+        name: releaseDate
+        required: true
+        type: string
+      - in: formData
+        name: title
+        required: true
+        type: string
+      - description: Book Poster
+        in: formData
+        name: poster
+        required: true
+        type: file
+      - description: Book Content in PDF
+        in: formData
+        name: content
+        required: true
+        type: file
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
@@ -245,17 +245,17 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Create a new Book
       tags:
-        - Catalog
+      - Catalog
   /books/{id}:
     delete:
       parameters:
-        - description: Book ID
-          in: path
-          name: id
-          required: true
-          type: string
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: Success
@@ -269,16 +269,16 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Delete a Book
       tags:
-        - Catalog
+      - Catalog
     get:
       parameters:
-        - description: Book ID
-          in: path
-          name: id
-          required: true
-          type: string
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -294,24 +294,24 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Fetch Book by ID
       tags:
-        - Catalog
+      - Catalog
     patch:
       consumes:
-        - application/json
+      - application/json
       parameters:
-        - description: Book Payload
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: '#/definitions/dto.UpdateBook'
-        - description: Book ID
-          in: path
-          name: id
-          required: true
-          type: string
+      - description: Book Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateBook'
+      - description: Book ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: Success
@@ -329,20 +329,20 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Update the provided Book
       tags:
-        - Catalog
+      - Catalog
   /login:
     post:
       consumes:
-        - application/json
+      - application/json
       parameters:
-        - description: Register Payload
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: '#/definitions/dto.LoginRequest'
+      - description: Register Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.LoginRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
@@ -362,18 +362,18 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Login using email and password
       tags:
-        - Auth
+      - Auth
   /orders:
     get:
       parameters:
-        - description: Filters
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: '#/definitions/dto.SearchOrders'
+      - description: Filters
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.SearchOrders'
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -385,19 +385,19 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Fetch Orders
       tags:
-        - Shop
+      - Shop
     post:
       consumes:
-        - application/json
+      - application/json
       parameters:
-        - description: Order Payload
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: '#/definitions/dto.CreateOrder'
+      - description: Order Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateOrder'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
@@ -413,17 +413,17 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Create a new Order
       tags:
-        - Shop
+      - Shop
   /orders/{id}:
     get:
       parameters:
-        - description: orderId ID
-          in: path
-          name: id
-          required: true
-          type: string
+      - description: orderId ID
+        in: path
+        name: id
+        required: true
+        type: string
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: OK
@@ -439,18 +439,18 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Fetch Order by ID
       tags:
-        - Shop
+      - Shop
   /orders/{id}/download:
     get:
       parameters:
-        - description: Order Payload
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: '#/definitions/dto.CreateOrder'
+      - description: Order Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateOrder'
       produces:
-        - application/pdf
+      - application/pdf
       responses:
         "200":
           description: Success
@@ -468,20 +468,20 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Download the book for the given Order
       tags:
-        - Shop
+      - Shop
   /password-reset:
     post:
       consumes:
-        - application/json
+      - application/json
       parameters:
-        - description: Register Payload
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: '#/definitions/dto.PasswordResetRequest'
+      - description: Register Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PasswordResetRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "204":
           description: success
@@ -495,20 +495,20 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Reset the password for the given email
       tags:
-        - Auth
+      - Auth
   /register:
     post:
       consumes:
-        - application/json
+      - application/json
       parameters:
-        - description: Register Payload
-          in: body
-          name: payload
-          required: true
-          schema:
-            $ref: '#/definitions/dto.RegisterRequest'
+      - description: Register Payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RegisterRequest'
       produces:
-        - application/json
+      - application/json
       responses:
         "201":
           description: Created
@@ -528,13 +528,13 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Register a new user
       tags:
-        - Auth
+      - Auth
   /stripe/webhook:
     post:
       consumes:
-        - application/json
+      - application/json
       produces:
-        - application/json
+      - application/json
       responses:
         "200":
           description: Success
@@ -544,5 +544,5 @@ paths:
             $ref: '#/definitions/api.Error'
       summary: Handle stripe webhooks
       tags:
-        - Shop
+      - Shop
 swagger: "2.0"

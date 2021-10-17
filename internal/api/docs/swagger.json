@@ -1,839 +1,839 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "description": "Endpoints available in the E-book store REST API.",
-    "title": "E-book Store",
-    "termsOfService": "https://github.com/C0lliNN",
-    "contact": {
-      "name": "Raphael Collin",
-      "email": "raphael_professional@yahoo.com"
+    "swagger": "2.0",
+    "info": {
+        "description": "Endpoints available in the E-book store REST API.",
+        "title": "E-book Store",
+        "termsOfService": "https://github.com/C0lliNN",
+        "contact": {
+            "name": "Raphael Collin",
+            "email": "raphael_professional@yahoo.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
     },
-    "license": {
-      "name": "Apache 2.0",
-      "url": "https://www.apache.org/licenses/LICENSE-2.0.html"
+    "host": "https://ebook-store2.herokuapp.com",
+    "basePath": "/",
+    "paths": {
+        "/books": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Catalog"
+                ],
+                "summary": "Fetch Books",
+                "parameters": [
+                    {
+                        "description": "Filters",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SearchBooks"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PaginatedBooksResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Catalog"
+                ],
+                "summary": "Create a new Book",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "authorName",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "description",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "price",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "releaseDate",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "name": "title",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Book Poster",
+                        "name": "poster",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Book Content in PDF",
+                        "name": "content",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BookResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/books/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Catalog"
+                ],
+                "summary": "Fetch Book by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.BookResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Catalog"
+                ],
+                "summary": "Delete a Book",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Catalog"
+                ],
+                "summary": "Update the provided Book",
+                "parameters": [
+                    {
+                        "description": "Book Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateBook"
+                        }
+                    },
+                    {
+                        "type": "string",
+                        "description": "Book ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Success"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login using email and password",
+                "parameters": [
+                    {
+                        "description": "Register Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CredentialsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Fetch Orders",
+                "parameters": [
+                    {
+                        "description": "Filters",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.SearchOrders"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.PaginatedOrdersResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Create a new Order",
+                "parameters": [
+                    {
+                        "description": "Order Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OrderResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Fetch Order by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "orderId ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.OrderResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/orders/{id}/download": {
+            "get": {
+                "produces": [
+                    "application/pdf"
+                ],
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Download the book for the given Order",
+                "parameters": [
+                    {
+                        "description": "Order Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateOrder"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "402": {
+                        "description": "Payment Required",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/password-reset": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Reset the password for the given email",
+                "parameters": [
+                    {
+                        "description": "Register Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PasswordResetRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "success"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Register Payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dto.CredentialsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/stripe/webhook": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Handle stripe webhooks",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.Error"
+                        }
+                    }
+                }
+            }
+        }
     },
-    "version": "1.0"
-  },
-  "host": "localhost:8081",
-  "basePath": "/",
-  "paths": {
-    "/books": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Catalog"
-        ],
-        "summary": "Fetch Books",
-        "parameters": [
-          {
-            "description": "Filters",
-            "name": "payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dto.SearchBooks"
+    "definitions": {
+        "api.Error": {
+            "type": "object",
+            "properties": {
+                "details": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
             }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dto.PaginatedBooksResponse"
+        },
+        "dto.BookResponse": {
+            "type": "object",
+            "properties": {
+                "authorName": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "posterImageLink": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
+                },
+                "releaseDate": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
             }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
+        },
+        "dto.CreateOrder": {
+            "type": "object",
+            "required": [
+                "bookId"
+            ],
+            "properties": {
+                "bookId": {
+                    "type": "string"
+                }
             }
-          }
+        },
+        "dto.CredentialsResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.OrderResponse": {
+            "type": "object",
+            "properties": {
+                "bookId": {
+                    "type": "string"
+                },
+                "clientSecret": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "paymentIntentId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PaginatedBooksResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.BookResponse"
+                    }
+                },
+                "totalItems": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PaginatedOrdersResponse": {
+            "type": "object",
+            "properties": {
+                "currentPage": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OrderResponse"
+                    }
+                },
+                "totalItems": {
+                    "type": "integer"
+                },
+                "totalPages": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.PasswordResetRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstName",
+                "lastName",
+                "password",
+                "passwordConfirmation"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "passwordConfirmation": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SearchBooks": {
+            "type": "object",
+            "properties": {
+                "authorName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.SearchOrders": {
+            "type": "object",
+            "properties": {
+                "page": {
+                    "type": "integer"
+                },
+                "perPage": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateBook": {
+            "type": "object",
+            "properties": {
+                "authorName": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
         }
-      },
-      "post": {
-        "consumes": [
-          "multipart/form-data"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Catalog"
-        ],
-        "summary": "Create a new Book",
-        "parameters": [
-          {
-            "type": "string",
-            "name": "authorName",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "description",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "integer",
-            "name": "price",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "releaseDate",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "string",
-            "name": "title",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "file",
-            "description": "Book Poster",
-            "name": "poster",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "file",
-            "description": "Book Content in PDF",
-            "name": "content",
-            "in": "formData",
-            "required": true
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dto.BookResponse"
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
-    },
-    "/books/{id}": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Catalog"
-        ],
-        "summary": "Fetch Book by ID",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Book ID",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dto.BookResponse"
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      },
-      "delete": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Catalog"
-        ],
-        "summary": "Delete a Book",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Book ID",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      },
-      "patch": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Catalog"
-        ],
-        "summary": "Update the provided Book",
-        "parameters": [
-          {
-            "description": "Book Payload",
-            "name": "payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dto.UpdateBook"
-            }
-          },
-          {
-            "type": "string",
-            "description": "Book ID",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "Success"
-          },
-          "400": {
-            "description": "Bad Request",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
-    },
-    "/login": {
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Login using email and password",
-        "parameters": [
-          {
-            "description": "Register Payload",
-            "name": "payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dto.LoginRequest"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dto.CredentialsResponse"
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
-    },
-    "/orders": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Shop"
-        ],
-        "summary": "Fetch Orders",
-        "parameters": [
-          {
-            "description": "Filters",
-            "name": "payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dto.SearchOrders"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dto.PaginatedOrdersResponse"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      },
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Shop"
-        ],
-        "summary": "Create a new Order",
-        "parameters": [
-          {
-            "description": "Order Payload",
-            "name": "payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dto.CreateOrder"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dto.OrderResponse"
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
-    },
-    "/orders/{id}": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Shop"
-        ],
-        "summary": "Fetch Order by ID",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "orderId ID",
-            "name": "id",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/dto.OrderResponse"
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
-    },
-    "/orders/{id}/download": {
-      "get": {
-        "produces": [
-          "application/pdf"
-        ],
-        "tags": [
-          "Shop"
-        ],
-        "summary": "Download the book for the given Order",
-        "parameters": [
-          {
-            "description": "Order Payload",
-            "name": "payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dto.CreateOrder"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "402": {
-            "description": "Payment Required",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
-    },
-    "/password-reset": {
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Reset the password for the given email",
-        "parameters": [
-          {
-            "description": "Register Payload",
-            "name": "payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dto.PasswordResetRequest"
-            }
-          }
-        ],
-        "responses": {
-          "204": {
-            "description": "success"
-          },
-          "400": {
-            "description": "Bad Request",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
-    },
-    "/register": {
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Register a new user",
-        "parameters": [
-          {
-            "description": "Register Payload",
-            "name": "payload",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/dto.RegisterRequest"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "schema": {
-              "$ref": "#/definitions/dto.CredentialsResponse"
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
-    },
-    "/stripe/webhook": {
-      "post": {
-        "consumes": [
-          "application/json"
-        ],
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Shop"
-        ],
-        "summary": "Handle stripe webhooks",
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "schema": {
-              "$ref": "#/definitions/api.Error"
-            }
-          }
-        }
-      }
     }
-  },
-  "definitions": {
-    "api.Error": {
-      "type": "object",
-      "properties": {
-        "details": {
-          "type": "string"
-        },
-        "message": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.BookResponse": {
-      "type": "object",
-      "properties": {
-        "authorName": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "posterImageLink": {
-          "type": "string"
-        },
-        "price": {
-          "type": "integer"
-        },
-        "releaseDate": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "updatedAt": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.CreateOrder": {
-      "type": "object",
-      "required": [
-        "bookId"
-      ],
-      "properties": {
-        "bookId": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.CredentialsResponse": {
-      "type": "object",
-      "properties": {
-        "token": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.LoginRequest": {
-      "type": "object",
-      "required": [
-        "email",
-        "password"
-      ],
-      "properties": {
-        "email": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.OrderResponse": {
-      "type": "object",
-      "properties": {
-        "bookId": {
-          "type": "string"
-        },
-        "clientSecret": {
-          "type": "string"
-        },
-        "createdAt": {
-          "type": "string"
-        },
-        "id": {
-          "type": "string"
-        },
-        "paymentIntentId": {
-          "type": "string"
-        },
-        "status": {
-          "type": "string"
-        },
-        "total": {
-          "type": "integer"
-        },
-        "updatedAt": {
-          "type": "string"
-        },
-        "userId": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.PaginatedBooksResponse": {
-      "type": "object",
-      "properties": {
-        "currentPage": {
-          "type": "integer"
-        },
-        "perPage": {
-          "type": "integer"
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dto.BookResponse"
-          }
-        },
-        "totalItems": {
-          "type": "integer"
-        },
-        "totalPages": {
-          "type": "integer"
-        }
-      }
-    },
-    "dto.PaginatedOrdersResponse": {
-      "type": "object",
-      "properties": {
-        "currentPage": {
-          "type": "integer"
-        },
-        "perPage": {
-          "type": "integer"
-        },
-        "results": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/dto.OrderResponse"
-          }
-        },
-        "totalItems": {
-          "type": "integer"
-        },
-        "totalPages": {
-          "type": "integer"
-        }
-      }
-    },
-    "dto.PasswordResetRequest": {
-      "type": "object",
-      "required": [
-        "email"
-      ],
-      "properties": {
-        "email": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.RegisterRequest": {
-      "type": "object",
-      "required": [
-        "email",
-        "firstName",
-        "lastName",
-        "password",
-        "passwordConfirmation"
-      ],
-      "properties": {
-        "email": {
-          "type": "string"
-        },
-        "firstName": {
-          "type": "string"
-        },
-        "lastName": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "passwordConfirmation": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.SearchBooks": {
-      "type": "object",
-      "properties": {
-        "authorName": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "page": {
-          "type": "integer"
-        },
-        "perPage": {
-          "type": "integer"
-        },
-        "title": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.SearchOrders": {
-      "type": "object",
-      "properties": {
-        "page": {
-          "type": "integer"
-        },
-        "perPage": {
-          "type": "integer"
-        },
-        "status": {
-          "type": "string"
-        }
-      }
-    },
-    "dto.UpdateBook": {
-      "type": "object",
-      "properties": {
-        "authorName": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        }
-      }
-    }
-  }
 }
