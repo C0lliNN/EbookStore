@@ -9,15 +9,13 @@ import (
 )
 
 func LoadMigrations(source string) {
-	uri := viper.GetString("POSTGRES_URI")
-
-	m, err := migrate.New(source, uri)
+	m, err := migrate.New(source, viper.GetString("DATABASE_URL"))
 
 	if err != nil {
 		log.Logger.Fatalw("DB migration has failed", "error", err)
 	}
 
-	if err := m.Up(); err != nil {
+	if err = m.Up(); err != nil {
 		if err == migrate.ErrNoChange {
 			log.Logger.Debug("No DB migration was applied")
 			return
