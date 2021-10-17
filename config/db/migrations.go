@@ -15,8 +15,9 @@ func LoadMigrations(source string) {
 	user := viper.GetString("POSTGRES_USERNAME")
 	pass := viper.GetString("POSTGRES_PASSWORD")
 	dbName := viper.GetString("POSTGRES_DATABASE")
+	ssl := viper.GetString("POSTGRES_SSL")
 
-	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", user, pass, host, port, dbName)
+	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", user, pass, host, port, dbName, ssl)
 
 	m, err := migrate.New(source, dbUrl)
 

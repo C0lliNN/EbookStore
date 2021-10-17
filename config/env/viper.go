@@ -2,6 +2,7 @@ package env
 
 import (
 	"fmt"
+	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/spf13/viper"
 	"os"
 )
@@ -10,7 +11,7 @@ func InitConfiguration() {
 	if os.Getenv("ENV") == "production" {
 		viper.AutomaticEnv()
 
-		fmt.Println("Configuration loaded from environment variables")
+		log.Logger.Debug("Configuration loaded from environment variables")
 	} else {
 		viper.AddConfigPath("..")
 		viper.SetConfigName("env")
@@ -20,6 +21,6 @@ func InitConfiguration() {
 			panic(fmt.Errorf("fatal error %w", err))
 		}
 
-		fmt.Printf("Configuration loaded from %s", viper.ConfigFileUsed())
+		log.Logger.Debug("Configuration loaded from %s", viper.ConfigFileUsed())
 	}
 }
