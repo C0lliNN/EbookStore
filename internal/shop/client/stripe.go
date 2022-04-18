@@ -1,7 +1,7 @@
 package client
 
 import (
-	"github.com/c0llinn/ebook-store/config"
+	"github.com/c0llinn/ebook-store/internal/config"
 	"github.com/c0llinn/ebook-store/internal/shop/model"
 	"github.com/spf13/viper"
 	"github.com/stripe/stripe-go/v72/paymentintent"

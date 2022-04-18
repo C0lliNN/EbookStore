@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/c0llinn/ebook-store/config"
+	config2 "github.com/c0llinn/ebook-store/internal/config"
 )
 
 func init() {
-	config.InitConfiguration()
-	config.InitLogger()
-	config.LoadMigrations("file:../migration")
+	config2.InitConfiguration()
+	config2.InitLogger()
+	config2.LoadMigrations("file:../migration")
 }
 
 func main() {
@@ -15,6 +15,6 @@ func main() {
 
 	err := server.ListenAndServe()
 	if err != nil {
-		config.Logger.Fatalf("Could not start web api: %v", err)
+		config2.Logger.Fatalf("Could not start web api: %v", err)
 	}
 }

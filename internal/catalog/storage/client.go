@@ -3,7 +3,7 @@ package storage
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/c0llinn/ebook-store/config"
+	"github.com/c0llinn/ebook-store/internal/config"
 	"io"
 	"time"
 )

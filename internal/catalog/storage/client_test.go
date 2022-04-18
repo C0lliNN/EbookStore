@@ -5,7 +5,7 @@ package storage
 
 import (
 	"bytes"
-	"github.com/c0llinn/ebook-store/config"
+	"github.com/c0llinn/ebook-store/internal/config"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"

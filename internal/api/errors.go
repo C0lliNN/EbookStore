@@ -2,8 +2,8 @@ package api
 
 import (
 	"fmt"
-	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/common"
+	"github.com/c0llinn/ebook-store/internal/config"
 	"github.com/gin-gonic/gin"
 )
 

@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/c0llinn/ebook-store/config"
 	auth "github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/catalog/helper"
 	catalog "github.com/c0llinn/ebook-store/internal/catalog/model"
@@ -15,6 +14,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/catalog/storage"
 	"github.com/c0llinn/ebook-store/internal/catalog/usecase"
 	"github.com/c0llinn/ebook-store/internal/common"
+	config2 "github.com/c0llinn/ebook-store/internal/config"
 	"github.com/c0llinn/ebook-store/internal/shop/client"
 	"github.com/c0llinn/ebook-store/internal/shop/delivery/dto"
 	helper3 "github.com/c0llinn/ebook-store/internal/shop/helper"
@@ -46,17 +46,17 @@ type ShopHandlerTestSuite struct {
 
 func (s *ShopHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	config.InitLogger()
-	config.LoadMigrations("file:../../../../migration")
+	config2.InitLogger()
+	config2.LoadMigrations("file:../../../../migration")
 
-	s.db = config.NewConnection()
+	s.db = config2.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
 	orderRepository := repository3.NewOrderRepository(s.db)
 	stripeClient := client.NewStripeClient()
-	bucket := config.NewBucket()
+	bucket := config2.NewBucket()
 	bookRepository := repository.NewBookRepository(s.db)
-	s3 := config.NewS3Service()
+	s3 := config2.NewS3Service()
 	s.s3Client = storage.NewS3Client(s3, bucket)
 	filenameGenerator := helper.NewFilenameGenerator()
 	catalogUseCase := usecase.NewCatalogUseCase(bookRepository, s.s3Client, filenameGenerator)

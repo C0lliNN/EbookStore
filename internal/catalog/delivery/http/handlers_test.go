@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/catalog/delivery/dto"
 	"github.com/c0llinn/ebook-store/internal/catalog/helper"
 	"github.com/c0llinn/ebook-store/internal/catalog/model"
@@ -15,6 +14,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/catalog/storage"
 	"github.com/c0llinn/ebook-store/internal/catalog/usecase"
 	"github.com/c0llinn/ebook-store/internal/common"
+	config2 "github.com/c0llinn/ebook-store/internal/config"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/gin-gonic/gin"
@@ -39,15 +39,15 @@ type CatalogHandlerTestSuite struct {
 
 func (s *CatalogHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	config.InitLogger()
-	config.LoadMigrations("file:../../../../migration")
+	config2.InitLogger()
+	config2.LoadMigrations("file:../../../../migration")
 
-	s.db = config.NewConnection()
+	s.db = config2.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
-	s.db = config.NewConnection()
+	s.db = config2.NewConnection()
 	bookRepository := repository.NewBookRepository(s.db)
-	s3Client := storage.NewS3Client(config.NewS3Service(), config.NewBucket())
+	s3Client := storage.NewS3Client(config2.NewS3Service(), config2.NewBucket())
 	filenameGenerator := helper.NewFilenameGenerator()
 	catalogUseCase := usecase.NewCatalogUseCase(bookRepository, s3Client, filenameGenerator)
 	idGenerator := helper.NewIDGenerator()

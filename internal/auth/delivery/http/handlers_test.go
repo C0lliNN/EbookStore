@@ -7,13 +7,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/auth/delivery/dto"
 	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/auth/repository"
 	"github.com/c0llinn/ebook-store/internal/auth/usecase"
+	config2 "github.com/c0llinn/ebook-store/internal/config"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/gin-gonic/gin"
@@ -39,15 +39,15 @@ type AuthHandlerTestSuite struct {
 
 func (s *AuthHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	config.InitLogger()
-	config.LoadMigrations("file:../../../../migration")
+	config2.InitLogger()
+	config2.LoadMigrations("file:../../../../migration")
 
-	s.db = config.NewConnection()
+	s.db = config2.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
 	userRepository := repository.NewUserRepository(s.db)
 	jwtWrapper := helper.NewJWTWrapper(helper.NewHMACSecret())
-	ses := config.NewSNSService()
+	ses := config2.NewSNSService()
 	client := email.NewEmailClient(ses)
 	passwordGenerator := helper.NewPasswordGenerator()
 	bcryptWrapper := helper.NewBcryptWrapper()

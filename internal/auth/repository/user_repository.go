@@ -1,9 +1,9 @@
 package repository
 
 import (
-	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/common"
+	"github.com/c0llinn/ebook-store/internal/config"
 	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
 )
