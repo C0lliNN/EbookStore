@@ -5,7 +5,7 @@ package storage
 
 import (
 	"bytes"
-	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
@@ -21,7 +21,7 @@ type StorageClientTestSuite struct {
 
 func (s *StorageClientTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	log.InitLogger()
+	config.InitLogger()
 
 	s.client = S3Client{service: test.NewS3Service(), bucket: Bucket(viper.GetString("AWS_S3_BUCKET"))}
 }

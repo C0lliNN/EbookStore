@@ -4,8 +4,7 @@
 package repository
 
 import (
-	"github.com/c0llinn/ebook-store/config/db"
-	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/shop/model"
 	"github.com/c0llinn/ebook-store/test"
@@ -24,10 +23,10 @@ type OrderRepositoryTestSuite struct {
 
 func (s *OrderRepositoryTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	log.InitLogger()
-	db.LoadMigrations("file:../../../migration")
+	config.InitLogger()
+	config.LoadMigrations("file:../../../migration")
 
-	conn := db.NewConnection()
+	conn := config.NewConnection()
 	s.repo = OrderRepository{conn}
 }
 

@@ -6,8 +6,7 @@
 package main
 
 import (
-	"github.com/c0llinn/ebook-store/config/aws"
-	"github.com/c0llinn/ebook-store/config/db"
+	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/api"
 	http2 "github.com/c0llinn/ebook-store/internal/auth/delivery/http"
 	"github.com/c0llinn/ebook-store/internal/auth/email"
@@ -32,11 +31,11 @@ import (
 
 func CreateWebServer() *http.Server {
 	engine := api.NewRouter()
-	gormDB := db.NewConnection()
+	gormDB := config.NewConnection()
 	userRepository := repository.NewUserRepository(gormDB)
 	hmacSecret := helper.NewHMACSecret()
 	jwtWrapper := helper.NewJWTWrapper(hmacSecret)
-	ses := aws.NewSNSService()
+	ses := config.NewSNSService()
 	emailClient := email.NewEmailClient(ses)
 	passwordGenerator := helper.NewPasswordGenerator()
 	bcryptWrapper := helper.NewBcryptWrapper()
@@ -44,8 +43,8 @@ func CreateWebServer() *http.Server {
 	uuidGenerator := helper.NewUUIDGenerator()
 	authHandler := http2.NewAuthHandler(authUseCase, uuidGenerator)
 	bookRepository := repository2.NewBookRepository(gormDB)
-	s3 := aws.NewS3Service()
-	bucket := aws.NewBucket()
+	s3 := config.NewS3Service()
+	bucket := config.NewBucket()
 	s3Client := storage.NewS3Client(s3, bucket)
 	filenameGenerator := helper2.NewFilenameGenerator()
 	catalogUseCase := usecase2.NewCatalogUseCase(bookRepository, s3Client, filenameGenerator)

@@ -1,8 +1,7 @@
-package db
+package config
 
 import (
 	"database/sql"
-	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -11,7 +10,7 @@ import (
 func NewConnection() *gorm.DB {
 	db, err := sql.Open("postgres", viper.GetString("DATABASE_URL"))
 	if err != nil {
-		log.Logger.Fatalw("Postgres connection has failed", "error", err.Error())
+		Logger.Fatalw("Postgres connection has failed", "error", err.Error())
 		return nil
 	}
 
@@ -23,12 +22,12 @@ func NewConnection() *gorm.DB {
 	conn, err := gorm.Open(dialector, &gorm.Config{})
 
 	if err != nil {
-		log.Logger.Fatalw("Postgres connection has failed", "error", err.Error())
+		Logger.Fatalw("Postgres connection has failed", "error", err.Error())
 		return nil
 	}
 
 	if err = db.Ping(); err != nil {
-		log.Logger.Fatalw("Ping has failed", "error", err.Error())
+		Logger.Fatalw("Ping has failed", "error", err.Error())
 		return nil
 	}
 

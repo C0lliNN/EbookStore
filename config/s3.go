@@ -1,10 +1,9 @@
-package aws
+package config
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/c0llinn/ebook-store/internal/catalog/storage"
 	"github.com/spf13/viper"
 )
@@ -26,7 +25,7 @@ func NewS3Service() *s3.S3 {
 	})
 
 	if err != nil {
-		log.Logger.Fatalw("Error creating aws session", "error", err)
+		Logger.Fatalw("Error creating aws session", "error", err)
 	}
 
 	return s3.New(currentSession)

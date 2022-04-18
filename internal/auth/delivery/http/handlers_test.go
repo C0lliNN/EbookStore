@@ -7,10 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/bxcodec/faker/v3"
-	"github.com/c0llinn/ebook-store/config/aws"
-	"github.com/c0llinn/ebook-store/config/db"
-	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/auth/delivery/dto"
 	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
@@ -42,15 +39,15 @@ type AuthHandlerTestSuite struct {
 
 func (s *AuthHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	log.InitLogger()
-	db.LoadMigrations("file:../../../../migration")
+	config.InitLogger()
+	config.LoadMigrations("file:../../../../migration")
 
-	s.db = db.NewConnection()
+	s.db = config.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
 	userRepository := repository.NewUserRepository(s.db)
 	jwtWrapper := helper.NewJWTWrapper(helper.NewHMACSecret())
-	ses := aws.NewSNSService()
+	ses := config.NewSNSService()
 	client := email.NewEmailClient(ses)
 	passwordGenerator := helper.NewPasswordGenerator()
 	bcryptWrapper := helper.NewBcryptWrapper()

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"fmt"
-	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/catalog/model"
 	"github.com/c0llinn/ebook-store/internal/common"
 	"gorm.io/gorm"
@@ -22,13 +22,13 @@ func (r BookRepository) FindByQuery(query model.BookQuery) (paginated model.Pagi
 
 	result := r.db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Find(&paginated.Books)
 	if err = result.Error; err != nil {
-		log.Logger.Error("error trying to find books by query: ", err)
+		config.Logger.Error("error trying to find books by query: ", err)
 		return
 	}
 
 	var count int64
 	if err = r.db.Model(&model.Book{}).Where(conditions).Count(&count).Error; err != nil {
-		log.Logger.Error("error trying to cound books: ", err)
+		config.Logger.Error("error trying to cound books: ", err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func (r BookRepository) createConditionsFromCriteria(criteria []model.Criteria) 
 func (r BookRepository) FindByID(id string) (book model.Book, err error) {
 	result := r.db.First(&book, "id = ?", id)
 	if err = result.Error; err != nil {
-		log.Logger.Errorf("error trying to find book by id %s: %v", id, err)
+		config.Logger.Errorf("error trying to find book by id %s: %v", id, err)
 		err = &common.ErrEntityNotFound{Entity: "Book", Err: err}
 	}
 
@@ -66,7 +66,7 @@ func (r BookRepository) FindByID(id string) (book model.Book, err error) {
 func (r BookRepository) Create(book *model.Book) error {
 	result := r.db.Create(book)
 	if err := result.Error; err != nil {
-		log.Logger.Error("error trying to create a book: ", err)
+		config.Logger.Error("error trying to create a book: ", err)
 		return err
 	}
 
@@ -76,7 +76,7 @@ func (r BookRepository) Create(book *model.Book) error {
 func (r BookRepository) Update(book *model.Book) error {
 	result := r.db.Updates(book).Where("id = ?", book.ID)
 	if err := result.Error; err != nil {
-		log.Logger.Errorf("error trying to update the book wiht id %s: %v", book.ID, err)
+		config.Logger.Errorf("error trying to update the book wiht id %s: %v", book.ID, err)
 		return err
 	}
 
@@ -86,7 +86,7 @@ func (r BookRepository) Update(book *model.Book) error {
 func (r BookRepository) Delete(id string) error {
 	result := r.db.Delete(&model.Book{}, "id = ?", id)
 	if err := result.Error; err != nil {
-		log.Logger.Errorf("error trying to delete the book with id %s: %v", id, err)
+		config.Logger.Errorf("error trying to delete the book with id %s: %v", id, err)
 		return err
 	}
 

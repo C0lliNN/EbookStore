@@ -7,9 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/c0llinn/ebook-store/config/aws"
-	"github.com/c0llinn/ebook-store/config/db"
-	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/config"
 	auth "github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/catalog/helper"
 	catalog "github.com/c0llinn/ebook-store/internal/catalog/model"
@@ -48,17 +46,17 @@ type ShopHandlerTestSuite struct {
 
 func (s *ShopHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	log.InitLogger()
-	db.LoadMigrations("file:../../../../migration")
+	config.InitLogger()
+	config.LoadMigrations("file:../../../../migration")
 
-	s.db = db.NewConnection()
+	s.db = config.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
 	orderRepository := repository3.NewOrderRepository(s.db)
 	stripeClient := client.NewStripeClient()
-	bucket := aws.NewBucket()
+	bucket := config.NewBucket()
 	bookRepository := repository.NewBookRepository(s.db)
-	s3 := aws.NewS3Service()
+	s3 := config.NewS3Service()
 	s.s3Client = storage.NewS3Client(s3, bucket)
 	filenameGenerator := helper.NewFilenameGenerator()
 	catalogUseCase := usecase.NewCatalogUseCase(bookRepository, s.s3Client, filenameGenerator)

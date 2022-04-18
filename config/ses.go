@@ -1,10 +1,9 @@
-package aws
+package config
 
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
-	"github.com/c0llinn/ebook-store/config/log"
 	"github.com/spf13/viper"
 )
 
@@ -22,7 +21,7 @@ func NewSNSService() *ses.SES {
 	})
 
 	if err != nil {
-		log.Logger.Fatalw("Error creating aws session", "error", err)
+		Logger.Fatalw("Error creating aws session", "error", err)
 	}
 
 	return ses.New(currentSession)

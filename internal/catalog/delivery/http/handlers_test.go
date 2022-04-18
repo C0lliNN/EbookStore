@@ -7,10 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/bxcodec/faker/v3"
-	"github.com/c0llinn/ebook-store/config/aws"
-	"github.com/c0llinn/ebook-store/config/db"
-	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/catalog/delivery/dto"
 	"github.com/c0llinn/ebook-store/internal/catalog/helper"
 	"github.com/c0llinn/ebook-store/internal/catalog/model"
@@ -42,15 +39,15 @@ type CatalogHandlerTestSuite struct {
 
 func (s *CatalogHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	log.InitLogger()
-	db.LoadMigrations("file:../../../../migration")
+	config.InitLogger()
+	config.LoadMigrations("file:../../../../migration")
 
-	s.db = db.NewConnection()
+	s.db = config.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
-	s.db = db.NewConnection()
+	s.db = config.NewConnection()
 	bookRepository := repository.NewBookRepository(s.db)
-	s3Client := storage.NewS3Client(aws.NewS3Service(), aws.NewBucket())
+	s3Client := storage.NewS3Client(config.NewS3Service(), config.NewBucket())
 	filenameGenerator := helper.NewFilenameGenerator()
 	catalogUseCase := usecase.NewCatalogUseCase(bookRepository, s3Client, filenameGenerator)
 	idGenerator := helper.NewIDGenerator()

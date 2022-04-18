@@ -4,8 +4,7 @@
 package repository
 
 import (
-	"github.com/c0llinn/ebook-store/config/db"
-	"github.com/c0llinn/ebook-store/config/log"
+	"github.com/c0llinn/ebook-store/config"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/test"
@@ -23,10 +22,10 @@ type UserRepositoryTestSuite struct {
 
 func (s *UserRepositoryTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	log.InitLogger()
-	db.LoadMigrations("file:../../../migration")
+	config.InitLogger()
+	config.LoadMigrations("file:../../../migration")
 
-	conn := db.NewConnection()
+	conn := config.NewConnection()
 	s.repo = UserRepository{conn}
 }
 
