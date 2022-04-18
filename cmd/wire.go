@@ -4,12 +4,12 @@
 package main
 
 import (
-	"github.com/c0llinn/ebook-store/internal/config"
 	"github.com/google/wire"
 	"net/http"
 )
 
-func CreateWebServer() *http.Server {
-	wire.Build(config.Container)
+func InitializeServer() *http.Server {
+	wire.Build(config.Provider, auth.Provider, catalog.Provider, shop.Provider, api.Provider)
+
 	return &http.Server{}
 }
