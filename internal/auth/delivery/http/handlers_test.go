@@ -40,7 +40,7 @@ type AuthHandlerTestSuite struct {
 func (s *AuthHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
 	config2.InitLogger()
-	config2.LoadMigrations("file:../../../../migration")
+	config2.LoadMigrations("file:../../../../migrations")
 
 	s.db = config2.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))

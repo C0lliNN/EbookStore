@@ -24,7 +24,7 @@ type OrderRepositoryTestSuite struct {
 func (s *OrderRepositoryTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
 	config2.InitLogger()
-	config2.LoadMigrations("file:../../../migration")
+	config2.LoadMigrations("file:../../../migrations")
 
 	conn := config2.NewConnection()
 	s.repo = OrderRepository{conn}

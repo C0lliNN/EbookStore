@@ -7,7 +7,7 @@ import (
 func init() {
 	config2.InitConfiguration()
 	config2.InitLogger()
-	config2.LoadMigrations("file:../migration")
+	config2.LoadMigrations("file:../migrations")
 }
 
 func main() {

@@ -11,15 +11,15 @@ func LoadMigrations(source string) {
 	m, err := migrate.New(source, viper.GetString("DATABASE_URL"))
 
 	if err != nil {
-		Logger.Fatalw("DB migration has failed", "error", err)
+		Logger.Fatalw("DB migrations has failed", "error", err)
 	}
 
 	if err = m.Up(); err != nil {
 		if err == migrate.ErrNoChange {
-			Logger.Debug("No DB migration was applied")
+			Logger.Debug("No DB migrations was applied")
 			return
 		}
 
-		Logger.Fatalw("DB migration has failed", "error", err)
+		Logger.Fatalw("DB migrations has failed", "error", err)
 	}
 }

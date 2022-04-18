@@ -23,7 +23,7 @@ type UserRepositoryTestSuite struct {
 func (s *UserRepositoryTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
 	config2.InitLogger()
-	config2.LoadMigrations("file:../../../migration")
+	config2.LoadMigrations("file:../../../migrations")
 
 	conn := config2.NewConnection()
 	s.repo = UserRepository{conn}
