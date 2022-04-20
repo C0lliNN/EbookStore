@@ -1,9 +1,10 @@
 package client
 
 import (
-	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/c0llinn/ebook-store/internal/shop/model"
 	"github.com/spf13/viper"
+	"github.com/stripe/stripe-go/v72"
 	"github.com/stripe/stripe-go/v72/paymentintent"
 )
 
@@ -37,7 +38,7 @@ func (c StripeClient) CreatePaymentIntentForOrder(order *model.Order) error {
 	params.AddMetadata("userID", order.UserID)
 	pi, err := paymentintent.New(params)
 	if err != nil {
-		config.Logger.Errorf("stripe intent creation failed for order %s: %v", pi.ID, err)
+		log.Default().Errorf("stripe intent creation failed for order %s: %v", pi.ID, err)
 		return err
 	}
 

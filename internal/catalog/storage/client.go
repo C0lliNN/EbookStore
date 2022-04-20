@@ -3,7 +3,7 @@ package storage
 import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/log"
 	"io"
 	"time"
 )
@@ -27,7 +27,7 @@ func (c S3Client) GeneratePreSignedUrl(key string) (string, error) {
 
 	url, err := request.Presign(time.Hour)
 	if err != nil {
-		config.Logger.Errorf("Error generating get presignUrl for key %s: %v", key, err)
+		log.Default().Errorf("Error generating get presignUrl for key %s: %v", key, err)
 	}
 
 	return url, err

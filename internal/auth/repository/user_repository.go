@@ -3,7 +3,7 @@ package repository
 import (
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/common"
-	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
 )
@@ -19,7 +19,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 func (r UserRepository) Save(user *model.User) error {
 	result := r.db.Create(user)
 	if err := result.Error; err != nil {
-		config.Logger.Error("error trying to save user: ", err)
+		log.Default().Errorf("error trying to save user: %v", err)
 
 		if parsed, ok := err.(*pgconn.PgError); ok && parsed.Code == "23505" {
 			return &common.ErrDuplicateKey{Key: "email", Err: err}
@@ -34,7 +34,7 @@ func (r UserRepository) Save(user *model.User) error {
 func (r UserRepository) FindByEmail(email string) (user model.User, err error) {
 	result := r.db.First(&user, "email = ?", email)
 	if err = result.Error; err != nil {
-		config.Logger.Errorf("error trying to find user by email %s: %v", email, err)
+		log.Default().Errorf("error trying to find user by email %s: %v", email, err)
 
 		err = &common.ErrEntityNotFound{Entity: "User", Err: err}
 	}
@@ -45,7 +45,7 @@ func (r UserRepository) FindByEmail(email string) (user model.User, err error) {
 func (r UserRepository) Update(user *model.User) error {
 	result := r.db.Updates(user).Where("id = ?", user.ID)
 	if err := result.Error; err != nil {
-		config.Logger.Error("error trying to update user", err)
+		log.Default().Errorf("error trying to update user: %v", err)
 		return err
 	}
 

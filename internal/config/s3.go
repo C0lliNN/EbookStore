@@ -5,6 +5,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/c0llinn/ebook-store/internal/catalog/storage"
+	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/spf13/viper"
 )
 
@@ -25,7 +26,7 @@ func NewS3Service() *s3.S3 {
 	})
 
 	if err != nil {
-		Logger.Fatalw("Error creating aws session", "error", err)
+		log.Default().Fatalf("could not create an aws session: %v", err)
 	}
 
 	return s3.New(currentSession)

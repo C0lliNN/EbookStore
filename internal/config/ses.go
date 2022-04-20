@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/spf13/viper"
 )
 
@@ -21,7 +22,7 @@ func NewSNSService() *ses.SES {
 	})
 
 	if err != nil {
-		Logger.Fatalw("Error creating aws session", "error", err)
+		log.Default().Fatalf("could not create aws session: %v", err)
 	}
 
 	return ses.New(currentSession)

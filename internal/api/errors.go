@@ -3,7 +3,7 @@ package api
 import (
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/common"
-	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/gin-gonic/gin"
 )
 
@@ -69,7 +69,8 @@ func Errors() gin.HandlerFunc {
 		var apiError *Error
 
 		if len(detectedErrors) > 0 {
-			config.Logger.Warn("error detected: " + detectedErrors.Errors()[0])
+
+			log.FromContext(context).Warn("error detected: " + detectedErrors.Errors()[0])
 			err := detectedErrors[0].Err
 
 			switch parsed := err.(type) {

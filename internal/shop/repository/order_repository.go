@@ -3,7 +3,7 @@ package repository
 import (
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/common"
-	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/c0llinn/ebook-store/internal/shop/model"
 	"gorm.io/gorm"
 	"strings"
@@ -21,13 +21,13 @@ func (r OrderRepository) FindByQuery(query model.OrderQuery) (paginated model.Pa
 	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
 	result := r.db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Order("created_at DESC").Find(&paginated.Orders)
 	if err = result.Error; err != nil {
-		config.Logger.Error("error trying to find orders by query: ", err)
+		log.Default().Error("error trying to find orders by query: ", err)
 		return
 	}
 
 	var count int64
 	if err = r.db.Model(&model.Order{}).Where(conditions).Count(&count).Error; err != nil {
-		config.Logger.Error("error trying to count orders: ", err)
+		log.Default().Error("error trying to count orders: ", err)
 		return
 	}
 
@@ -57,7 +57,7 @@ func (r OrderRepository) createConditionsFromCriteria(criteria []model.Criteria)
 func (r OrderRepository) FindByID(id string) (order model.Order, err error) {
 	result := r.db.First(&order, "id = ?", id)
 	if err = result.Error; err != nil {
-		config.Logger.Errorf("error when trying to find order with id %s: %v", id, err)
+		log.Default().Errorf("error when trying to find order with id %s: %v", id, err)
 		err = &common.ErrEntityNotFound{Entity: "Order", Err: err}
 	}
 
@@ -67,7 +67,7 @@ func (r OrderRepository) FindByID(id string) (order model.Order, err error) {
 func (r OrderRepository) Create(order *model.Order) error {
 	result := r.db.Create(order)
 	if err := result.Error; err != nil {
-		config.Logger.Error("error trying to create an order: ", err)
+		log.Default().Error("error trying to create an order: ", err)
 		return err
 	}
 
@@ -77,7 +77,7 @@ func (r OrderRepository) Create(order *model.Order) error {
 func (r OrderRepository) Update(order *model.Order) error {
 	result := r.db.Updates(order).Where("id = ?", order.ID)
 	if err := result.Error; err != nil {
-		config.Logger.Errorf("error trying to update the order %s: %v", order.ID, err)
+		log.Default().Errorf("error trying to update the order %s: %v", order.ID, err)
 		return err
 	}
 
