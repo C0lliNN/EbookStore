@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/catalog/model"
 	"github.com/c0llinn/ebook-store/internal/common"
@@ -17,7 +18,7 @@ func NewBookRepository(db *gorm.DB) BookRepository {
 	return BookRepository{db: db}
 }
 
-func (r BookRepository) FindByQuery(query model.BookQuery) (paginated model.PaginatedBooks, err error) {
+func (r BookRepository) FindByQuery(ctx context.Context, query model.BookQuery) (paginated model.PaginatedBooks, err error) {
 	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
 
 	result := r.db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Find(&paginated.Books)
@@ -53,7 +54,7 @@ func (r BookRepository) createConditionsFromCriteria(criteria []model.Criteria) 
 	return strings.Join(conditions, " AND ")
 }
 
-func (r BookRepository) FindByID(id string) (book model.Book, err error) {
+func (r BookRepository) FindByID(ctx context.Context, id string) (book model.Book, err error) {
 	result := r.db.First(&book, "id = ?", id)
 	if err = result.Error; err != nil {
 		log.Default().Errorf("error trying to find book by id %s: %v", id, err)
@@ -63,7 +64,7 @@ func (r BookRepository) FindByID(id string) (book model.Book, err error) {
 	return
 }
 
-func (r BookRepository) Create(book *model.Book) error {
+func (r BookRepository) Create(ctx context.Context, book *model.Book) error {
 	result := r.db.Create(book)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to create a book: %v", err)
@@ -73,7 +74,7 @@ func (r BookRepository) Create(book *model.Book) error {
 	return nil
 }
 
-func (r BookRepository) Update(book *model.Book) error {
+func (r BookRepository) Update(ctx context.Context, book *model.Book) error {
 	result := r.db.Updates(book).Where("id = ?", book.ID)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to update the book wiht id %s: %v", book.ID, err)
@@ -83,7 +84,7 @@ func (r BookRepository) Update(book *model.Book) error {
 	return nil
 }
 
-func (r BookRepository) Delete(id string) error {
+func (r BookRepository) Delete(ctx context.Context, id string) error {
 	result := r.db.Delete(&model.Book{}, "id = ?", id)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to delete the book with id %s: %v", id, err)

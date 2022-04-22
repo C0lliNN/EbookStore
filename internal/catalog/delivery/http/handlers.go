@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"github.com/c0llinn/ebook-store/internal/catalog/delivery/dto"
 	"github.com/c0llinn/ebook-store/internal/catalog/model"
 	"github.com/c0llinn/ebook-store/internal/common"
@@ -10,11 +11,11 @@ import (
 )
 
 type Service interface {
-	FindBooks(query model.BookQuery) (paginatedBooks model.PaginatedBooks, err error)
-	FindBookByID(id string) (book model.Book, err error)
-	CreateBook(book *model.Book, posterImage io.ReadSeeker, bookContent io.ReadSeeker) error
-	UpdateBook(book *model.Book) error
-	DeleteBook(id string) error
+	FindBooks(ctx context.Context, query model.BookQuery) (paginatedBooks model.PaginatedBooks, err error)
+	FindBookByID(ctx context.Context, id string) (book model.Book, err error)
+	CreateBook(ctx context.Context, book *model.Book, posterImage io.ReadSeeker, bookContent io.ReadSeeker) error
+	UpdateBook(ctx context.Context, book *model.Book) error
+	DeleteBook(ctx context.Context, id string) error
 }
 
 type IDGenerator interface {
@@ -48,7 +49,7 @@ func (h CatalogHandler) getBooks(context *gin.Context) {
 		return
 	}
 
-	paginatedBooks, err := h.service.FindBooks(s.ToDomain())
+	paginatedBooks, err := h.service.FindBooks(context.Request.Context(), s.ToDomain())
 	if err != nil {
 		context.Error(err)
 		return
@@ -67,7 +68,7 @@ func (h CatalogHandler) getBooks(context *gin.Context) {
 // @Failure 500 {object} api.Error
 // @Router /books/{id} [get]
 func (h CatalogHandler) getBook(context *gin.Context) {
-	book, err := h.service.FindBookByID(context.Param("id"))
+	book, err := h.service.FindBookByID(context.Request.Context(), context.Param("id"))
 	if err != nil {
 		context.Error(err)
 		return
@@ -119,7 +120,7 @@ func (h CatalogHandler) createBook(context *gin.Context) {
 	}
 
 	book := c.ToDomain(h.idGenerator.NewID())
-	if err = h.service.CreateBook(&book, posterFile, contentFile); err != nil {
+	if err = h.service.CreateBook(context.Request.Context(), &book, posterFile, contentFile); err != nil {
 		context.Error(err)
 		return
 	}
@@ -146,14 +147,14 @@ func (h CatalogHandler) updateBook(context *gin.Context) {
 		return
 	}
 
-	existingBook, err := h.service.FindBookByID(context.Param("id"))
+	existingBook, err := h.service.FindBookByID(context.Request.Context(), context.Param("id"))
 	if err != nil {
 		context.Error(err)
 		return
 	}
 
 	newBook := u.ToDomain(existingBook)
-	if err = h.service.UpdateBook(&newBook); err != nil {
+	if err = h.service.UpdateBook(context.Request.Context(), &newBook); err != nil {
 		context.Error(err)
 		return
 	}
@@ -171,7 +172,7 @@ func (h CatalogHandler) updateBook(context *gin.Context) {
 // @Failure 500 {object} api.Error
 // @Router /books/{id} [delete]
 func (h CatalogHandler) deleteBook(context *gin.Context) {
-	if err := h.service.DeleteBook(context.Param("id")); err != nil {
+	if err := h.service.DeleteBook(context.Request.Context(), context.Param("id")); err != nil {
 		context.Error(err)
 		return
 	}

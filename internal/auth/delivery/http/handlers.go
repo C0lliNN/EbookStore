@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"github.com/c0llinn/ebook-store/internal/auth/delivery/dto"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/common"
@@ -13,9 +14,9 @@ type IDGenerator interface {
 }
 
 type UseCase interface {
-	Register(user model.User) (model.Credentials, error)
-	Login(email, password string) (model.Credentials, error)
-	ResetPassword(email string) error
+	Register(ctx context.Context, user model.User) (model.Credentials, error)
+	Login(ctx context.Context, email, password string) (model.Credentials, error)
+	ResetPassword(ctx context.Context, email string) error
 }
 
 type AuthHandler struct {
@@ -46,7 +47,7 @@ func (h AuthHandler) register(context *gin.Context) {
 	}
 
 	user := r.ToDomain(h.idGenerator.NewID())
-	credentials, err := h.useCase.Register(user)
+	credentials, err := h.useCase.Register(context.Request.Context(), user)
 	if err != nil {
 		context.Error(err)
 		return
@@ -73,7 +74,7 @@ func (h AuthHandler) login(context *gin.Context) {
 		return
 	}
 
-	credentials, err := h.useCase.Login(r.Email, r.Password)
+	credentials, err := h.useCase.Login(context.Request.Context(), r.Email, r.Password)
 	if err != nil {
 		context.Error(err)
 		return
@@ -100,11 +101,10 @@ func (h AuthHandler) resetPassword(context *gin.Context) {
 		return
 	}
 
-	if err := h.useCase.ResetPassword(r.Email); err != nil {
+	if err := h.useCase.ResetPassword(context.Request.Context(), r.Email); err != nil {
 		context.Error(err)
 		return
 	}
 
 	context.Status(http.StatusNoContent)
-
 }

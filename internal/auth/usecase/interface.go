@@ -1,11 +1,14 @@
 package usecase
 
-import "github.com/c0llinn/ebook-store/internal/auth/model"
+import (
+	"context"
+	"github.com/c0llinn/ebook-store/internal/auth/model"
+)
 
 type Repository interface {
-	Save(user *model.User) error
-	Update(user *model.User) error
-	FindByEmail(email string) (model.User, error)
+	Save(ctx context.Context, user *model.User) error
+	Update(ctx context.Context, user *model.User) error
+	FindByEmail(ctx context.Context, email string) (model.User, error)
 }
 
 type JWTWrapper interface {
@@ -19,7 +22,7 @@ type BcryptWrapper interface {
 }
 
 type EmailClient interface {
-	SendPasswordResetEmail(user model.User, newPassword string) error
+	SendPasswordResetEmail(ctx context.Context, user model.User, newPassword string) error
 }
 
 type PasswordGenerator interface {

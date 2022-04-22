@@ -1,22 +1,23 @@
 package usecase
 
 import (
+	"context"
 	"github.com/c0llinn/ebook-store/internal/catalog/model"
 	"io"
 )
 
 type Repository interface {
-	FindByQuery(query model.BookQuery) (paginated model.PaginatedBooks, err error)
-	FindByID(id string) (book model.Book, err error)
-	Create(book *model.Book) error
-	Update(book *model.Book) error
-	Delete(id string) error
+	FindByQuery(ctx context.Context, query model.BookQuery) (paginated model.PaginatedBooks, err error)
+	FindByID(ctx context.Context, id string) (book model.Book, err error)
+	Create(ctx context.Context, book *model.Book) error
+	Update(ctx context.Context, book *model.Book) error
+	Delete(ctx context.Context, id string) error
 }
 
 type StorageClient interface {
-	GeneratePreSignedUrl(key string) (string, error)
-	SaveFile(key string, contentType string, content io.ReadSeeker) error
-	RetrieveFile(key string) (io.ReadCloser, error)
+	GeneratePreSignedUrl(ctx context.Context, key string) (string, error)
+	SaveFile(ctx context.Context, key string, contentType string, content io.ReadSeeker) error
+	RetrieveFile(ctx context.Context, key string) (io.ReadCloser, error)
 }
 
 type FilenameGenerator interface {
@@ -33,8 +34,8 @@ func NewCatalogUseCase(repo Repository, storageClient StorageClient, filenameGen
 	return CatalogUseCase{repo: repo, storageClient: storageClient, filenameGenerator: filenameGenerator}
 }
 
-func (u CatalogUseCase) FindBooks(query model.BookQuery) (paginatedBooks model.PaginatedBooks, err error) {
-	paginatedBooks, err = u.repo.FindByQuery(query)
+func (u CatalogUseCase) FindBooks(ctx context.Context, query model.BookQuery) (paginatedBooks model.PaginatedBooks, err error) {
+	paginatedBooks, err = u.repo.FindByQuery(ctx, query)
 	if err != nil {
 		return
 	}
@@ -43,7 +44,7 @@ func (u CatalogUseCase) FindBooks(query model.BookQuery) (paginatedBooks model.P
 		imageKey := paginatedBooks.Books[i].PosterImageBucketKey
 
 		var url string
-		url, err = u.storageClient.GeneratePreSignedUrl(imageKey)
+		url, err = u.storageClient.GeneratePreSignedUrl(ctx, imageKey)
 		if err != nil {
 			return
 		}
@@ -54,14 +55,14 @@ func (u CatalogUseCase) FindBooks(query model.BookQuery) (paginatedBooks model.P
 	return
 }
 
-func (u CatalogUseCase) FindBookByID(id string) (book model.Book, err error) {
-	book, err = u.repo.FindByID(id)
+func (u CatalogUseCase) FindBookByID(ctx context.Context, id string) (book model.Book, err error) {
+	book, err = u.repo.FindByID(ctx, id)
 	if err != nil {
 		return
 	}
 
 	imageKey := book.PosterImageBucketKey
-	url, err := u.storageClient.GeneratePreSignedUrl(imageKey)
+	url, err := u.storageClient.GeneratePreSignedUrl(ctx, imageKey)
 	if err != nil {
 		return
 	}
@@ -70,43 +71,43 @@ func (u CatalogUseCase) FindBookByID(id string) (book model.Book, err error) {
 	return
 }
 
-func (u CatalogUseCase) GetBookContent(id string) (io.ReadCloser, error) {
-	book, err := u.repo.FindByID(id)
+func (u CatalogUseCase) GetBookContent(ctx context.Context, id string) (io.ReadCloser, error) {
+	book, err := u.repo.FindByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
-	return u.storageClient.RetrieveFile(book.ContentBucketKey)
+	return u.storageClient.RetrieveFile(ctx, book.ContentBucketKey)
 }
 
-func (u CatalogUseCase) CreateBook(book *model.Book, posterImage io.ReadSeeker, bookContent io.ReadSeeker) error {
+func (u CatalogUseCase) CreateBook(ctx context.Context, book *model.Book, posterImage io.ReadSeeker, bookContent io.ReadSeeker) error {
 	posterImageKey := u.filenameGenerator.NewUniqueName("poster_" + book.Title)
 	contentKey := u.filenameGenerator.NewUniqueName("content_" + book.Title)
 
-	if err := u.storageClient.SaveFile(posterImageKey, "image/jpeg", posterImage); err != nil {
+	if err := u.storageClient.SaveFile(ctx, posterImageKey, "image/jpeg", posterImage); err != nil {
 		return err
 	}
 
-	if err := u.storageClient.SaveFile(contentKey, "application/pdf", bookContent); err != nil {
+	if err := u.storageClient.SaveFile(ctx, contentKey, "application/pdf", bookContent); err != nil {
 		return err
 	}
 
 	book.PosterImageBucketKey = posterImageKey
 	book.ContentBucketKey = contentKey
 
-	url, err := u.storageClient.GeneratePreSignedUrl(posterImageKey)
+	url, err := u.storageClient.GeneratePreSignedUrl(ctx, posterImageKey)
 	if err != nil {
 		return err
 	}
 	book.SetPosterImageLink(url)
 
-	return u.repo.Create(book)
+	return u.repo.Create(ctx, book)
 }
 
-func (u CatalogUseCase) UpdateBook(book *model.Book) error {
-	return u.repo.Update(book)
+func (u CatalogUseCase) UpdateBook(ctx context.Context, book *model.Book) error {
+	return u.repo.Update(ctx, book)
 }
 
-func (u CatalogUseCase) DeleteBook(id string) error {
-	return u.repo.Delete(id)
+func (u CatalogUseCase) DeleteBook(ctx context.Context, id string) error {
+	return u.repo.Delete(ctx, id)
 }

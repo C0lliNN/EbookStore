@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	auth "github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/common"
@@ -13,12 +14,12 @@ import (
 )
 
 type ShopService interface {
-	FindOrders(query model.OrderQuery) (model.PaginatedOrders, error)
-	FindOrderByID(id string) (model.Order, error)
-	CreateOrder(order *model.Order) error
-	UpdateOrder(order *model.Order) error
-	CompleteOrder(orderID string) error
-	DownloadOrder(orderID string) (io.ReadCloser, error)
+	FindOrders(ctx context.Context, query model.OrderQuery) (model.PaginatedOrders, error)
+	FindOrderByID(ctx context.Context, id string) (model.Order, error)
+	CreateOrder(ctx context.Context, order *model.Order) error
+	UpdateOrder(ctx context.Context, order *model.Order) error
+	CompleteOrder(ctx context.Context, orderID string) error
+	DownloadOrder(ctx context.Context, orderID string) (io.ReadCloser, error)
 }
 
 type IDGenerator interface {
@@ -60,7 +61,7 @@ func (h ShopHandler) getOrders(context *gin.Context) {
 		query.UserID = user.ID
 	}
 
-	paginatedOrders, err := h.service.FindOrders(query)
+	paginatedOrders, err := h.service.FindOrders(context.Request.Context(), query)
 	if err != nil {
 		context.Error(err)
 		return
@@ -79,7 +80,7 @@ func (h ShopHandler) getOrders(context *gin.Context) {
 // @Failure 500 {object} api.Error
 // @Router /orders/{id} [get]
 func (h ShopHandler) getOrder(context *gin.Context) {
-	order, err := h.service.FindOrderByID(context.Param("id"))
+	order, err := h.service.FindOrderByID(context.Request.Context(), context.Param("id"))
 	if err != nil {
 		context.Error(err)
 		return
@@ -124,7 +125,7 @@ func (h ShopHandler) createOrder(context *gin.Context) {
 
 	order := c.ToDomain(h.idGenerator.NewID(), user.ID)
 
-	if err = h.service.CreateOrder(&order); err != nil {
+	if err = h.service.CreateOrder(context.Request.Context(), &order); err != nil {
 		context.Error(err)
 		return
 	}
@@ -154,7 +155,7 @@ func (h ShopHandler) getUserFromContext(context *gin.Context) (user auth.User, e
 // @Failure 500 {object} api.Error
 // @Router /orders/{id}/download [get]
 func (h ShopHandler) downloadOrder(context *gin.Context) {
-	content, err := h.service.DownloadOrder(context.Param("id"))
+	content, err := h.service.DownloadOrder(context.Request.Context(), context.Param("id"))
 	if err != nil {
 		context.Error(err)
 		return
@@ -186,7 +187,7 @@ func (h ShopHandler) handleStripeWebhook(context *gin.Context) {
 
 	if w.Type == "payment_intent.succeeded" {
 		orderID := w.Data["object"].(map[string]interface{})["metadata"].(map[string]interface{})["orderID"].(string)
-		if err := h.service.CompleteOrder(orderID); err != nil {
+		if err := h.service.CompleteOrder(context.Request.Context(), orderID); err != nil {
 			context.Error(err)
 			return
 		}

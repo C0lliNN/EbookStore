@@ -2,6 +2,7 @@ package email
 
 import (
 	"bytes"
+	"context"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ses"
@@ -28,7 +29,7 @@ func NewEmailClient(sns *ses.SES) Client {
 	return Client{sns: sns}
 }
 
-func (c Client) SendPasswordResetEmail(user model.User, newPassword string) error {
+func (c Client) SendPasswordResetEmail(ctx context.Context, user model.User, newPassword string) error {
 	sourceEmail := viper.GetString("AWS_SES_SOURCE_EMAIL")
 	messageBody, err := getMessageBody(user, newPassword)
 	if err != nil {

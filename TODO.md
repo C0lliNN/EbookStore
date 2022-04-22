@@ -5,7 +5,11 @@
 * [x] Rename from migration to migrations
 * [x] Define Logging Strategy
 * [x] Search about ctx wrapper
-* [ ] Send ctx context.Context in all functions
+* [x] Send ctx context.Context in all functions
+* [ ] Flat folders (one by ones)
+* [ ] Add validation to usecase layer
+* [ ] Reduce numer of multi-argument functions
+* [ ] Add Request/Response model to usecase layer
 * [ ] Refactor wire
 * [ ] Update Logging strategy
 * [ ] Review errors 

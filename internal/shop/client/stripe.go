@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/c0llinn/ebook-store/internal/shop/model"
 	"github.com/spf13/viper"
@@ -25,7 +26,7 @@ func NewStripeClient() StripeClient {
 	return StripeClient(0)
 }
 
-func (c StripeClient) CreatePaymentIntentForOrder(order *model.Order) error {
+func (c StripeClient) CreatePaymentIntentForOrder(ctx context.Context, order *model.Order) error {
 	params := &stripe.PaymentIntentParams{
 		Amount:   stripe.Int64(order.Total),
 		Currency: stripe.String(string(stripe.CurrencyUSD)),

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/log"
@@ -16,7 +17,7 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 	return UserRepository{db: db}
 }
 
-func (r UserRepository) Save(user *model.User) error {
+func (r UserRepository) Save(ctx context.Context, user *model.User) error {
 	result := r.db.Create(user)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to save user: %v", err)
@@ -31,7 +32,7 @@ func (r UserRepository) Save(user *model.User) error {
 	return nil
 }
 
-func (r UserRepository) FindByEmail(email string) (user model.User, err error) {
+func (r UserRepository) FindByEmail(ctx context.Context, email string) (user model.User, err error) {
 	result := r.db.First(&user, "email = ?", email)
 	if err = result.Error; err != nil {
 		log.Default().Errorf("error trying to find user by email %s: %v", email, err)
@@ -42,7 +43,7 @@ func (r UserRepository) FindByEmail(email string) (user model.User, err error) {
 	return
 }
 
-func (r UserRepository) Update(user *model.User) error {
+func (r UserRepository) Update(ctx context.Context, user *model.User) error {
 	result := r.db.Updates(user).Where("id = ?", user.ID)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to update user: %v", err)

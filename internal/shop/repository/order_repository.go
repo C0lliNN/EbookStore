@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/log"
@@ -17,7 +18,7 @@ func NewOrderRepository(db *gorm.DB) OrderRepository {
 	return OrderRepository{db: db}
 }
 
-func (r OrderRepository) FindByQuery(query model.OrderQuery) (paginated model.PaginatedOrders, err error) {
+func (r OrderRepository) FindByQuery(ctx context.Context, query model.OrderQuery) (paginated model.PaginatedOrders, err error) {
 	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
 	result := r.db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Order("created_at DESC").Find(&paginated.Orders)
 	if err = result.Error; err != nil {
@@ -54,7 +55,7 @@ func (r OrderRepository) createConditionsFromCriteria(criteria []model.Criteria)
 	return strings.Join(conditions, " AND ")
 }
 
-func (r OrderRepository) FindByID(id string) (order model.Order, err error) {
+func (r OrderRepository) FindByID(ctx context.Context, id string) (order model.Order, err error) {
 	result := r.db.First(&order, "id = ?", id)
 	if err = result.Error; err != nil {
 		log.Default().Errorf("error when trying to find order with id %s: %v", id, err)
@@ -64,7 +65,7 @@ func (r OrderRepository) FindByID(id string) (order model.Order, err error) {
 	return
 }
 
-func (r OrderRepository) Create(order *model.Order) error {
+func (r OrderRepository) Create(ctx context.Context, order *model.Order) error {
 	result := r.db.Create(order)
 	if err := result.Error; err != nil {
 		log.Default().Error("error trying to create an order: ", err)
@@ -74,7 +75,7 @@ func (r OrderRepository) Create(order *model.Order) error {
 	return nil
 }
 
-func (r OrderRepository) Update(order *model.Order) error {
+func (r OrderRepository) Update(ctx context.Context, order *model.Order) error {
 	result := r.db.Updates(order).Where("id = ?", order.ID)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to update the order %s: %v", order.ID, err)

@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"github.com/c0llinn/ebook-store/internal/auth/model"
 	"github.com/c0llinn/ebook-store/internal/common"
 )
@@ -23,22 +24,22 @@ func NewAuthUseCase(repo Repository, jwt JWTWrapper, emailClient EmailClient, pa
 	}
 }
 
-func (u AuthUseCase) Register(user model.User) (model.Credentials, error) {
+func (u AuthUseCase) Register(ctx context.Context, user model.User) (model.Credentials, error) {
 	hashedPassword, err := u.bcrypt.HashPassword(user.Password)
 	if err != nil {
 		return model.Credentials{}, err
 	}
 
 	user.Password = hashedPassword
-	if err = u.repo.Save(&user); err != nil {
+	if err = u.repo.Save(ctx, &user); err != nil {
 		return model.Credentials{}, err
 	}
 
 	return u.generateCredentialsForUser(user)
 }
 
-func (u AuthUseCase) Login(email, password string) (model.Credentials, error) {
-	user, err := u.repo.FindByEmail(email)
+func (u AuthUseCase) Login(ctx context.Context, email, password string) (model.Credentials, error) {
+	user, err := u.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return model.Credentials{}, err
 	}
@@ -59,8 +60,8 @@ func (u AuthUseCase) generateCredentialsForUser(user model.User) (model.Credenti
 	return model.Credentials{Token: token}, nil
 }
 
-func (u AuthUseCase) ResetPassword(email string) error {
-	user, err := u.repo.FindByEmail(email)
+func (u AuthUseCase) ResetPassword(ctx context.Context, email string) error {
+	user, err := u.repo.FindByEmail(ctx, email)
 	if err != nil {
 		return err
 	}
@@ -72,9 +73,9 @@ func (u AuthUseCase) ResetPassword(email string) error {
 	}
 
 	user.Password = hashedNewPassword
-	if err = u.repo.Update(&user); err != nil {
+	if err = u.repo.Update(ctx, &user); err != nil {
 		return err
 	}
 
-	return u.emailClient.SendPasswordResetEmail(user, newPassword)
+	return u.emailClient.SendPasswordResetEmail(ctx, user, newPassword)
 }
