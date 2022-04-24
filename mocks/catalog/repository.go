@@ -5,7 +5,8 @@ package mocks
 import (
 	context "context"
 
-	model "github.com/c0llinn/ebook-store/internal/catalog/model"
+	catalog "github.com/c0llinn/ebook-store/internal/catalog"
+
 	mock "github.com/stretchr/testify/mock"
 
 	testing "testing"
@@ -17,11 +18,11 @@ type Repository struct {
 }
 
 // Create provides a mock function with given fields: ctx, book
-func (_m *Repository) Create(ctx context.Context, book *model.Book) error {
+func (_m *Repository) Create(ctx context.Context, book *catalog.Book) error {
 	ret := _m.Called(ctx, book)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.Book) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *catalog.Book) error); ok {
 		r0 = rf(ctx, book)
 	} else {
 		r0 = ret.Error(0)
@@ -45,14 +46,14 @@ func (_m *Repository) Delete(ctx context.Context, id string) error {
 }
 
 // FindByID provides a mock function with given fields: ctx, id
-func (_m *Repository) FindByID(ctx context.Context, id string) (model.Book, error) {
+func (_m *Repository) FindByID(ctx context.Context, id string) (catalog.Book, error) {
 	ret := _m.Called(ctx, id)
 
-	var r0 model.Book
-	if rf, ok := ret.Get(0).(func(context.Context, string) model.Book); ok {
+	var r0 catalog.Book
+	if rf, ok := ret.Get(0).(func(context.Context, string) catalog.Book); ok {
 		r0 = rf(ctx, id)
 	} else {
-		r0 = ret.Get(0).(model.Book)
+		r0 = ret.Get(0).(catalog.Book)
 	}
 
 	var r1 error
@@ -66,18 +67,18 @@ func (_m *Repository) FindByID(ctx context.Context, id string) (model.Book, erro
 }
 
 // FindByQuery provides a mock function with given fields: ctx, query
-func (_m *Repository) FindByQuery(ctx context.Context, query model.BookQuery) (model.PaginatedBooks, error) {
+func (_m *Repository) FindByQuery(ctx context.Context, query catalog.BookQuery) (catalog.PaginatedBooks, error) {
 	ret := _m.Called(ctx, query)
 
-	var r0 model.PaginatedBooks
-	if rf, ok := ret.Get(0).(func(context.Context, model.BookQuery) model.PaginatedBooks); ok {
+	var r0 catalog.PaginatedBooks
+	if rf, ok := ret.Get(0).(func(context.Context, catalog.BookQuery) catalog.PaginatedBooks); ok {
 		r0 = rf(ctx, query)
 	} else {
-		r0 = ret.Get(0).(model.PaginatedBooks)
+		r0 = ret.Get(0).(catalog.PaginatedBooks)
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(context.Context, model.BookQuery) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, catalog.BookQuery) error); ok {
 		r1 = rf(ctx, query)
 	} else {
 		r1 = ret.Error(1)
@@ -87,11 +88,11 @@ func (_m *Repository) FindByQuery(ctx context.Context, query model.BookQuery) (m
 }
 
 // Update provides a mock function with given fields: ctx, book
-func (_m *Repository) Update(ctx context.Context, book *model.Book) error {
+func (_m *Repository) Update(ctx context.Context, book *catalog.Book) error {
 	ret := _m.Called(ctx, book)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *model.Book) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, *catalog.Book) error); ok {
 		r0 = rf(ctx, book)
 	} else {
 		r0 = ret.Error(0)

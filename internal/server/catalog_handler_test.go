@@ -1,20 +1,16 @@
-//go:build integration
-// +build integration
-
-package http
+package server
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/catalog/delivery/dto"
-	"github.com/c0llinn/ebook-store/internal/catalog/helper"
-	"github.com/c0llinn/ebook-store/internal/catalog/model"
-	"github.com/c0llinn/ebook-store/internal/catalog/repository"
-	"github.com/c0llinn/ebook-store/internal/catalog/storage"
-	"github.com/c0llinn/ebook-store/internal/catalog/usecase"
+	"github.com/bxcodec/faker/v3"
+	"github.com/c0llinn/ebook-store/internal/catalog"
 	"github.com/c0llinn/ebook-store/internal/common"
-	config2 "github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/generator"
+	"github.com/c0llinn/ebook-store/internal/persistence"
+	"github.com/c0llinn/ebook-store/internal/storage"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/gin-gonic/gin"
@@ -26,6 +22,7 @@ import (
 	"gorm.io/gorm"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 type CatalogHandlerTestSuite struct {
@@ -34,41 +31,87 @@ type CatalogHandlerTestSuite struct {
 	context  *gin.Context
 	recorder *httptest.ResponseRecorder
 	db       *gorm.DB
-	handler  CatalogHandler
+	handler  *CatalogHandler
 }
 
 func (s *CatalogHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	config2.InitLogger()
-	config2.LoadMigrations("file:../../../../migrations")
+	config.LoadMigrations("file:../../migrations")
 
-	s.db = config2.NewConnection()
+	s.db = config.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
-	s.db = config2.NewConnection()
-	bookRepository := repository.NewBookRepository(s.db)
-	s3Client := storage.NewS3Client(config2.NewS3Service(), config2.NewBucket())
-	filenameGenerator := helper.NewFilenameGenerator()
-	catalogUseCase := usecase.NewCatalogUseCase(bookRepository, s3Client, filenameGenerator)
-	idGenerator := helper.NewIDGenerator()
-	s.handler = NewCatalogHandler(catalogUseCase, idGenerator)
+	s.db = config.NewConnection()
+	bookRepository := persistence.NewBookRepository(s.db)
+	s3Client := storage.NewS3Client(config.NewS3Service(), config.NewBucket())
+	filenameGenerator := generator.NewFilenameGenerator()
+	idGenerator := generator.NewUUIDGenerator()
+
+	c := catalog.Config{
+		Repository:        bookRepository,
+		StorageClient:     s3Client,
+		FilenameGenerator: filenameGenerator,
+		IDGenerator:       idGenerator,
+	}
+
+	catalog := catalog.New(c)
+
+	s.handler = NewCatalogHandler(gin.New(), catalog)
 
 	s.recorder = httptest.NewRecorder()
 	s.context, _ = gin.CreateTestContext(s.recorder)
 }
 
 func (s *CatalogHandlerTestSuite) TearDownTest() {
-	s.db.Delete(&model.Book{}, "1 = 1")
+	s.db.Delete(&catalog.Book{}, "1 = 1")
 }
 
-func TestCatalogHandlerRun(t *testing.T) {
+func TestCatalogHandler(t *testing.T) {
 	suite.Run(t, new(CatalogHandlerTestSuite))
 }
 
 func (s *CatalogHandlerTestSuite) TestGetBooks() {
-	book1 := factory.NewBook()
-	book2 := factory.NewBook()
-	book3 := factory.NewBook()
+	book1 := catalog.Book{
+		ID:                   "some-id1",
+		Title:                "Clean Code",
+		Description:          "Some Description",
+		AuthorName:           "Robert C. Martin",
+		PosterImageBucketKey: "key1",
+		PosterImageLink:      "http://localhost",
+		ContentBucketKey:     "key2",
+		Price:                4000,
+		ReleaseDate:          time.Date(2021, time.September, 25, 0, 0, 0, 0, time.UTC),
+		CreatedAt:            time.Date(2022, time.September, 26, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:            time.Date(2022, time.September, 27, 0, 0, 0, 0, time.UTC),
+	}
+
+	book2 := catalog.Book{
+		ID:                   "some-id2",
+		Title:                "Clean Coder",
+		Description:          "Some Description2",
+		AuthorName:           "Robert C. Martin",
+		PosterImageBucketKey: "key4",
+		PosterImageLink:      "http://localhost/test",
+		ContentBucketKey:     "key6",
+		Price:                4500,
+		ReleaseDate:          time.Date(2021, time.September, 28, 0, 0, 0, 0, time.UTC),
+		CreatedAt:            time.Date(2022, time.September, 29, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:            time.Date(2022, time.September, 30, 0, 0, 0, 0, time.UTC),
+	}
+
+	book3 := catalog.Book{
+		ID:                   "some-id4",
+		Title:                "Clean Architecture",
+		Description:          "Some Description3",
+		AuthorName:           "Robert C. Martin",
+		PosterImageBucketKey: "key12",
+		PosterImageLink:      "http://localhost/test",
+		ContentBucketKey:     "key14",
+		Price:                6000,
+		ReleaseDate:          time.Date(2021, time.October, 28, 0, 0, 0, 0, time.UTC),
+		CreatedAt:            time.Date(2022, time.October, 29, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:            time.Date(2022, time.October, 30, 0, 0, 0, 0, time.UTC),
+	}
 
 	err := s.db.Create(book1).Error
 	require.Nil(s.T(), err)
@@ -88,7 +131,19 @@ func (s *CatalogHandlerTestSuite) TestGetBooks() {
 }
 
 func (s *CatalogHandlerTestSuite) TestGetBook_Successfully() {
-	book := factory.NewBook()
+	book := catalog.Book{
+		ID:                   "some-id1",
+		Title:                "Clean Code",
+		Description:          "Some Description",
+		AuthorName:           "Robert C. Martin",
+		PosterImageBucketKey: "key1",
+		PosterImageLink:      "http://localhost",
+		ContentBucketKey:     "key2",
+		Price:                4000,
+		ReleaseDate:          time.Date(2021, time.September, 25, 0, 0, 0, 0, time.UTC),
+		CreatedAt:            time.Date(2022, time.September, 26, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:            time.Date(2022, time.September, 27, 0, 0, 0, 0, time.UTC),
+	}
 
 	err := s.db.Create(book).Error
 	require.Nil(s.T(), err)
@@ -103,7 +158,7 @@ func (s *CatalogHandlerTestSuite) TestGetBook_Successfully() {
 }
 
 func (s *CatalogHandlerTestSuite) TestGetBook_NotFound() {
-	id := uuid.NewString()
+	id := "some-id"
 
 	request := httptest.NewRequest("GET", s.baseURL+"/books/"+id, nil)
 	s.context.Request = request
@@ -131,7 +186,7 @@ func (s *CatalogHandlerTestSuite) TestCreateBook_WithMalformedPayload() {
 }
 
 func (s *CatalogHandlerTestSuite) TestCreateBook_WithInvalidPayload() {
-	payload := dto.CreateBook{
+	payload := catalog.CreateBook{
 		Title: "title",
 	}
 
@@ -169,13 +224,25 @@ func (s *CatalogHandlerTestSuite) TestUpdateBook_WithMalformedPayload() {
 }
 
 func (s *CatalogHandlerTestSuite) TestUpdateBook_WithInvalidPayload() {
-	book := factory.NewBook()
+	book := catalog.Book{
+		ID:                   "some-id1",
+		Title:                "Clean Code",
+		Description:          "Some Description",
+		AuthorName:           "Robert C. Martin",
+		PosterImageBucketKey: "key1",
+		PosterImageLink:      "http://localhost",
+		ContentBucketKey:     "key2",
+		Price:                4000,
+		ReleaseDate:          time.Date(2021, time.September, 25, 0, 0, 0, 0, time.UTC),
+		CreatedAt:            time.Date(2022, time.September, 26, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:            time.Date(2022, time.September, 27, 0, 0, 0, 0, time.UTC),
+	}
 
 	err := s.db.Create(book).Error
 	require.Nil(s.T(), err)
 
 	title := uuid.NewString() + uuid.NewString() + uuid.NewString()
-	payload := dto.UpdateBook{
+	payload := catalog.UpdateBook{
 		Title: &title,
 	}
 
@@ -192,10 +259,10 @@ func (s *CatalogHandlerTestSuite) TestUpdateBook_WithInvalidPayload() {
 }
 
 func (s *CatalogHandlerTestSuite) TestUpdateBook_WithUnknownID() {
-	id := uuid.NewString()
+	id := "some-id"
 
 	title := faker.TitleMale()
-	payload := dto.UpdateBook{
+	payload := catalog.UpdateBook{
 		Title: &title,
 	}
 
@@ -212,13 +279,25 @@ func (s *CatalogHandlerTestSuite) TestUpdateBook_WithUnknownID() {
 }
 
 func (s *CatalogHandlerTestSuite) TestUpdateBook_Successfully() {
-	book := factory.NewBook()
+	book := catalog.Book{
+		ID:                   "some-id1",
+		Title:                "Clean Code",
+		Description:          "Some Description",
+		AuthorName:           "Robert C. Martin",
+		PosterImageBucketKey: "key1",
+		PosterImageLink:      "http://localhost",
+		ContentBucketKey:     "key2",
+		Price:                4000,
+		ReleaseDate:          time.Date(2021, time.September, 25, 0, 0, 0, 0, time.UTC),
+		CreatedAt:            time.Date(2022, time.September, 26, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:            time.Date(2022, time.September, 27, 0, 0, 0, 0, time.UTC),
+	}
 
 	err := s.db.Create(&book).Error
 	require.Nil(s.T(), err)
 
-	title := faker.TitleMale()
-	payload := dto.UpdateBook{
+	title := "new title"
+	payload := catalog.UpdateBook{
 		Title: &title,
 	}
 
@@ -236,7 +315,7 @@ func (s *CatalogHandlerTestSuite) TestUpdateBook_Successfully() {
 	expected := book
 	expected.Title = title
 
-	actual := model.Book{}
+	actual := catalog.Book{}
 
 	err = s.db.First(&actual, "id = ?", book.ID).Error
 	assert.Nil(s.T(), err)
@@ -246,7 +325,19 @@ func (s *CatalogHandlerTestSuite) TestUpdateBook_Successfully() {
 }
 
 func (s *CatalogHandlerTestSuite) TestDeleteBook_Successfully() {
-	book := factory.NewBook()
+	book := catalog.Book{
+		ID:                   "some-id1",
+		Title:                "Clean Code",
+		Description:          "Some Description",
+		AuthorName:           "Robert C. Martin",
+		PosterImageBucketKey: "key1",
+		PosterImageLink:      "http://localhost",
+		ContentBucketKey:     "key2",
+		Price:                4000,
+		ReleaseDate:          time.Date(2021, time.September, 25, 0, 0, 0, 0, time.UTC),
+		CreatedAt:            time.Date(2022, time.September, 26, 0, 0, 0, 0, time.UTC),
+		UpdatedAt:            time.Date(2022, time.September, 27, 0, 0, 0, 0, time.UTC),
+	}
 
 	err := s.db.Create(book).Error
 	require.Nil(s.T(), err)
@@ -261,7 +352,7 @@ func (s *CatalogHandlerTestSuite) TestDeleteBook_Successfully() {
 }
 
 func (s *CatalogHandlerTestSuite) TestDeleteBook_WithError() {
-	id := uuid.NewString()
+	id := "some-id"
 
 	request := httptest.NewRequest("GET", s.baseURL+"/books/"+id, nil)
 	s.context.Request = request

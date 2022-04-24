@@ -51,37 +51,37 @@ func New(c Config) *Authenticator {
 	}
 }
 
-func (u *Authenticator) Register(ctx context.Context, request RegisterRequest) (CredentialsResponse, error) {
-	user := request.User(u.IDGenerator.NewID())
+func (a *Authenticator) Register(ctx context.Context, request RegisterRequest) (CredentialsResponse, error) {
+	user := request.User(a.IDGenerator.NewID())
 
-	hashedPassword, err := u.Hasher.HashPassword(user.Password)
+	hashedPassword, err := a.Hasher.HashPassword(user.Password)
 	if err != nil {
 		return CredentialsResponse{}, err
 	}
 	user.Password = hashedPassword
 
-	if err = u.Repository.Save(ctx, &user); err != nil {
+	if err = a.Repository.Save(ctx, &user); err != nil {
 		return CredentialsResponse{}, err
 	}
 
-	return u.generateCredentialsForUser(user)
+	return a.generateCredentialsForUser(user)
 }
 
-func (u *Authenticator) Login(ctx context.Context, request LoginRequest) (CredentialsResponse, error) {
-	user, err := u.Repository.FindByEmail(ctx, request.Email)
+func (a *Authenticator) Login(ctx context.Context, request LoginRequest) (CredentialsResponse, error) {
+	user, err := a.Repository.FindByEmail(ctx, request.Email)
 	if err != nil {
 		return CredentialsResponse{}, err
 	}
 
-	if err = u.Hasher.CompareHashAndPassword(user.Password, request.Password); err != nil {
+	if err = a.Hasher.CompareHashAndPassword(user.Password, request.Password); err != nil {
 		return CredentialsResponse{}, ErrWrongPassword
 	}
 
-	return u.generateCredentialsForUser(user)
+	return a.generateCredentialsForUser(user)
 }
 
-func (u *Authenticator) generateCredentialsForUser(user User) (CredentialsResponse, error) {
-	token, err := u.Tokener.GenerateTokenForUser(user)
+func (a *Authenticator) generateCredentialsForUser(user User) (CredentialsResponse, error) {
+	token, err := a.Tokener.GenerateTokenForUser(user)
 	if err != nil {
 		return CredentialsResponse{}, err
 	}
@@ -89,22 +89,22 @@ func (u *Authenticator) generateCredentialsForUser(user User) (CredentialsRespon
 	return FromCredentials(Credentials{Token: token}), nil
 }
 
-func (u *Authenticator) ResetPassword(ctx context.Context, request PasswordResetRequest) error {
-	user, err := u.Repository.FindByEmail(ctx, request.Email)
+func (a *Authenticator) ResetPassword(ctx context.Context, request PasswordResetRequest) error {
+	user, err := a.Repository.FindByEmail(ctx, request.Email)
 	if err != nil {
 		return err
 	}
 
-	newPassword := u.PasswordGenerator.NewPassword()
-	hashedNewPassword, err := u.Hasher.HashPassword(newPassword)
+	newPassword := a.PasswordGenerator.NewPassword()
+	hashedNewPassword, err := a.Hasher.HashPassword(newPassword)
 	if err != nil {
 		return err
 	}
 
 	user.Password = hashedNewPassword
-	if err = u.Repository.Update(ctx, &user); err != nil {
+	if err = a.Repository.Update(ctx, &user); err != nil {
 		return err
 	}
 
-	return u.EmailClient.SendPasswordResetEmail(ctx, user, newPassword)
+	return a.EmailClient.SendPasswordResetEmail(ctx, user, newPassword)
 }

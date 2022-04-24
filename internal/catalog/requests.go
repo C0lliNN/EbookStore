@@ -1,7 +1,7 @@
-package dto
+package catalog
 
 import (
-	"github.com/c0llinn/ebook-store/internal/catalog/model"
+	"io"
 	"time"
 )
 
@@ -13,7 +13,7 @@ type SearchBooks struct {
 	PerPage     int    `form:"perPage"`
 }
 
-func (s *SearchBooks) ToDomain() model.BookQuery {
+func (s *SearchBooks) BookQuery() BookQuery {
 	if s.Page == 0 {
 		s.Page = 1
 	}
@@ -22,7 +22,7 @@ func (s *SearchBooks) ToDomain() model.BookQuery {
 		s.PerPage = 10
 	}
 
-	return model.BookQuery{
+	return BookQuery{
 		Title:       s.Title,
 		Description: s.Description,
 		AuthorName:  s.AuthorName,
@@ -37,10 +37,13 @@ type CreateBook struct {
 	AuthorName  string    `form:"authorName" binding:"required,max=100"`
 	Price       int       `form:"price" binding:"required,gt=0"`
 	ReleaseDate time.Time `form:"releaseDate" binding:"required"`
+
+	PosterImage io.ReadSeeker
+	BookContent io.ReadSeeker
 }
 
-func (c CreateBook) ToDomain(id string) model.Book {
-	return model.Book{
+func (c CreateBook) Book(id string) Book {
+	return Book{
 		ID:          id,
 		Title:       c.Title,
 		Description: c.Description,
@@ -51,12 +54,13 @@ func (c CreateBook) ToDomain(id string) model.Book {
 }
 
 type UpdateBook struct {
+	ID          string
 	Title       *string `form:"title" binding:"omitempty,max=100"`
 	Description *string `form:"description" binding:"omitempty"`
 	AuthorName  *string `form:"authorName" binding:"omitempty,max=100"`
 }
 
-func (u UpdateBook) ToDomain(existing model.Book) model.Book {
+func (u UpdateBook) Update(existing Book) Book {
 	updated := existing
 
 	if u.Title != nil && *u.Title != "" {

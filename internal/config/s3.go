@@ -4,8 +4,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/c0llinn/ebook-store/internal/catalog/storage"
 	"github.com/c0llinn/ebook-store/internal/log"
+	"github.com/c0llinn/ebook-store/internal/storage"
 	"github.com/spf13/viper"
 )
 

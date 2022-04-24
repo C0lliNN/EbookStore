@@ -2,12 +2,12 @@ package factory
 
 import (
 	"github.com/bxcodec/faker/v3"
-	"github.com/c0llinn/ebook-store/internal/catalog/model"
+	"github.com/c0llinn/ebook-store/internal/catalog"
 	"time"
 )
 
-func NewBook() model.Book {
-	return model.Book{
+func NewBook() catalog.Book {
+	return catalog.Book{
 		ID:                   faker.UUIDHyphenated(),
 		Title:                faker.TitleMale(),
 		Description:          faker.Sentence(),
@@ -21,9 +21,9 @@ func NewBook() model.Book {
 	}
 }
 
-func NewPaginatedBooks() model.PaginatedBooks {
-	return model.PaginatedBooks{
-		Books:      []model.Book{NewBook(), NewBook()},
+func NewPaginatedBooks() catalog.PaginatedBooks {
+	return catalog.PaginatedBooks{
+		Books:      []catalog.Book{NewBook(), NewBook()},
 		Limit:      10,
 		Offset:     0,
 		TotalBooks: 2,

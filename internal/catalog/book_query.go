@@ -1,4 +1,4 @@
-package model
+package catalog
 
 type BookQuery struct {
 	Title       string

@@ -7,10 +7,14 @@
 * [x] Search about ctx wrapper
 * [x] Send ctx context.Context in all functions
 * [x] Flat auth folder
-* [ ] Flat catalog folder
+* [x] Flat catalog folder
+* [ ] Flat shop folder
 * [ ] Add validation to usecase layer
+* [ ] Rename from 'FromBook' to 'NewBook' 
 * [ ] Find way to separate tests
 * [ ] Reduce numer of multi-argument functions
+* [ ] Review test names
+* [ ] Review pointer/concrete types in struct and as recievers
 * [ ] Add Request/Response model to usecase layer
 * [ ] Refactor wire
 * [ ] Find a way to separate unit and integration tests while keeping good autocompletion

@@ -1,7 +1,6 @@
-package dto
+package catalog
 
 import (
-	"github.com/c0llinn/ebook-store/internal/catalog/model"
 	"math"
 	"time"
 )
@@ -18,7 +17,7 @@ type BookResponse struct {
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
-func FromBook(book model.Book) BookResponse {
+func NewBookResponse(book Book) BookResponse {
 	return BookResponse{
 		ID:              book.ID,
 		Title:           book.Title,
@@ -40,10 +39,10 @@ type PaginatedBooksResponse struct {
 	TotalItems  int64          `json:"totalItems"`
 }
 
-func FromPaginatedBooks(paginatedBooks model.PaginatedBooks) PaginatedBooksResponse {
+func NewPaginatedBooksResponse(paginatedBooks PaginatedBooks) PaginatedBooksResponse {
 	books := make([]BookResponse, 0, len(paginatedBooks.Books))
 	for _, b := range paginatedBooks.Books {
-		books = append(books, FromBook(b))
+		books = append(books, NewBookResponse(b))
 	}
 
 	return PaginatedBooksResponse{

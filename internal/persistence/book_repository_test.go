@@ -1,7 +1,7 @@
 //go:build integration
 // +build integration
 
-package repository
+package persistence
 
 import (
 	"github.com/c0llinn/ebook-store/internal/catalog/model"
