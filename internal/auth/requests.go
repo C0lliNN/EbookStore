@@ -1,0 +1,29 @@
+package auth
+
+type RegisterRequest struct {
+	FirstName            string `json:"firstName" binding:"required,max=150"`
+	LastName             string `json:"lastName" binding:"required,max=150"`
+	Email                string `json:"email" binding:"required,email"`
+	Password             string `json:"password" binding:"required,min=6,max=20"`
+	PasswordConfirmation string `json:"passwordConfirmation" binding:"required,eqfield=Password"`
+}
+
+func (r RegisterRequest) User(id string) User {
+	return User{
+		ID:        id,
+		FirstName: r.FirstName,
+		LastName:  r.LastName,
+		Email:     r.Email,
+		Role:      Customer,
+		Password:  r.Password,
+	}
+}
+
+type LoginRequest struct {
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required,min=6,max=20"`
+}
+
+type PasswordResetRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}

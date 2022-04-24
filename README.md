@@ -40,7 +40,18 @@ docker-compose up -d
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 ```
+
 3. Execute app
 ```bash
 cd cmd && go run .
+```
+
+## How to generate mocks
+1. Install Mockery
+```bash
+go install github.com/vektra/mockery/v2@latest
+```
+2. Generate Mocks
+```bash
+make generate-mocks
 ```

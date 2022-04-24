@@ -11,7 +11,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth/email"
 	"github.com/c0llinn/ebook-store/internal/auth/helper"
 	"github.com/c0llinn/ebook-store/internal/auth/middleware"
-	"github.com/c0llinn/ebook-store/internal/auth/repository"
+	"github.com/c0llinn/ebook-store/internal/auth/persistence"
 	"github.com/c0llinn/ebook-store/internal/auth/usecase"
 	http3 "github.com/c0llinn/ebook-store/internal/catalog/delivery/http"
 	helper2 "github.com/c0llinn/ebook-store/internal/catalog/helper"
@@ -32,7 +32,7 @@ import (
 func CreateWebServer() *http.Server {
 	engine := api.NewRouter()
 	gormDB := config2.NewConnection()
-	userRepository := repository.NewUserRepository(gormDB)
+	userRepository := persistence.NewUserRepository(gormDB)
 	hmacSecret := helper.NewHMACSecret()
 	jwtWrapper := helper.NewJWTWrapper(hmacSecret)
 	ses := config2.NewSNSService()

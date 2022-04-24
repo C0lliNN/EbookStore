@@ -28,5 +28,8 @@ clear: docker-down
 wire:
 	@cd cmd && wire .
 
+generate-mocks:
+	@mockery --all --output=./mocks --dir=internal --case=underscore --keeptree
+
 api-docs:
 	@cd cmd && swag init -g ../internal/api/server.go --dir ../internal --output ../internal/api/docs
