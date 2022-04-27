@@ -19,11 +19,11 @@ import (
 	"github.com/c0llinn/ebook-store/internal/catalog/storage"
 	usecase2 "github.com/c0llinn/ebook-store/internal/catalog/usecase"
 	config2 "github.com/c0llinn/ebook-store/internal/config"
-	"github.com/c0llinn/ebook-store/internal/shop/client"
+	"github.com/c0llinn/ebook-store/internal/payment"
+	repository3 "github.com/c0llinn/ebook-store/internal/persistence"
+	usecase3 "github.com/c0llinn/ebook-store/internal/shop"
 	http4 "github.com/c0llinn/ebook-store/internal/shop/delivery/http"
 	helper3 "github.com/c0llinn/ebook-store/internal/shop/helper"
-	repository3 "github.com/c0llinn/ebook-store/internal/shop/repository"
-	usecase3 "github.com/c0llinn/ebook-store/internal/shop/usecase"
 	"net/http"
 )
 
@@ -51,7 +51,7 @@ func CreateWebServer() *http.Server {
 	idGenerator := helper2.NewIDGenerator()
 	catalogHandler := http3.NewCatalogHandler(catalogUseCase, idGenerator)
 	orderRepository := repository3.NewOrderRepository(gormDB)
-	stripeClient := client.NewStripeClient()
+	stripeClient := payment.NewStripeClient()
 	shopUseCase := usecase3.NewShopUseCase(orderRepository, stripeClient, catalogUseCase)
 	helperIDGenerator := helper3.NewIDGenerator()
 	shopHandler := http4.NewShopHandler(shopUseCase, helperIDGenerator)

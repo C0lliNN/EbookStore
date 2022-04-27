@@ -28,14 +28,14 @@ func NewCatalogHandler(engine *gin.Engine, catalog Catalog) *CatalogHandler {
 	}
 }
 
-func (h *CatalogHandler) Routes(engine *gin.Engine) {
-	engine.GET("/books", h.getBooks)
-	engine.GET("/books/:id", h.getBook)
+func (h *CatalogHandler) Routes() {
+	h.engine.GET("/books", h.getBooks)
+	h.engine.GET("/books/:id", h.getBook)
 
 	// Admin Routes
-	engine.POST("/books", h.createBook)
-	engine.PATCH("/books/:id", h.updateBook)
-	engine.DELETE("/books/:id", h.deleteBook)
+	h.engine.POST("/books", h.createBook)
+	h.engine.PATCH("/books/:id", h.updateBook)
+	h.engine.DELETE("/books/:id", h.deleteBook)
 }
 
 // getBooks godoc

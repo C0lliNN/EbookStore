@@ -330,7 +330,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Shop"
+                    "shop"
                 ],
                 "summary": "Fetch Orders",
                 "parameters": [
@@ -367,7 +367,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Shop"
+                    "shop"
                 ],
                 "summary": "Create a new Order",
                 "parameters": [
@@ -409,7 +409,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Shop"
+                    "shop"
                 ],
                 "summary": "Fetch Order by ID",
                 "parameters": [
@@ -449,7 +449,7 @@ var doc = `{
                     "application/pdf"
                 ],
                 "tags": [
-                    "Shop"
+                    "shop"
                 ],
                 "summary": "Download the book for the given Order",
                 "parameters": [
@@ -590,7 +590,7 @@ var doc = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Shop"
+                    "shop"
                 ],
                 "summary": "Handle stripe webhooks",
                 "responses": {

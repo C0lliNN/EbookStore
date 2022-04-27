@@ -46,7 +46,7 @@ export AWS_SECRET_ACCESS_KEY=test
 cd cmd && go run .
 ```
 
-## How to generate mocks
+## How to regenerate mocks
 1. Install Mockery
 ```bash
 go install github.com/vektra/mockery/v2@latest

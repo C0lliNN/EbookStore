@@ -1,7 +1,6 @@
-package dto
+package shop
 
 import (
-	"github.com/c0llinn/ebook-store/internal/shop/model"
 	"math"
 	"time"
 )
@@ -18,7 +17,7 @@ type OrderResponse struct {
 	UpdatedAt       time.Time `json:"updatedAt"`
 }
 
-func FromOrder(order model.Order) OrderResponse {
+func NewOrderResponse(order Order) OrderResponse {
 	return OrderResponse{
 		ID:              order.ID,
 		Status:          string(order.Status),
@@ -40,10 +39,10 @@ type PaginatedOrdersResponse struct {
 	TotalItems  int64           `json:"totalItems"`
 }
 
-func FromPaginatedOrders(paginatedOrders model.PaginatedOrders) PaginatedOrdersResponse {
+func NewPaginatedOrdersResponse(paginatedOrders PaginatedOrders) PaginatedOrdersResponse {
 	orders := make([]OrderResponse, 0, len(paginatedOrders.Orders))
 	for _, o := range paginatedOrders.Orders {
-		orders = append(orders, FromOrder(o))
+		orders = append(orders, NewOrderResponse(o))
 	}
 
 	return PaginatedOrdersResponse{

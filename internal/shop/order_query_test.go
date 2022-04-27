@@ -1,7 +1,7 @@
 //go:build unit
 // +build unit
 
-package model
+package shop
 
 import (
 	"github.com/google/uuid"

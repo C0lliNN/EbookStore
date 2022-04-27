@@ -1,4 +1,4 @@
-package model
+package shop
 
 type OrderQuery struct {
 	Status OrderStatus

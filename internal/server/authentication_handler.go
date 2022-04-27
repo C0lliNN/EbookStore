@@ -21,15 +21,15 @@ type AuthenticatorHandler struct {
 
 func NewAuthenticatorHandler(engine *gin.Engine, authenticator Authenticator) *AuthenticatorHandler {
 	return &AuthenticatorHandler{
-		engine: engine,
+		engine:        engine,
 		authenticator: authenticator,
 	}
 }
 
-func (h *AuthenticatorHandler) RegisterRoutes(engine *gin.Engine) {
-	engine.POST("/register", h.register)
-	engine.POST("/login", h.login)
-	engine.POST("/password-reset", h.resetPassword)
+func (h *AuthenticatorHandler) RegisterRoutes() {
+	h.engine.POST("/register", h.register)
+	h.engine.POST("/login", h.login)
+	h.engine.POST("/password-reset", h.resetPassword)
 }
 
 // register godoc

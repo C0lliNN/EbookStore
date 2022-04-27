@@ -1,7 +1,4 @@
-//go:build unit
-// +build unit
-
-package model
+package shop
 
 import (
 	"github.com/stretchr/testify/assert"

@@ -1,12 +1,12 @@
 //go:build integration
 // +build integration
 
-package repository
+package persistence
 
 import (
 	"github.com/c0llinn/ebook-store/internal/common"
 	config2 "github.com/c0llinn/ebook-store/internal/config"
-	"github.com/c0llinn/ebook-store/internal/shop/model"
+	"github.com/c0llinn/ebook-store/internal/shop"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/google/uuid"
@@ -35,7 +35,7 @@ func TestOrderRepositoryRun(t *testing.T) {
 }
 
 func (s *OrderRepositoryTestSuite) TearDownTest() {
-	s.repo.db.Delete(&model.Order{}, "1 = 1")
+	s.repo.db.Delete(&shop.Order{}, "1 = 1")
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
@@ -52,7 +52,7 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
 	err = s.repo.Create(&order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(model.OrderQuery{})
+	actual, err := s.repo.FindByQuery(shop.OrderQuery{})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -77,7 +77,7 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithLimit() {
 	err = s.repo.Create(&order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(model.OrderQuery{Limit: 1})
+	actual, err := s.repo.FindByQuery(shop.OrderQuery{Limit: 1})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 1, actual.Limit)
@@ -101,7 +101,7 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithOffset() {
 	err = s.repo.Create(&order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(model.OrderQuery{Offset: 1})
+	actual, err := s.repo.FindByQuery(shop.OrderQuery{Offset: 1})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -114,7 +114,7 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithOffset() {
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithStatus() {
 	order1 := factory.NewOrder()
-	order1.Status = model.Paid
+	order1.Status = shop.Paid
 	order2 := factory.NewOrder()
 	order3 := factory.NewOrder()
 
@@ -127,7 +127,7 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithStatus() {
 	err = s.repo.Create(&order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(model.OrderQuery{Status: model.Paid})
+	actual, err := s.repo.FindByQuery(shop.OrderQuery{Status: shop.Paid})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -151,7 +151,7 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithBookID() {
 	err = s.repo.Create(&order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(model.OrderQuery{BookID: order1.BookID})
+	actual, err := s.repo.FindByQuery(shop.OrderQuery{BookID: order1.BookID})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -175,7 +175,7 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithUserID() {
 	err = s.repo.Create(&order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(model.OrderQuery{UserID: order1.UserID})
+	actual, err := s.repo.FindByQuery(shop.OrderQuery{UserID: order1.UserID})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -231,12 +231,12 @@ func (s *OrderRepositoryTestSuite) TestUpdate_Successfully() {
 	err := s.repo.Create(&order)
 	assert.Nil(s.T(), err)
 
-	order.Status = model.Paid
+	order.Status = shop.Paid
 	err = s.repo.Update(&order)
 	assert.Nil(s.T(), err)
 
 	persisted, err := s.repo.FindByID(order.ID)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), model.Paid, persisted.Status)
+	assert.Equal(s.T(), shop.Paid, persisted.Status)
 }

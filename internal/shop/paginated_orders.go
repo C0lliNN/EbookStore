@@ -1,4 +1,4 @@
-package model
+package shop
 
 type PaginatedOrders struct {
 	Orders      []Order

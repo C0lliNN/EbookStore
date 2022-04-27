@@ -1,22 +1,22 @@
-package client
+package payment
 
 import (
 	"context"
 	"github.com/c0llinn/ebook-store/internal/log"
-	"github.com/c0llinn/ebook-store/internal/shop/model"
+	"github.com/c0llinn/ebook-store/internal/shop"
 	"github.com/spf13/viper"
 	"github.com/stripe/stripe-go/v72"
 	"github.com/stripe/stripe-go/v72/paymentintent"
 )
 
-var statusMap = map[stripe.PaymentIntentStatus]model.OrderStatus{
-	stripe.PaymentIntentStatusCanceled:              model.Cancelled,
-	stripe.PaymentIntentStatusProcessing:            model.Pending,
-	stripe.PaymentIntentStatusRequiresAction:        model.Pending,
-	stripe.PaymentIntentStatusRequiresCapture:       model.Pending,
-	stripe.PaymentIntentStatusRequiresConfirmation:  model.Pending,
-	stripe.PaymentIntentStatusRequiresPaymentMethod: model.Pending,
-	stripe.PaymentIntentStatusSucceeded:             model.Paid,
+var statusMap = map[stripe.PaymentIntentStatus]shop.OrderStatus{
+	stripe.PaymentIntentStatusCanceled:              shop.Cancelled,
+	stripe.PaymentIntentStatusProcessing:            shop.Pending,
+	stripe.PaymentIntentStatusRequiresAction:        shop.Pending,
+	stripe.PaymentIntentStatusRequiresCapture:       shop.Pending,
+	stripe.PaymentIntentStatusRequiresConfirmation:  shop.Pending,
+	stripe.PaymentIntentStatusRequiresPaymentMethod: shop.Pending,
+	stripe.PaymentIntentStatusSucceeded:             shop.Paid,
 }
 
 type StripeClient byte
@@ -26,7 +26,7 @@ func NewStripeClient() StripeClient {
 	return StripeClient(0)
 }
 
-func (c StripeClient) CreatePaymentIntentForOrder(ctx context.Context, order *model.Order) error {
+func (c StripeClient) CreatePaymentIntentForOrder(ctx context.Context, order *shop.Order) error {
 	params := &stripe.PaymentIntentParams{
 		Amount:   stripe.Int64(order.Total),
 		Currency: stripe.String(string(stripe.CurrencyUSD)),

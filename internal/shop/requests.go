@@ -1,8 +1,4 @@
-package dto
-
-import (
-	"github.com/c0llinn/ebook-store/internal/shop/model"
-)
+package shop
 
 type SearchOrders struct {
 	Status  string `form:"status"`
@@ -10,7 +6,7 @@ type SearchOrders struct {
 	PerPage int    `form:"perPage"`
 }
 
-func (s *SearchOrders) ToDomain() model.OrderQuery {
+func (s *SearchOrders) OrderQuery() OrderQuery {
 	if s.Page == 0 {
 		s.Page = 1
 	}
@@ -19,8 +15,8 @@ func (s *SearchOrders) ToDomain() model.OrderQuery {
 		s.PerPage = 10
 	}
 
-	return model.OrderQuery{
-		Status: model.OrderStatus(s.Status),
+	return OrderQuery{
+		Status: OrderStatus(s.Status),
 		Limit:  s.PerPage,
 		Offset: (s.Page - 1) * s.PerPage,
 	}
@@ -30,8 +26,8 @@ type CreateOrder struct {
 	BookID string `json:"bookId" binding:"required,max=36"`
 }
 
-func (c CreateOrder) ToDomain(orderId, userId string) model.Order {
-	return model.Order{
+func (c CreateOrder) Order(orderId, userId string) Order {
+	return Order{
 		ID:     orderId,
 		BookID: c.BookID,
 		UserID: userId,

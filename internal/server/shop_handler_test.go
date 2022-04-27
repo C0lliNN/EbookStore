@@ -1,26 +1,19 @@
-//go:build integration
-// +build integration
-
-package http
+package server
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
-	auth "github.com/c0llinn/ebook-store/internal/auth/model"
-	"github.com/c0llinn/ebook-store/internal/catalog/helper"
-	catalog "github.com/c0llinn/ebook-store/internal/catalog/model"
-	"github.com/c0llinn/ebook-store/internal/catalog/repository"
-	"github.com/c0llinn/ebook-store/internal/catalog/storage"
-	"github.com/c0llinn/ebook-store/internal/catalog/usecase"
+	"github.com/c0llinn/ebook-store/internal/auth"
+	"github.com/c0llinn/ebook-store/internal/catalog"
 	"github.com/c0llinn/ebook-store/internal/common"
-	config2 "github.com/c0llinn/ebook-store/internal/config"
-	"github.com/c0llinn/ebook-store/internal/shop/client"
-	"github.com/c0llinn/ebook-store/internal/shop/delivery/dto"
-	helper3 "github.com/c0llinn/ebook-store/internal/shop/helper"
-	"github.com/c0llinn/ebook-store/internal/shop/model"
-	repository3 "github.com/c0llinn/ebook-store/internal/shop/repository"
-	usecase3 "github.com/c0llinn/ebook-store/internal/shop/usecase"
+	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/generator"
+	"github.com/c0llinn/ebook-store/internal/payment"
+	"github.com/c0llinn/ebook-store/internal/persistence"
+	"github.com/c0llinn/ebook-store/internal/shop"
+	"github.com/c0llinn/ebook-store/internal/storage"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/gin-gonic/gin"
@@ -41,39 +34,50 @@ type ShopHandlerTestSuite struct {
 	recorder *httptest.ResponseRecorder
 	db       *gorm.DB
 	s3Client storage.S3Client
-	handler  ShopHandler
+	handler  *ShopHandler
 }
 
 func (s *ShopHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	config2.InitLogger()
-	config2.LoadMigrations("file:../../../../migrations")
+	config.LoadMigrations("file:../../migrations")
 
-	s.db = config2.NewConnection()
+	s.db = config.NewConnection()
 	s.baseURL = fmt.Sprintf("http://localhost:%s", viper.GetString("PORT"))
 
-	orderRepository := repository3.NewOrderRepository(s.db)
-	stripeClient := client.NewStripeClient()
-	bucket := config2.NewBucket()
-	bookRepository := repository.NewBookRepository(s.db)
-	s3 := config2.NewS3Service()
+	orderRepository := persistence.NewOrderRepository(s.db)
+	stripeClient := payment.NewStripeClient()
+	bucket := config.NewBucket()
+	bookRepository := persistence.NewBookRepository(s.db)
+	s3 := config.NewS3Service()
 	s.s3Client = storage.NewS3Client(s3, bucket)
-	filenameGenerator := helper.NewFilenameGenerator()
-	catalogUseCase := usecase.NewCatalogUseCase(bookRepository, s.s3Client, filenameGenerator)
-	shopUseCase := usecase3.NewShopUseCase(orderRepository, stripeClient, catalogUseCase)
-	helperIDGenerator := helper3.NewIDGenerator()
-	s.handler = NewShopHandler(shopUseCase, helperIDGenerator)
+	filenameGenerator := generator.NewFilenameGenerator()
+	idGenerator := generator.NewUUIDGenerator()
+
+	catalog := catalog.New(catalog.Config{
+		Repository:        bookRepository,
+		StorageClient:     s.s3Client,
+		FilenameGenerator: filenameGenerator,
+		IDGenerator:       idGenerator,
+	})
+	shop := shop.New(shop.Config{
+		Repository:     orderRepository,
+		PaymentClient:  stripeClient,
+		CatalogService: catalog,
+		IDGenerator:    idGenerator,
+	})
+
+	s.handler = NewShopHandler(gin.New(), shop)
 
 	s.recorder = httptest.NewRecorder()
 	s.context, _ = gin.CreateTestContext(s.recorder)
 }
 
-func TestShopHandlerRun(t *testing.T) {
+func TestShopHandler(t *testing.T) {
 	suite.Run(t, new(ShopHandlerTestSuite))
 }
 
 func (s *ShopHandlerTestSuite) TearDownTest() {
-	s.db.Delete(&model.Order{}, "1 = 1")
+	s.db.Delete(&shop.Order{}, "1 = 1")
 	s.db.Delete(&catalog.Book{}, "1 = 1")
 	s.db.Delete(&auth.User{}, "1 = 1")
 }
@@ -100,7 +104,7 @@ func (s *ShopHandlerTestSuite) TestGetOrders_Customer() {
 
 	assert.Empty(s.T(), s.context.Errors.Errors())
 
-	var response dto.PaginatedOrdersResponse
+	var response shop.PaginatedOrdersResponse
 	err = json.Unmarshal(s.recorder.Body.Bytes(), &response)
 
 	assert.Equal(s.T(), order1.ID, response.Results[0].ID)
@@ -132,7 +136,7 @@ func (s *ShopHandlerTestSuite) TestGetOrders_Admin() {
 
 	assert.Empty(s.T(), s.context.Errors.Errors())
 
-	var response dto.PaginatedOrdersResponse
+	var response shop.PaginatedOrdersResponse
 	err = json.Unmarshal(s.recorder.Body.Bytes(), &response)
 
 	assert.Equal(s.T(), order2.ID, response.Results[0].ID)
@@ -163,7 +167,7 @@ func (s *ShopHandlerTestSuite) TestGetOrder_CustomerSuccessfully() {
 
 	assert.Empty(s.T(), s.context.Errors.Errors())
 
-	var response dto.OrderResponse
+	var response shop.OrderResponse
 	err = json.Unmarshal(s.recorder.Body.Bytes(), &response)
 
 	assert.Equal(s.T(), order1.ID, response.ID)
@@ -208,14 +212,14 @@ func (s *ShopHandlerTestSuite) TestGetOrder_Admin() {
 
 	assert.Empty(s.T(), s.context.Errors.Errors())
 
-	var response dto.OrderResponse
+	var response shop.OrderResponse
 	err = json.Unmarshal(s.recorder.Body.Bytes(), &response)
 
 	assert.Equal(s.T(), order1.ID, response.ID)
 }
 
 func (s *ShopHandlerTestSuite) TestCreateOrder_WithInvalidData() {
-	payload := dto.CreateOrder{BookID: ""}
+	payload := shop.CreateOrder{BookID: ""}
 
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
@@ -237,7 +241,7 @@ func (s *ShopHandlerTestSuite) TestCreateOrder_Successfully() {
 	err := s.db.Create(book).Error
 	require.Nil(s.T(), err)
 
-	payload := dto.CreateOrder{BookID: book.ID}
+	payload := shop.CreateOrder{BookID: book.ID}
 
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
@@ -253,7 +257,7 @@ func (s *ShopHandlerTestSuite) TestCreateOrder_Successfully() {
 
 	assert.Empty(s.T(), s.context.Errors.Errors())
 
-	var response dto.OrderResponse
+	var response shop.OrderResponse
 	err = json.Unmarshal(s.recorder.Body.Bytes(), &response)
 	require.Nil(s.T(), err)
 
@@ -326,11 +330,11 @@ func (s *ShopHandlerTestSuite) TestCompleteOrder_Successfully() {
 
 	assert.Empty(s.T(), s.context.Errors.Errors())
 
-	var updated model.Order
+	var updated shop.Order
 	err = s.db.First(&updated, "id = ?", order.ID).Error
 	require.Nil(s.T(), err)
 
-	assert.Equal(s.T(), model.Paid, updated.Status)
+	assert.Equal(s.T(), shop.Paid, updated.Status)
 }
 
 func (s *ShopHandlerTestSuite) TestDownloadOrder_WhenOrderIsNotFound() {
@@ -343,7 +347,7 @@ func (s *ShopHandlerTestSuite) TestDownloadOrder_WhenOrderIsNotFound() {
 
 func (s *ShopHandlerTestSuite) TestDownloadOrder_WhenOrderIsNotPaid() {
 	order := factory.NewOrder()
-	order.Status = model.Pending
+	order.Status = shop.Pending
 
 	err := s.db.Create(order).Error
 	require.Nil(s.T(), err)
@@ -360,11 +364,11 @@ func (s *ShopHandlerTestSuite) TestDownloadOrder_Successfully() {
 	err := s.db.Create(book).Error
 	require.Nil(s.T(), err)
 
-	err = s.s3Client.SaveFile(book.ContentBucketKey, "text/plain", strings.NewReader("something"))
+	err = s.s3Client.SaveFile(context.TODO(), book.ContentBucketKey, "text/plain", strings.NewReader("something"))
 	require.Nil(s.T(), err)
 
 	order := factory.NewOrder()
-	order.Status = model.Paid
+	order.Status = shop.Paid
 	order.BookID = book.ID
 
 	err = s.db.Create(order).Error

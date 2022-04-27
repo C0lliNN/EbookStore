@@ -2,17 +2,17 @@ package factory
 
 import (
 	"github.com/bxcodec/faker/v3"
-	"github.com/c0llinn/ebook-store/internal/shop/model"
+	"github.com/c0llinn/ebook-store/internal/shop"
 	"time"
 )
 
-func NewOrder() model.Order {
+func NewOrder() shop.Order {
 	paymentIntentId := faker.UUIDHyphenated()
 	clientSecret := faker.UUIDHyphenated()
 
-	return model.Order{
+	return shop.Order{
 		ID:              faker.UUIDHyphenated(),
-		Status:          model.Pending,
+		Status:          shop.Pending,
 		Total:           1000,
 		PaymentIntentID: &paymentIntentId,
 		ClientSecret:    &clientSecret,
@@ -20,14 +20,5 @@ func NewOrder() model.Order {
 		UserID:          faker.UUIDHyphenated(),
 		CreatedAt:       time.Now(),
 		UpdatedAt:       time.Now(),
-	}
-}
-
-func NewPaginatedOrders() model.PaginatedOrders {
-	return model.PaginatedOrders{
-		Orders:      []model.Order{NewOrder(), NewOrder(), NewOrder()},
-		Limit:       10,
-		Offset:      0,
-		TotalOrders: 3,
 	}
 }
