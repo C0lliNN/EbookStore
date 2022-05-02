@@ -32,6 +32,10 @@ type IDGenerator interface {
 	NewID() string
 }
 
+type Validator interface {
+	Validate(i interface{}) error
+}
+
 type Config struct {
 	Repository        Repository
 	Tokener           TokenHandler
@@ -39,6 +43,7 @@ type Config struct {
 	EmailClient       EmailClient
 	PasswordGenerator PasswordGenerator
 	IDGenerator       IDGenerator
+	Validator         Validator
 }
 
 type Authenticator struct {
@@ -52,8 +57,11 @@ func New(c Config) *Authenticator {
 }
 
 func (a *Authenticator) Register(ctx context.Context, request RegisterRequest) (CredentialsResponse, error) {
-	user := request.User(a.IDGenerator.NewID())
+	if err := a.Validator.Validate(request); err != nil {
+		return CredentialsResponse{}, err
+	}
 
+	user := request.User(a.IDGenerator.NewID())
 	hashedPassword, err := a.Hasher.HashPassword(user.Password)
 	if err != nil {
 		return CredentialsResponse{}, err
@@ -68,6 +76,10 @@ func (a *Authenticator) Register(ctx context.Context, request RegisterRequest) (
 }
 
 func (a *Authenticator) Login(ctx context.Context, request LoginRequest) (CredentialsResponse, error) {
+	if err := a.Validator.Validate(request); err != nil {
+		return CredentialsResponse{}, err
+	}
+
 	user, err := a.Repository.FindByEmail(ctx, request.Email)
 	if err != nil {
 		return CredentialsResponse{}, err
@@ -90,6 +102,10 @@ func (a *Authenticator) generateCredentialsForUser(user User) (CredentialsRespon
 }
 
 func (a *Authenticator) ResetPassword(ctx context.Context, request PasswordResetRequest) error {
+	if err := a.Validator.Validate(request); err != nil {
+		return err
+	}
+
 	user, err := a.Repository.FindByEmail(ctx, request.Email)
 	if err != nil {
 		return err

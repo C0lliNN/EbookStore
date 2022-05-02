@@ -20,6 +20,7 @@ const (
 	sendEmailMethod              = "SendPasswordResetEmail"
 	hashPasswordMethod           = "HashPassword"
 	compareHashAndPasswordMethod = "CompareHashAndPassword"
+	validateMethod               = "Validate"
 )
 
 type AuthenticatorTestSuite struct {
@@ -30,6 +31,7 @@ type AuthenticatorTestSuite struct {
 	passwordGenerator *mocks.PasswordGenerator
 	hash              *mocks.HashHandler
 	idGenerator       *mocks.IDGenerator
+	validator         *mocks.Validator
 	authenticator     *auth.Authenticator
 }
 
@@ -40,6 +42,7 @@ func (s *AuthenticatorTestSuite) SetupTest() {
 	s.passwordGenerator = new(mocks.PasswordGenerator)
 	s.hash = new(mocks.HashHandler)
 	s.idGenerator = new(mocks.IDGenerator)
+	s.validator = new(mocks.Validator)
 
 	config := auth.Config{
 		Repository:        s.repo,
@@ -48,6 +51,7 @@ func (s *AuthenticatorTestSuite) SetupTest() {
 		EmailClient:       s.emailClient,
 		PasswordGenerator: s.passwordGenerator,
 		IDGenerator:       s.idGenerator,
+		Validator:         s.validator,
 	}
 
 	s.authenticator = auth.New(config)
@@ -57,9 +61,7 @@ func TestAuthenticator(t *testing.T) {
 	suite.Run(t, new(AuthenticatorTestSuite))
 }
 
-func (s *AuthenticatorTestSuite) TestRegister_WhenPasswordHashingFails() {
-	s.idGenerator.On(newIdMethod).Return("user-id")
-
+func (s *AuthenticatorTestSuite) TestRegister_WhenPasswordValidationFails() {
 	request := auth.RegisterRequest{
 		FirstName:            "Raphael",
 		LastName:             "Collin",
@@ -68,6 +70,30 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenPasswordHashingFails() {
 		PasswordConfirmation: "123456",
 	}
 
+	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
+
+	_, err := s.authenticator.Register(context.TODO(), request)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
+	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
+	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 0)
+	s.repo.AssertNotCalled(s.T(), saveMethod)
+	s.token.AssertNotCalled(s.T(), generateTokenMethod)
+}
+
+func (s *AuthenticatorTestSuite) TestRegister_WhenPasswordHashingFails() {
+	request := auth.RegisterRequest{
+		FirstName:            "Raphael",
+		LastName:             "Collin",
+		Email:                "raphael@test.com",
+		Password:             "123456",
+		PasswordConfirmation: "123456",
+	}
+	s.validator.On(validateMethod, request).Return(nil)
+
+	s.idGenerator.On(newIdMethod).Return("user-id")
 	user := request.User("user-id")
 	s.hash.On(hashPasswordMethod, user.Password).Return("", fmt.Errorf("some-error"))
 
@@ -75,6 +101,7 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenPasswordHashingFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some-error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 1)
 	s.repo.AssertNotCalled(s.T(), saveMethod)
@@ -82,8 +109,6 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenPasswordHashingFails() {
 }
 
 func (s *AuthenticatorTestSuite) TestRegister_WhenRepositoryFails() {
-	s.idGenerator.On(newIdMethod).Return("user-id")
-
 	request := auth.RegisterRequest{
 		FirstName:            "Raphael",
 		LastName:             "Collin",
@@ -91,7 +116,9 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenRepositoryFails() {
 		Password:             "123456",
 		PasswordConfirmation: "123456",
 	}
+	s.validator.On(validateMethod, request).Return(nil)
 
+	s.idGenerator.On(newIdMethod).Return("user-id")
 	user := request.User("user-id")
 	s.hash.On(hashPasswordMethod, user.Password).Return("hashed-password", nil)
 
@@ -103,6 +130,7 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenRepositoryFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), saveMethod, 1)
@@ -110,8 +138,6 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenRepositoryFails() {
 }
 
 func (s *AuthenticatorTestSuite) TestRegister_WhenTokenGenerationFails() {
-	s.idGenerator.On(newIdMethod).Return("user-id")
-
 	request := auth.RegisterRequest{
 		FirstName:            "Raphael",
 		LastName:             "Collin",
@@ -119,7 +145,9 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenTokenGenerationFails() {
 		Password:             "123456",
 		PasswordConfirmation: "123456",
 	}
+	s.validator.On(validateMethod, request).Return(nil)
 
+	s.idGenerator.On(newIdMethod).Return("user-id")
 	user := request.User("user-id")
 	s.hash.On(hashPasswordMethod, user.Password).Return("hashed-password", nil)
 
@@ -133,6 +161,7 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenTokenGenerationFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), saveMethod, 1)
@@ -140,8 +169,6 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenTokenGenerationFails() {
 }
 
 func (s *AuthenticatorTestSuite) TestRegister_Successfully() {
-	s.idGenerator.On(newIdMethod).Return("user-id")
-
 	request := auth.RegisterRequest{
 		FirstName:            "Raphael",
 		LastName:             "Collin",
@@ -149,7 +176,9 @@ func (s *AuthenticatorTestSuite) TestRegister_Successfully() {
 		Password:             "123456",
 		PasswordConfirmation: "123456",
 	}
+	s.validator.On(validateMethod, request).Return(nil)
 
+	s.idGenerator.On(newIdMethod).Return("user-id")
 	user := request.User("user-id")
 	s.hash.On(hashPasswordMethod, user.Password).Return("hashed-password", nil)
 
@@ -163,10 +192,28 @@ func (s *AuthenticatorTestSuite) TestRegister_Successfully() {
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), auth.FromCredentials(auth.Credentials{Token: "token"}), response)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), saveMethod, 1)
 	s.token.AssertNumberOfCalls(s.T(), generateTokenMethod, 1)
+}
+
+func (s *AuthenticatorTestSuite) TestLogin_WhenValidationFails() {
+	request := auth.LoginRequest{
+		Email:    "email@test.com",
+		Password: "12345678",
+	}
+	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
+
+	_, err := s.authenticator.Login(context.TODO(), request)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 0)
+	s.hash.AssertNotCalled(s.T(), compareHashAndPasswordMethod)
+	s.token.AssertNotCalled(s.T(), generateTokenMethod)
 }
 
 func (s *AuthenticatorTestSuite) TestLogin_WhenUserWasNotFound() {
@@ -174,12 +221,14 @@ func (s *AuthenticatorTestSuite) TestLogin_WhenUserWasNotFound() {
 		Email:    "email@test.com",
 		Password: "12345678",
 	}
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), request.Email).Return(auth.User{}, fmt.Errorf("some error"))
 
 	_, err := s.authenticator.Login(context.TODO(), request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.hash.AssertNotCalled(s.T(), compareHashAndPasswordMethod)
 	s.token.AssertNotCalled(s.T(), generateTokenMethod)
@@ -192,6 +241,7 @@ func (s *AuthenticatorTestSuite) TestLogin_WhenPasswordsDontMatch() {
 	}
 
 	user := auth.User{ID: "some-id", Email: request.Email, Password: "some-password"}
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), user.Email).Return(user, nil)
 	s.hash.On(compareHashAndPasswordMethod, user.Password, request.Password).Return(auth.ErrWrongPassword)
 
@@ -199,6 +249,7 @@ func (s *AuthenticatorTestSuite) TestLogin_WhenPasswordsDontMatch() {
 
 	assert.Equal(s.T(), auth.ErrWrongPassword, err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.hash.AssertNumberOfCalls(s.T(), compareHashAndPasswordMethod, 1)
 	s.token.AssertNotCalled(s.T(), generateTokenMethod)
@@ -212,6 +263,7 @@ func (s *AuthenticatorTestSuite) TestLogin_Successfully() {
 
 	user := auth.User{ID: "some-id", Email: request.Email, Password: "some-password"}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), user.Email).Return(user, nil)
 	s.hash.On(compareHashAndPasswordMethod, user.Password, request.Password).Return(nil)
 	s.token.On(generateTokenMethod, user).Return("token", nil)
@@ -221,19 +273,38 @@ func (s *AuthenticatorTestSuite) TestLogin_Successfully() {
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), auth.FromCredentials(auth.Credentials{Token: "token"}), response)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.hash.AssertNumberOfCalls(s.T(), compareHashAndPasswordMethod, 1)
 	s.token.AssertNumberOfCalls(s.T(), generateTokenMethod, 1)
 }
 
+func (s AuthenticatorTestSuite) TestResetPassword_WhenValidationFails() {
+	request := auth.PasswordResetRequest{Email: "some email"}
+	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
+
+	err := s.authenticator.ResetPassword(context.TODO(), request)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
+	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 0)
+	s.repo.AssertNotCalled(s.T(), updateMethod)
+	s.hash.AssertNotCalled(s.T(), hashPasswordMethod)
+	s.passwordGenerator.AssertNotCalled(s.T(), newPasswordMethod)
+	s.emailClient.AssertNotCalled(s.T(), sendEmailMethod)
+}
+
 func (s AuthenticatorTestSuite) TestResetPassword_WhenUserWasNotFound() {
 	request := auth.PasswordResetRequest{Email: "some email"}
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), request.Email).Return(auth.User{}, fmt.Errorf("some error"))
 
 	err := s.authenticator.ResetPassword(context.TODO(), request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.repo.AssertNotCalled(s.T(), updateMethod)
 	s.hash.AssertNotCalled(s.T(), hashPasswordMethod)
@@ -244,6 +315,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenUserWasNotFound() {
 func (s AuthenticatorTestSuite) TestResetPassword_WhenPasswordHashingFails() {
 	request := auth.PasswordResetRequest{Email: "some email"}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), request.Email).Return(auth.User{}, nil)
 	s.passwordGenerator.On(newPasswordMethod).Return("new-password")
 	s.hash.On(hashPasswordMethod, "new-password").Return("", fmt.Errorf("some error"))
@@ -252,6 +324,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenPasswordHashingFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.passwordGenerator.AssertNumberOfCalls(s.T(), newPasswordMethod, 1)
 	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 1)
@@ -264,6 +337,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenUpdateFails() {
 	user := auth.User{Email: request.Email, Password: "another-password"}
 	newPassword := "password"
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), user.Email).Return(user, nil)
 	s.passwordGenerator.On(newPasswordMethod).Return(newPassword)
 	s.hash.On(hashPasswordMethod, newPassword).Return("new-hashed-password", nil)
@@ -275,6 +349,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenUpdateFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), updateMethod, 1)
@@ -287,6 +362,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenEmailSendingFails() {
 	user := auth.User{Email: request.Email, Password: "another-password"}
 	newPassword := "password"
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), user.Email).Return(user, nil)
 	s.passwordGenerator.On(newPasswordMethod).Return(newPassword)
 	s.hash.On(hashPasswordMethod, newPassword).Return("new-hashed-password", nil)
@@ -299,6 +375,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenEmailSendingFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), updateMethod, 1)
@@ -311,6 +388,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_Successfully() {
 	user := auth.User{Email: request.Email, Password: "another-password"}
 	newPassword := "password"
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), user.Email).Return(user, nil)
 	s.passwordGenerator.On(newPasswordMethod).Return(newPassword)
 	s.hash.On(hashPasswordMethod, newPassword).Return("new-hashed-password", nil)
@@ -323,6 +401,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_Successfully() {
 
 	assert.Nil(s.T(), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
 	s.hash.AssertNumberOfCalls(s.T(), hashPasswordMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), updateMethod, 1)

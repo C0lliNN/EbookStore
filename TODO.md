@@ -9,12 +9,12 @@
 * [x] Flat auth folder
 * [x] Flat catalog folder
 * [x] Flat shop folder
+* [x] Add validation to usecase layer
 * [ ] Add Authorization to validation layer (and add userId to shop layer)
-* [ ] Add validation to usecase layer
 * [ ] Rename from 'FromBook' to 'NewBook'
 * [ ] Maybe Create a Route Wrapper
+* [ ] Review tests
 * [ ] Reduce numer of multi-argument functions
-* [ ] Review test names
 * [ ] Review pointer/concrete types in struct and as recievers
 * [ ] Add Request/Response model to usecase layer
 * [ ] Refactor wire

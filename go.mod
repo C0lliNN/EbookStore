@@ -5,8 +5,9 @@ go 1.16
 require (
 	github.com/aws/aws-sdk-go v1.40.43
 	github.com/bxcodec/faker/v3 v3.6.0
+	github.com/casbin/casbin v1.9.1
 	github.com/gin-gonic/gin v1.7.4
-	github.com/go-playground/validator/v10 v10.9.0 // indirect
+	github.com/go-playground/validator/v10 v10.11.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/google/uuid v1.3.0
@@ -23,7 +24,7 @@ require (
 	github.com/swaggo/swag v1.7.1
 	github.com/ugorji/go v1.2.6 // indirect
 	go.uber.org/zap v1.17.0
-	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
+	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
 	golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect

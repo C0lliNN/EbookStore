@@ -27,11 +27,16 @@ type IDGenerator interface {
 	NewID() string
 }
 
+type Validator interface {
+	Validate(i interface{}) error
+}
+
 type Config struct {
 	Repository        Repository
 	StorageClient     StorageClient
 	FilenameGenerator FilenameGenerator
 	IDGenerator       IDGenerator
+	Validator         Validator
 }
 
 type Catalog struct {
@@ -91,8 +96,11 @@ func (c *Catalog) GetBookContent(ctx context.Context, id string) (io.ReadCloser,
 }
 
 func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookResponse, error) {
-	book := request.Book(c.IDGenerator.NewID())
+	if err := c.Validator.Validate(request); err != nil {
+		return BookResponse{}, err
+	}
 
+	book := request.Book(c.IDGenerator.NewID())
 	posterImageKey := c.FilenameGenerator.NewUniqueName("poster_" + book.Title)
 	contentKey := c.FilenameGenerator.NewUniqueName("content_" + book.Title)
 
@@ -121,6 +129,10 @@ func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookRespo
 }
 
 func (c *Catalog) UpdateBook(ctx context.Context, request UpdateBook) error {
+	if err := c.Validator.Validate(request); err != nil {
+		return err
+	}
+
 	existing, err := c.Repository.FindByID(ctx, request.ID)
 	if err != nil {
 		return err

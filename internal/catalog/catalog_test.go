@@ -25,6 +25,7 @@ const (
 	createBookMethod           = "Create"
 	updateBookMethod           = "Update"
 	deleteBookMethod           = "Delete"
+	validateMethod             = "Validate"
 )
 
 type CatalogTestSuite struct {
@@ -33,6 +34,7 @@ type CatalogTestSuite struct {
 	storageClient     *mocks.StorageClient
 	filenameGenerator *mocks.FilenameGenerator
 	idGenerator       *mocks.IDGenerator
+	validator         *mocks.Validator
 	catalog           *catalog.Catalog
 }
 
@@ -41,12 +43,14 @@ func (s *CatalogTestSuite) SetupTest() {
 	s.storageClient = new(mocks.StorageClient)
 	s.filenameGenerator = new(mocks.FilenameGenerator)
 	s.idGenerator = new(mocks.IDGenerator)
+	s.validator = new(mocks.Validator)
 
 	config := catalog.Config{
 		Repository:        s.repo,
 		StorageClient:     s.storageClient,
 		FilenameGenerator: s.filenameGenerator,
 		IDGenerator:       s.idGenerator,
+		Validator:         s.validator,
 	}
 
 	s.catalog = catalog.New(config)
@@ -213,6 +217,30 @@ func (s *CatalogTestSuite) TestGetBookContent_Successfully() {
 	s.storageClient.AssertCalled(s.T(), retrieveFileMethod, context.TODO(), book.ContentBucketKey)
 }
 
+func (s *CatalogTestSuite) TestCreateBook_ValidationFails() {
+	request := catalog.CreateBook{
+		Title:       "Clean Code",
+		Description: "A Craftsman Guide",
+		AuthorName:  "Robert C. Martin",
+		Price:       4000,
+		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
+		PosterImage: bytes.NewReader([]byte("some poster image")),
+		BookContent: bytes.NewReader([]byte("some book content content")),
+	}
+	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
+
+	_, err := s.catalog.CreateBook(context.TODO(), request)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
+	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
+	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 0)
+	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 0)
+	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod, "poster_name")
+	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 0)
+}
+
 func (s *CatalogTestSuite) TestCreateBook_WhenPosterStorageFails() {
 	request := catalog.CreateBook{
 		Title:       "Clean Code",
@@ -224,6 +252,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPosterStorageFails() {
 		BookContent: bytes.NewReader([]byte("some book content content")),
 	}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+request.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+request.Title).Return("content_name").Once()
@@ -235,6 +264,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPosterStorageFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 1)
@@ -255,6 +285,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenContentStorageFails() {
 
 	book := request.Book("some-id")
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+request.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+request.Title).Return("content_name").Once()
@@ -265,6 +296,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenContentStorageFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 2)
@@ -285,6 +317,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPreSigningFails() {
 
 	book := request.Book("some-id")
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
@@ -296,6 +329,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPreSigningFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 2)
@@ -316,6 +350,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenRepositoryFails() {
 
 	book := request.Book("some-id")
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
@@ -334,6 +369,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenRepositoryFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 2)
@@ -354,6 +390,7 @@ func (s *CatalogTestSuite) TestCreateBook_Successfully() {
 
 	book := request.Book("some-id")
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
@@ -374,11 +411,28 @@ func (s *CatalogTestSuite) TestCreateBook_Successfully() {
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
 	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 2)
 	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 1)
+}
+
+func (s *CatalogTestSuite) TestUpdateBook_ValidationFails() {
+	newTitle := "new title"
+	request := catalog.UpdateBook{
+		ID:    "some-id",
+		Title: &newTitle,
+	}
+	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
+
+	err := s.catalog.UpdateBook(context.TODO(), request)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
+	s.repo.AssertNotCalled(s.T(), findByIdMethod, context.TODO(), request.ID)
 }
 
 func (s *CatalogTestSuite) TestUpdateBook_WhenBookIsNotFound() {
@@ -388,12 +442,14 @@ func (s *CatalogTestSuite) TestUpdateBook_WhenBookIsNotFound() {
 		Title: &newTitle,
 	}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByIdMethod, context.TODO(), request.ID).Return(catalog.Book{}, fmt.Errorf("some error"))
 
 	err := s.catalog.UpdateBook(context.TODO(), request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), request.ID)
 }
 
@@ -408,6 +464,7 @@ func (s *CatalogTestSuite) TestUpdateBook_WhenUpdateFails() {
 		Title: "old-title",
 	}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByIdMethod, context.TODO(), request.ID).Return(book, nil)
 
 	updated := request.Update(book)
@@ -417,6 +474,7 @@ func (s *CatalogTestSuite) TestUpdateBook_WhenUpdateFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), request.ID)
 	s.repo.AssertCalled(s.T(), updateBookMethod, context.TODO(), &updated)
 }
@@ -432,6 +490,7 @@ func (s *CatalogTestSuite) TestUpdateBook_Successfully() {
 		Title: "old-title",
 	}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByIdMethod, context.TODO(), request.ID).Return(book, nil)
 
 	updated := request.Update(book)
@@ -441,6 +500,7 @@ func (s *CatalogTestSuite) TestUpdateBook_Successfully() {
 
 	assert.Nil(s.T(), err)
 
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), request.ID)
 	s.repo.AssertCalled(s.T(), updateBookMethod, context.TODO(), &updated)
 }

@@ -1,11 +1,11 @@
 package auth
 
 type RegisterRequest struct {
-	FirstName            string `json:"firstName" binding:"required,max=150"`
-	LastName             string `json:"lastName" binding:"required,max=150"`
-	Email                string `json:"email" binding:"required,email"`
-	Password             string `json:"password" binding:"required,min=6,max=20"`
-	PasswordConfirmation string `json:"passwordConfirmation" binding:"required,eqfield=Password"`
+	FirstName            string `json:"firstName" validate:"required,max=150"`
+	LastName             string `json:"lastName" validate:"required,max=150"`
+	Email                string `json:"email" validate:"required,email"`
+	Password             string `json:"password" validate:"required,min=6,max=20"`
+	PasswordConfirmation string `json:"passwordConfirmation" validate:"required,eqfield=Password"`
 }
 
 func (r RegisterRequest) User(id string) User {
@@ -20,10 +20,10 @@ func (r RegisterRequest) User(id string) User {
 }
 
 type LoginRequest struct {
-	Email    string `json:"email" binding:"required,email"`
-	Password string `json:"password" binding:"required,min=6,max=20"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,min=6,max=20"`
 }
 
 type PasswordResetRequest struct {
-	Email string `json:"email" binding:"required,email"`
+	Email string `json:"email" validate:"required,email"`
 }

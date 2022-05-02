@@ -22,6 +22,7 @@ const (
 	createPaymentIntentMethod = "CreatePaymentIntentForOrder"
 	getBookContent            = "GetBookContent"
 	newIdMethod               = "NewID"
+	validateMethod            = "Validate"
 )
 
 type ShopTestSuite struct {
@@ -30,6 +31,7 @@ type ShopTestSuite struct {
 	paymentClient  *mocks.PaymentClient
 	catalogService *mocks.CatalogService
 	idGenerator    *mocks.IDGenerator
+	validator      *mocks.Validator
 	shop           *shop.Shop
 }
 
@@ -38,12 +40,14 @@ func (s *ShopTestSuite) SetupTest() {
 	s.paymentClient = new(mocks.PaymentClient)
 	s.catalogService = new(mocks.CatalogService)
 	s.idGenerator = new(mocks.IDGenerator)
+	s.validator = new(mocks.Validator)
 
 	s.shop = shop.New(shop.Config{
 		Repository:     s.repo,
 		PaymentClient:  s.paymentClient,
 		CatalogService: s.catalogService,
 		IDGenerator:    s.idGenerator,
+		Validator:      s.validator,
 	})
 }
 
@@ -106,6 +110,27 @@ func (s *ShopTestSuite) TestFindOrderByID_WithError() {
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), id)
 }
 
+func (s *ShopTestSuite) TestCreateOrder_ValidationFails() {
+	request := shop.CreateOrder{
+		BookID: "some-id",
+	}
+	orderId := "orderId"
+	userId := "userId"
+	order := request.Order(orderId, userId)
+
+	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
+
+	_, err := s.shop.CreateOrder(context.TODO(), request)
+
+	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+
+	s.validator.AssertCalled(s.T(), validateMethod, request)
+	s.idGenerator.AssertNotCalled(s.T(), newIdMethod)
+	s.catalogService.AssertNotCalled(s.T(), findBookByIDMethod, context.TODO(), order.BookID)
+	s.paymentClient.AssertNotCalled(s.T(), createPaymentIntentMethod, context.TODO(), &order)
+	s.repo.AssertNotCalled(s.T(), createOrderMethod, context.TODO(), &order)
+}
+
 func (s *ShopTestSuite) TestCreateOrder_WhenCatalogServiceFails() {
 	request := shop.CreateOrder{
 		BookID: "some-id",
@@ -114,13 +139,15 @@ func (s *ShopTestSuite) TestCreateOrder_WhenCatalogServiceFails() {
 	userId := "userId"
 	order := request.Order(orderId, userId)
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return(orderId)
-	s.catalogService.On(findBookByIDMethod, context.TODO(), order.BookID).Return(catalog.Book{}, fmt.Errorf("some error"))
+	s.catalogService.On(findBookByIDMethod, context.TODO(), order.BookID).Return(catalog.BookResponse{}, fmt.Errorf("some error"))
 
 	_, err := s.shop.CreateOrder(context.TODO(), request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
 	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, context.TODO(), order.BookID)
 	s.paymentClient.AssertNotCalled(s.T(), createPaymentIntentMethod, context.TODO(), &order)
@@ -134,8 +161,9 @@ func (s *ShopTestSuite) TestCreateOrder_WhenPaymentClientFails() {
 	orderId := "orderId"
 	userId := "userId"
 	order := request.Order(orderId, userId)
-	book := catalog.Book{ID: "some-id", Price: 2000}
+	book := catalog.BookResponse{ID: "some-id", Price: 2000}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return(orderId)
 	s.catalogService.On(findBookByIDMethod, context.TODO(), book.ID).Return(book, nil)
 
@@ -147,6 +175,7 @@ func (s *ShopTestSuite) TestCreateOrder_WhenPaymentClientFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
 	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, context.TODO(), &updatedOrder)
 	s.catalogService.AssertNotCalled(s.T(), findBookByIDMethod, context.TODO(), order.ID)
@@ -160,8 +189,9 @@ func (s *ShopTestSuite) TestCreateOrder_WhenRepositoryFails() {
 	orderId := "orderId"
 	userId := "userId"
 	order := request.Order(orderId, userId)
-	book := catalog.Book{ID: "some-id", Price: 2000}
+	book := catalog.BookResponse{ID: "some-id", Price: 2000}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return(orderId)
 	s.catalogService.On(findBookByIDMethod, context.TODO(), book.ID).Return(book, nil)
 
@@ -174,6 +204,7 @@ func (s *ShopTestSuite) TestCreateOrder_WhenRepositoryFails() {
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
+	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
 	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, context.TODO(), &updatedOrder)
 	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, context.TODO(), order.BookID)
@@ -187,8 +218,9 @@ func (s *ShopTestSuite) TestCreateOrder_Successfully() {
 	orderId := "orderId"
 	userId := "userId"
 	order := request.Order(orderId, userId)
-	book := catalog.Book{ID: "some-id", Price: 4000}
+	book := catalog.BookResponse{ID: "some-id", Price: 4000}
 
+	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return(orderId)
 	s.catalogService.On(findBookByIDMethod, context.TODO(), order.BookID).Return(book, nil)
 
@@ -203,6 +235,7 @@ func (s *ShopTestSuite) TestCreateOrder_Successfully() {
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
 
+	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
 	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, context.TODO(), &updatedOrder)
 	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, context.TODO(), order.BookID)

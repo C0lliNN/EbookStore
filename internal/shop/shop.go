@@ -26,11 +26,21 @@ type IDGenerator interface {
 	NewID() string
 }
 
+type Validator interface {
+	Validate(i interface{}) error
+}
+
+type Authorizer interface {
+	Authorize(ctx context.Context, object interface{}, action string) error
+}
+
 type Config struct {
 	Repository     Repository
 	PaymentClient  PaymentClient
 	CatalogService CatalogService
 	IDGenerator    IDGenerator
+	Validator      Validator
+	Authorizer     Authorizer
 }
 
 type Shop struct {
@@ -43,7 +53,6 @@ func New(c Config) *Shop {
 
 func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedOrdersResponse, error) {
 	query := request.OrderQuery()
-
 	paginatedOrders, err := s.Repository.FindByQuery(ctx, query)
 	if err != nil {
 		return PaginatedOrdersResponse{}, err
@@ -62,8 +71,11 @@ func (s *Shop) FindOrderByID(ctx context.Context, id string) (OrderResponse, err
 }
 
 func (s *Shop) CreateOrder(ctx context.Context, request CreateOrder) (OrderResponse, error) {
-	order := request.Order(s.IDGenerator.NewID(), "userId")
+	if err := s.Validator.Validate(request); err != nil {
+		return OrderResponse{}, err
+	}
 
+	order := request.Order(s.IDGenerator.NewID(), "userId")
 	book, err := s.CatalogService.FindBookByID(ctx, order.BookID)
 	if err != nil {
 		return OrderResponse{}, err

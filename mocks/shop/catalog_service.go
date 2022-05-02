@@ -20,14 +20,14 @@ type CatalogService struct {
 }
 
 // FindBookByID provides a mock function with given fields: ctx, bookId
-func (_m *CatalogService) FindBookByID(ctx context.Context, bookId string) (catalog.Book, error) {
+func (_m *CatalogService) FindBookByID(ctx context.Context, bookId string) (catalog.BookResponse, error) {
 	ret := _m.Called(ctx, bookId)
 
-	var r0 catalog.Book
-	if rf, ok := ret.Get(0).(func(context.Context, string) catalog.Book); ok {
+	var r0 catalog.BookResponse
+	if rf, ok := ret.Get(0).(func(context.Context, string) catalog.BookResponse); ok {
 		r0 = rf(ctx, bookId)
 	} else {
-		r0 = ret.Get(0).(catalog.Book)
+		r0 = ret.Get(0).(catalog.BookResponse)
 	}
 
 	var r1 error

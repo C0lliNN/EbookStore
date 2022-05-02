@@ -95,7 +95,7 @@ func (_m *Shop) FindOrders(_a0 context.Context, _a1 shop.SearchOrders) (shop.Pag
 	return r0, r1
 }
 
-// GetBookContentForOrder provides a mock function with given fields: _a0, _a1
+// GetOrderDeliverableContent provides a mock function with given fields: _a0, _a1
 func (_m *Shop) GetOrderDeliverableContent(_a0 context.Context, _a1 string) (io.ReadCloser, error) {
 	ret := _m.Called(_a0, _a1)
 
