@@ -96,6 +96,10 @@ func (c *Catalog) GetBookContent(ctx context.Context, id string) (io.ReadCloser,
 }
 
 func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookResponse, error) {
+	if !isAdmin(ctx) {
+		return BookResponse{}, ErrForbiddenCatalogAccess
+	}
+
 	if err := c.Validator.Validate(request); err != nil {
 		return BookResponse{}, err
 	}
@@ -129,6 +133,10 @@ func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookRespo
 }
 
 func (c *Catalog) UpdateBook(ctx context.Context, request UpdateBook) error {
+	if !isAdmin(ctx) {
+		return ErrForbiddenCatalogAccess
+	}
+
 	if err := c.Validator.Validate(request); err != nil {
 		return err
 	}
@@ -143,5 +151,18 @@ func (c *Catalog) UpdateBook(ctx context.Context, request UpdateBook) error {
 }
 
 func (c *Catalog) DeleteBook(ctx context.Context, id string) error {
+	if !isAdmin(ctx) {
+		return ErrForbiddenCatalogAccess
+	}
+
 	return c.Repository.Delete(ctx, id)
+}
+
+func isAdmin(ctx context.Context) bool {
+	admin, ok := ctx.Value("admin").(bool)
+	if !ok {
+		return false
+	}
+
+	return admin
 }

@@ -217,6 +217,30 @@ func (s *CatalogTestSuite) TestGetBookContent_Successfully() {
 	s.storageClient.AssertCalled(s.T(), retrieveFileMethod, context.TODO(), book.ContentBucketKey)
 }
 
+func (s *CatalogTestSuite) TestCreateBook_WithNonAdminUser() {
+	request := catalog.CreateBook{
+		Title:       "Clean Code",
+		Description: "A Craftsman Guide",
+		AuthorName:  "Robert C. Martin",
+		Price:       4000,
+		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
+		PosterImage: bytes.NewReader([]byte("some poster image")),
+		BookContent: bytes.NewReader([]byte("some book content content")),
+	}
+
+	ctx := context.WithValue(context.Background(), "admin", false)
+	_, err := s.catalog.CreateBook(ctx, request)
+
+	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, err)
+
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 0)
+	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
+	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 0)
+	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 0)
+	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod, "poster_name")
+	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 0)
+}
+
 func (s *CatalogTestSuite) TestCreateBook_ValidationFails() {
 	request := catalog.CreateBook{
 		Title:       "Clean Code",
@@ -229,7 +253,8 @@ func (s *CatalogTestSuite) TestCreateBook_ValidationFails() {
 	}
 	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
 
-	_, err := s.catalog.CreateBook(context.TODO(), request)
+	ctx := context.WithValue(context.Background(), "admin", true)
+	_, err := s.catalog.CreateBook(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
@@ -252,15 +277,17 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPosterStorageFails() {
 		BookContent: bytes.NewReader([]byte("some book content content")),
 	}
 
+	ctx := context.WithValue(context.Background(), "admin", true)
+
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+request.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+request.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, context.TODO(), "poster_name", "image/jpeg", request.PosterImage).Return(fmt.Errorf("some error"))
+	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(fmt.Errorf("some error"))
 
 	book := request.Book("some-id")
 
-	_, err := s.catalog.CreateBook(context.TODO(), request)
+	_, err := s.catalog.CreateBook(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
@@ -285,14 +312,16 @@ func (s *CatalogTestSuite) TestCreateBook_WhenContentStorageFails() {
 
 	book := request.Book("some-id")
 
+	ctx := context.WithValue(context.Background(), "admin", true)
+
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+request.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+request.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, context.TODO(), "poster_name", "image/jpeg", request.PosterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, context.TODO(), "content_name", "application/pdf", request.BookContent).Return(fmt.Errorf("some error"))
+	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(nil)
+	s.storageClient.On(saveFileMethod, ctx, "content_name", "application/pdf", request.BookContent).Return(fmt.Errorf("some error"))
 
-	_, err := s.catalog.CreateBook(context.TODO(), request)
+	_, err := s.catalog.CreateBook(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
@@ -316,16 +345,17 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPreSigningFails() {
 	}
 
 	book := request.Book("some-id")
+	ctx := context.WithValue(context.Background(), "admin", true)
 
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, context.TODO(), "poster_name", "image/jpeg", request.PosterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, context.TODO(), "content_name", "application/pdf", request.BookContent).Return(nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "poster_name").Return("", fmt.Errorf("some error"))
+	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(nil)
+	s.storageClient.On(saveFileMethod, ctx, "content_name", "application/pdf", request.BookContent).Return(nil)
+	s.storageClient.On(generatePreSignedUrlMethod, ctx, "poster_name").Return("", fmt.Errorf("some error"))
 
-	_, err := s.catalog.CreateBook(context.TODO(), request)
+	_, err := s.catalog.CreateBook(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
@@ -349,23 +379,24 @@ func (s *CatalogTestSuite) TestCreateBook_WhenRepositoryFails() {
 	}
 
 	book := request.Book("some-id")
+	ctx := context.WithValue(context.Background(), "admin", true)
 
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, context.TODO(), "poster_name", "image/jpeg", request.PosterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, context.TODO(), "content_name", "application/pdf", request.BookContent).Return(nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "poster_name").Return("some-link", nil)
+	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(nil)
+	s.storageClient.On(saveFileMethod, ctx, "content_name", "application/pdf", request.BookContent).Return(nil)
+	s.storageClient.On(generatePreSignedUrlMethod, ctx, "poster_name").Return("some-link", nil)
 
 	newBook := book
 	newBook.PosterImageBucketKey = "poster_name"
 	newBook.ContentBucketKey = "content_name"
 	newBook.PosterImageLink = "some-link"
 
-	s.repo.On(createBookMethod, context.TODO(), &newBook).Return(fmt.Errorf("some error"))
+	s.repo.On(createBookMethod, ctx, &newBook).Return(fmt.Errorf("some error"))
 
-	_, err := s.catalog.CreateBook(context.TODO(), request)
+	_, err := s.catalog.CreateBook(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
@@ -389,24 +420,25 @@ func (s *CatalogTestSuite) TestCreateBook_Successfully() {
 	}
 
 	book := request.Book("some-id")
+	ctx := context.WithValue(context.Background(), "admin", true)
 
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
 	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, context.TODO(), "poster_name", "image/jpeg", request.PosterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, context.TODO(), "content_name", "application/pdf", request.BookContent).Return(nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "poster_name").Return("some-link", nil)
+	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(nil)
+	s.storageClient.On(saveFileMethod, ctx, "content_name", "application/pdf", request.BookContent).Return(nil)
+	s.storageClient.On(generatePreSignedUrlMethod, ctx, "poster_name").Return("some-link", nil)
 
 	newBook := book
 	newBook.PosterImageBucketKey = "poster_name"
 	newBook.ContentBucketKey = "content_name"
 	newBook.PosterImageLink = "some-link"
 
-	s.repo.On(createBookMethod, context.TODO(), &newBook).Return(nil)
+	s.repo.On(createBookMethod, ctx, &newBook).Return(nil)
 
 	expected := catalog.NewBookResponse(newBook)
-	actual, err := s.catalog.CreateBook(context.TODO(), request)
+	actual, err := s.catalog.CreateBook(ctx, request)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
@@ -419,6 +451,22 @@ func (s *CatalogTestSuite) TestCreateBook_Successfully() {
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 1)
 }
 
+func (s *CatalogTestSuite) TestUpdateBook_WithNonAdminUser() {
+	newTitle := "new title"
+	request := catalog.UpdateBook{
+		ID:    "some-id",
+		Title: &newTitle,
+	}
+
+	ctx := context.Background()
+	err := s.catalog.UpdateBook(ctx, request)
+
+	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, err)
+
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 0)
+	s.repo.AssertNotCalled(s.T(), findByIdMethod, ctx, request.ID)
+}
+
 func (s *CatalogTestSuite) TestUpdateBook_ValidationFails() {
 	newTitle := "new title"
 	request := catalog.UpdateBook{
@@ -427,12 +475,13 @@ func (s *CatalogTestSuite) TestUpdateBook_ValidationFails() {
 	}
 	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
 
-	err := s.catalog.UpdateBook(context.TODO(), request)
+	ctx := context.WithValue(context.Background(), "admin", true)
+	err := s.catalog.UpdateBook(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.repo.AssertNotCalled(s.T(), findByIdMethod, context.TODO(), request.ID)
+	s.repo.AssertNotCalled(s.T(), findByIdMethod, ctx, request.ID)
 }
 
 func (s *CatalogTestSuite) TestUpdateBook_WhenBookIsNotFound() {
@@ -442,15 +491,17 @@ func (s *CatalogTestSuite) TestUpdateBook_WhenBookIsNotFound() {
 		Title: &newTitle,
 	}
 
-	s.validator.On(validateMethod, request).Return(nil)
-	s.repo.On(findByIdMethod, context.TODO(), request.ID).Return(catalog.Book{}, fmt.Errorf("some error"))
+	ctx := context.WithValue(context.Background(), "admin", true)
 
-	err := s.catalog.UpdateBook(context.TODO(), request)
+	s.validator.On(validateMethod, request).Return(nil)
+	s.repo.On(findByIdMethod, ctx, request.ID).Return(catalog.Book{}, fmt.Errorf("some error"))
+
+	err := s.catalog.UpdateBook(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), request.ID)
+	s.repo.AssertCalled(s.T(), findByIdMethod, ctx, request.ID)
 }
 
 func (s *CatalogTestSuite) TestUpdateBook_WhenUpdateFails() {
@@ -464,19 +515,21 @@ func (s *CatalogTestSuite) TestUpdateBook_WhenUpdateFails() {
 		Title: "old-title",
 	}
 
+	ctx := context.WithValue(context.Background(), "admin", true)
+
 	s.validator.On(validateMethod, request).Return(nil)
-	s.repo.On(findByIdMethod, context.TODO(), request.ID).Return(book, nil)
+	s.repo.On(findByIdMethod, ctx, request.ID).Return(book, nil)
 
 	updated := request.Update(book)
-	s.repo.On(updateBookMethod, context.TODO(), &updated).Return(fmt.Errorf("some error"))
+	s.repo.On(updateBookMethod, ctx, &updated).Return(fmt.Errorf("some error"))
 
-	err := s.catalog.UpdateBook(context.TODO(), request)
+	err := s.catalog.UpdateBook(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), request.ID)
-	s.repo.AssertCalled(s.T(), updateBookMethod, context.TODO(), &updated)
+	s.repo.AssertCalled(s.T(), findByIdMethod, ctx, request.ID)
+	s.repo.AssertCalled(s.T(), updateBookMethod, ctx, &updated)
 }
 
 func (s *CatalogTestSuite) TestUpdateBook_Successfully() {
@@ -490,38 +543,53 @@ func (s *CatalogTestSuite) TestUpdateBook_Successfully() {
 		Title: "old-title",
 	}
 
+	ctx := context.WithValue(context.Background(), "admin", true)
+
 	s.validator.On(validateMethod, request).Return(nil)
-	s.repo.On(findByIdMethod, context.TODO(), request.ID).Return(book, nil)
+	s.repo.On(findByIdMethod, ctx, request.ID).Return(book, nil)
 
 	updated := request.Update(book)
-	s.repo.On(updateBookMethod, context.TODO(), &updated).Return(nil)
+	s.repo.On(updateBookMethod, ctx, &updated).Return(nil)
 
-	err := s.catalog.UpdateBook(context.TODO(), request)
+	err := s.catalog.UpdateBook(ctx, request)
 
 	assert.Nil(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), request.ID)
-	s.repo.AssertCalled(s.T(), updateBookMethod, context.TODO(), &updated)
+	s.repo.AssertCalled(s.T(), findByIdMethod, ctx, request.ID)
+	s.repo.AssertCalled(s.T(), updateBookMethod, ctx, &updated)
+}
+
+func (s *CatalogTestSuite) TestDeleteBook_WithNonAdminUser() {
+	id := "some-id"
+
+	ctx := context.Background()
+	err := s.catalog.DeleteBook(ctx, id)
+
+	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, err)
+
+	s.repo.AssertNotCalled(s.T(), deleteBookMethod, ctx, id)
 }
 
 func (s *CatalogTestSuite) TestDeleteBook_WhenRepositoryFails() {
 	id := "some-id"
-	s.repo.On(deleteBookMethod, context.TODO(), id).Return(fmt.Errorf("some error"))
+	ctx := context.WithValue(context.Background(), "admin", true)
+	s.repo.On(deleteBookMethod, ctx, id).Return(fmt.Errorf("some error"))
 
-	err := s.catalog.DeleteBook(context.TODO(), id)
+	err := s.catalog.DeleteBook(ctx, id)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
-	s.repo.AssertCalled(s.T(), deleteBookMethod, context.TODO(), id)
+	s.repo.AssertCalled(s.T(), deleteBookMethod, ctx, id)
 }
 
 func (s *CatalogTestSuite) TestDeleteBook_Successfully() {
 	id := "some-id"
-	s.repo.On(deleteBookMethod, context.TODO(), id).Return(nil)
+	ctx := context.WithValue(context.Background(), "admin", true)
+	s.repo.On(deleteBookMethod, ctx, id).Return(nil)
 
-	err := s.catalog.DeleteBook(context.TODO(), id)
+	err := s.catalog.DeleteBook(ctx, id)
 	assert.Nil(s.T(), err)
 
-	s.repo.AssertCalled(s.T(), deleteBookMethod, context.TODO(), id)
+	s.repo.AssertCalled(s.T(), deleteBookMethod, ctx, id)
 }

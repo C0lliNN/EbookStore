@@ -7,7 +7,7 @@ require (
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/casbin/casbin v1.9.1
 	github.com/gin-gonic/gin v1.7.4
-	github.com/go-playground/validator/v10 v10.11.0 // indirect
+	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-migrate/migrate/v4 v4.14.1
 	github.com/google/uuid v1.3.0

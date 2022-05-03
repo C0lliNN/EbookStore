@@ -30,17 +30,12 @@ type Validator interface {
 	Validate(i interface{}) error
 }
 
-type Authorizer interface {
-	Authorize(ctx context.Context, object interface{}, action string) error
-}
-
 type Config struct {
 	Repository     Repository
 	PaymentClient  PaymentClient
 	CatalogService CatalogService
 	IDGenerator    IDGenerator
 	Validator      Validator
-	Authorizer     Authorizer
 }
 
 type Shop struct {
@@ -53,6 +48,11 @@ func New(c Config) *Shop {
 
 func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedOrdersResponse, error) {
 	query := request.OrderQuery()
+	if !isAdmin(ctx) {
+		// Non-admin users should only see their orders
+		query.UserID = userId(ctx)
+	}
+
 	paginatedOrders, err := s.Repository.FindByQuery(ctx, query)
 	if err != nil {
 		return PaginatedOrdersResponse{}, err
@@ -67,6 +67,10 @@ func (s *Shop) FindOrderByID(ctx context.Context, id string) (OrderResponse, err
 		return OrderResponse{}, err
 	}
 
+	if !s.isUserAllowedToReadOrder(ctx, order) {
+		return OrderResponse{}, ErrForbiddenOrderAccess
+	}
+
 	return NewOrderResponse(order), nil
 }
 
@@ -75,7 +79,7 @@ func (s *Shop) CreateOrder(ctx context.Context, request CreateOrder) (OrderRespo
 		return OrderResponse{}, err
 	}
 
-	order := request.Order(s.IDGenerator.NewID(), "userId")
+	order := request.Order(s.IDGenerator.NewID(), userId(ctx))
 	book, err := s.CatalogService.FindBookByID(ctx, order.BookID)
 	if err != nil {
 		return OrderResponse{}, err
@@ -113,5 +117,27 @@ func (s *Shop) GetOrderDeliverableContent(ctx context.Context, orderID string) (
 		return nil, ErrOrderNotPaid
 	}
 
+	if !s.isUserAllowedToReadOrder(ctx, order) {
+		return nil, ErrForbiddenOrderAccess
+	}
+
 	return s.CatalogService.GetBookContent(ctx, order.BookID)
+}
+
+func (s *Shop) isUserAllowedToReadOrder(ctx context.Context, order Order) bool {
+	return isAdmin(ctx) || order.UserID == userId(ctx)
+}
+
+func isAdmin(ctx context.Context) bool {
+	admin, ok := ctx.Value("admin").(bool)
+	if !ok {
+		return false
+	}
+
+	return admin
+}
+
+func userId(ctx context.Context) string {
+	id, _ := ctx.Value("userId").(string)
+	return id
 }

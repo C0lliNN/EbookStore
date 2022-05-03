@@ -55,7 +55,7 @@ func TestShop(t *testing.T) {
 	suite.Run(t, new(ShopTestSuite))
 }
 
-func (s *ShopTestSuite) TestFindOrders_Successfully() {
+func (s *ShopTestSuite) TestFindOrders_Admin_Successfully() {
 	request := shop.SearchOrders{}
 	query := request.OrderQuery()
 
@@ -63,14 +63,37 @@ func (s *ShopTestSuite) TestFindOrders_Successfully() {
 		Orders: []shop.Order{{ID: "some-id"}},
 		Limit:  10,
 	}
-	s.repo.On(findOrdersByQueryMethod, context.TODO(), query).Return(paginatedOrders, nil)
+	ctx := context.WithValue(context.Background(), "admin", true)
+	s.repo.On(findOrdersByQueryMethod, ctx, query).Return(paginatedOrders, nil)
 
 	expected := shop.NewPaginatedOrdersResponse(paginatedOrders)
-	actual, err := s.shop.FindOrders(context.TODO(), request)
+	actual, err := s.shop.FindOrders(ctx, request)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
-	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, context.TODO(), query)
+	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, ctx, query)
+}
+
+func (s *ShopTestSuite) TestFindOrders_NonAdmin_Successfully() {
+	request := shop.SearchOrders{}
+
+	paginatedOrders := shop.PaginatedOrders{
+		Orders: []shop.Order{{ID: "some-id"}},
+		Limit:  10,
+	}
+
+	query := request.OrderQuery()
+	query.UserID = "some-user-id"
+
+	ctx := context.WithValue(context.Background(), "userId", "some-user-id")
+	s.repo.On(findOrdersByQueryMethod, ctx, query).Return(paginatedOrders, nil)
+
+	expected := shop.NewPaginatedOrdersResponse(paginatedOrders)
+	actual, err := s.shop.FindOrders(ctx, request)
+
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), expected, actual)
+	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, ctx, query)
 }
 
 func (s *ShopTestSuite) TestFindOrders_WithError() {
@@ -85,19 +108,52 @@ func (s *ShopTestSuite) TestFindOrders_WithError() {
 	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, context.TODO(), query)
 }
 
-func (s *ShopTestSuite) TestFindOrderByID_Successfully() {
+func (s *ShopTestSuite) TestFindOrderByID_Admin_Successfully() {
 	order := shop.Order{
 		ID:    "order-rid",
 		Total: 4000,
 	}
-	s.repo.On(findOrderByIDMethod, context.TODO(), order.ID).Return(order, nil)
+	ctx := context.WithValue(context.Background(), "admin", true)
+	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
 
 	expected := shop.NewOrderResponse(order)
-	actual, err := s.shop.FindOrderByID(context.TODO(), order.ID)
+	actual, err := s.shop.FindOrderByID(ctx, order.ID)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
-	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), order.ID)
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, ctx, order.ID)
+}
+
+func (s *ShopTestSuite) TestFindOrderByID_NonAdmin_Successfully() {
+	order := shop.Order{
+		ID:     "order-rid",
+		UserID: "current-user-id",
+		Total:  4000,
+	}
+	ctx := context.WithValue(context.Background(), "userId", "current-user-id")
+	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
+
+	expected := shop.NewOrderResponse(order)
+	actual, err := s.shop.FindOrderByID(ctx, order.ID)
+
+	assert.Nil(s.T(), err)
+	assert.Equal(s.T(), expected, actual)
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, ctx, order.ID)
+}
+
+func (s *ShopTestSuite) TestFindOrderByID_NonAdmin_Unauthorized() {
+	order := shop.Order{
+		ID:     "order-rid",
+		UserID: "current-user-id",
+		Total:  4000,
+	}
+	ctx := context.WithValue(context.Background(), "userId", "another-user-id")
+	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
+
+	_, err := s.shop.FindOrderByID(ctx, order.ID)
+
+	assert.Equal(s.T(), shop.ErrForbiddenOrderAccess, err)
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, ctx, order.ID)
 }
 
 func (s *ShopTestSuite) TestFindOrderByID_WithError() {
@@ -136,22 +192,24 @@ func (s *ShopTestSuite) TestCreateOrder_WhenCatalogServiceFails() {
 		BookID: "some-id",
 	}
 	orderId := "orderId"
-	userId := "userId"
+	userId := "some-user-id"
 	order := request.Order(orderId, userId)
+
+	ctx := context.WithValue(context.Background(), "userId", userId)
 
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return(orderId)
-	s.catalogService.On(findBookByIDMethod, context.TODO(), order.BookID).Return(catalog.BookResponse{}, fmt.Errorf("some error"))
+	s.catalogService.On(findBookByIDMethod, ctx, order.BookID).Return(catalog.BookResponse{}, fmt.Errorf("some error"))
 
-	_, err := s.shop.CreateOrder(context.TODO(), request)
+	_, err := s.shop.CreateOrder(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
 	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
-	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, context.TODO(), order.BookID)
-	s.paymentClient.AssertNotCalled(s.T(), createPaymentIntentMethod, context.TODO(), &order)
-	s.repo.AssertNotCalled(s.T(), createOrderMethod, context.TODO(), &order)
+	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, ctx, order.BookID)
+	s.paymentClient.AssertNotCalled(s.T(), createPaymentIntentMethod, ctx, &order)
+	s.repo.AssertNotCalled(s.T(), createOrderMethod, ctx, &order)
 }
 
 func (s *ShopTestSuite) TestCreateOrder_WhenPaymentClientFails() {
@@ -163,23 +221,25 @@ func (s *ShopTestSuite) TestCreateOrder_WhenPaymentClientFails() {
 	order := request.Order(orderId, userId)
 	book := catalog.BookResponse{ID: "some-id", Price: 2000}
 
+	ctx := context.WithValue(context.Background(), "userId", userId)
+
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return(orderId)
-	s.catalogService.On(findBookByIDMethod, context.TODO(), book.ID).Return(book, nil)
+	s.catalogService.On(findBookByIDMethod, ctx, book.ID).Return(book, nil)
 
 	updatedOrder := order
 	updatedOrder.Total = int64(book.Price)
-	s.paymentClient.On(createPaymentIntentMethod, context.TODO(), &updatedOrder).Return(fmt.Errorf("some error"))
+	s.paymentClient.On(createPaymentIntentMethod, ctx, &updatedOrder).Return(fmt.Errorf("some error"))
 
-	_, err := s.shop.CreateOrder(context.TODO(), request)
+	_, err := s.shop.CreateOrder(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
 	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
-	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, context.TODO(), &updatedOrder)
-	s.catalogService.AssertNotCalled(s.T(), findBookByIDMethod, context.TODO(), order.ID)
-	s.repo.AssertNotCalled(s.T(), createOrderMethod, context.TODO(), &order)
+	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, ctx, &updatedOrder)
+	s.catalogService.AssertNotCalled(s.T(), findBookByIDMethod, ctx, order.ID)
+	s.repo.AssertNotCalled(s.T(), createOrderMethod, ctx, &order)
 }
 
 func (s *ShopTestSuite) TestCreateOrder_WhenRepositoryFails() {
@@ -187,28 +247,30 @@ func (s *ShopTestSuite) TestCreateOrder_WhenRepositoryFails() {
 		BookID: "some-id",
 	}
 	orderId := "orderId"
-	userId := "userId"
+	userId := "some-user-id"
 	order := request.Order(orderId, userId)
 	book := catalog.BookResponse{ID: "some-id", Price: 2000}
 
+	ctx := context.WithValue(context.Background(), "userId", userId)
+
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return(orderId)
-	s.catalogService.On(findBookByIDMethod, context.TODO(), book.ID).Return(book, nil)
+	s.catalogService.On(findBookByIDMethod, ctx, book.ID).Return(book, nil)
 
 	updatedOrder := order
 	updatedOrder.Total = int64(book.Price)
-	s.paymentClient.On(createPaymentIntentMethod, context.TODO(), &updatedOrder).Return(nil)
-	s.repo.On(createOrderMethod, context.TODO(), &updatedOrder).Return(fmt.Errorf("some error"))
+	s.paymentClient.On(createPaymentIntentMethod, ctx, &updatedOrder).Return(nil)
+	s.repo.On(createOrderMethod, ctx, &updatedOrder).Return(fmt.Errorf("some error"))
 
-	_, err := s.shop.CreateOrder(context.TODO(), request)
+	_, err := s.shop.CreateOrder(ctx, request)
 
 	assert.Equal(s.T(), fmt.Errorf("some error"), err)
 
 	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
-	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, context.TODO(), &updatedOrder)
-	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, context.TODO(), order.BookID)
-	s.repo.AssertCalled(s.T(), createOrderMethod, context.TODO(), &updatedOrder)
+	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, ctx, &updatedOrder)
+	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, ctx, order.BookID)
+	s.repo.AssertCalled(s.T(), createOrderMethod, ctx, &updatedOrder)
 }
 
 func (s *ShopTestSuite) TestCreateOrder_Successfully() {
@@ -216,30 +278,32 @@ func (s *ShopTestSuite) TestCreateOrder_Successfully() {
 		BookID: "some-id",
 	}
 	orderId := "orderId"
-	userId := "userId"
+	userId := "some-user-id"
 	order := request.Order(orderId, userId)
 	book := catalog.BookResponse{ID: "some-id", Price: 4000}
 
+	ctx := context.WithValue(context.Background(), "userId", userId)
+
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return(orderId)
-	s.catalogService.On(findBookByIDMethod, context.TODO(), order.BookID).Return(book, nil)
+	s.catalogService.On(findBookByIDMethod, ctx, order.BookID).Return(book, nil)
 
 	updatedOrder := order
 	updatedOrder.Total = int64(book.Price)
-	s.paymentClient.On(createPaymentIntentMethod, context.TODO(), &updatedOrder).Return(nil)
-	s.repo.On(createOrderMethod, context.TODO(), &updatedOrder).Return(nil)
+	s.paymentClient.On(createPaymentIntentMethod, ctx, &updatedOrder).Return(nil)
+	s.repo.On(createOrderMethod, ctx, &updatedOrder).Return(nil)
 
 	expected := shop.NewOrderResponse(updatedOrder)
-	actual, err := s.shop.CreateOrder(context.TODO(), request)
+	actual, err := s.shop.CreateOrder(ctx, request)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
 
 	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
-	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, context.TODO(), &updatedOrder)
-	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, context.TODO(), order.BookID)
-	s.repo.AssertCalled(s.T(), createOrderMethod, context.TODO(), &updatedOrder)
+	s.paymentClient.AssertCalled(s.T(), createPaymentIntentMethod, ctx, &updatedOrder)
+	s.catalogService.AssertCalled(s.T(), findBookByIDMethod, ctx, order.BookID)
+	s.repo.AssertCalled(s.T(), createOrderMethod, ctx, &updatedOrder)
 }
 
 func (s *ShopTestSuite) TestCompleteOrder_WhenOrderCouldNotBeFound() {
@@ -333,20 +397,69 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_WithError() {
 	s.catalogService.AssertCalled(s.T(), getBookContent, context.TODO(), order.BookID)
 }
 
-func (s *ShopTestSuite) TestGetOrderDeliverableContent_Successfully() {
+func (s *ShopTestSuite) TestGetOrderDeliverableContent_NonAdmin_Forbidden() {
 	order := shop.Order{
 		ID:     "some-id",
 		BookID: "some-book-id",
+		UserID: "some-user-id",
 		Status: shop.Paid,
 	}
-	s.repo.On(findOrderByIDMethod, context.TODO(), order.ID).Return(order, nil)
-	s.catalogService.On(getBookContent, context.TODO(), order.BookID).Return(io.NopCloser(strings.NewReader("test")), nil)
 
-	actual, err := s.shop.GetOrderDeliverableContent(context.TODO(), order.ID)
+	ctx := context.WithValue(context.Background(), "admin", false)
+	ctx = context.WithValue(ctx, "userId", "some-user-id2")
+
+	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
+	s.catalogService.On(getBookContent, ctx, order.BookID).Return(io.NopCloser(strings.NewReader("test")), nil)
+
+	_, err := s.shop.GetOrderDeliverableContent(ctx, order.ID)
+
+	assert.Equal(s.T(), shop.ErrForbiddenOrderAccess, err)
+
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, ctx, order.ID)
+	s.catalogService.AssertNotCalled(s.T(), getBookContent, ctx, order.BookID)
+}
+
+func (s *ShopTestSuite) TestGetOrderDeliverableContent_NonAdmin_Successfully() {
+	order := shop.Order{
+		ID:     "some-id",
+		BookID: "some-book-id",
+		UserID: "some-user-id",
+		Status: shop.Paid,
+	}
+
+	ctx := context.WithValue(context.Background(), "admin", false)
+	ctx = context.WithValue(ctx, "userId", "some-user-id")
+
+	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
+	s.catalogService.On(getBookContent, ctx, order.BookID).Return(io.NopCloser(strings.NewReader("test")), nil)
+
+	actual, err := s.shop.GetOrderDeliverableContent(ctx, order.ID)
 
 	assert.NotNil(s.T(), actual)
 	assert.Nil(s.T(), err)
 
-	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), order.ID)
-	s.catalogService.AssertCalled(s.T(), getBookContent, context.TODO(), order.BookID)
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, ctx, order.ID)
+	s.catalogService.AssertCalled(s.T(), getBookContent, ctx, order.BookID)
+}
+
+func (s *ShopTestSuite) TestGetOrderDeliverableContent_Admin_Successfully() {
+	order := shop.Order{
+		ID:     "some-id",
+		BookID: "some-book-id",
+		UserID: "some-user-id",
+		Status: shop.Paid,
+	}
+
+	ctx := context.WithValue(context.Background(), "admin", true)
+
+	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
+	s.catalogService.On(getBookContent, ctx, order.BookID).Return(io.NopCloser(strings.NewReader("test")), nil)
+
+	actual, err := s.shop.GetOrderDeliverableContent(ctx, order.ID)
+
+	assert.NotNil(s.T(), actual)
+	assert.Nil(s.T(), err)
+
+	s.repo.AssertCalled(s.T(), findOrderByIDMethod, ctx, order.ID)
+	s.catalogService.AssertCalled(s.T(), getBookContent, ctx, order.BookID)
 }

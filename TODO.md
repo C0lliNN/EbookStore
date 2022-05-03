@@ -10,20 +10,21 @@
 * [x] Flat catalog folder
 * [x] Flat shop folder
 * [x] Add validation to usecase layer
-* [ ] Add Authorization to validation layer (and add userId to shop layer)
-* [ ] Rename from 'FromBook' to 'NewBook'
-* [ ] Maybe Create a Route Wrapper
+* [x] Add Authorization to usecase layer (and add userId to shop layer)
+* [ ] Double check requests/responses function names looking for inconsistencies
+* [ ] Create a Route Wrapper
+* [ ] Make the code compile again / Refactor Wire
 * [ ] Review tests
-* [ ] Reduce numer of multi-argument functions
-* [ ] Review pointer/concrete types in struct and as recievers
-* [ ] Add Request/Response model to usecase layer
-* [ ] Refactor wire
+* [ ] Add Logging, Observability
+* [ ] Review Swagger Documentation
+* [ ] Review errors (Update Server Error Mapping)
+* [ ] Reduce number of multi-argument functions
+* [ ] Review pointer/concrete types in struct and as receivers (tests included)
 * [ ] Find a way to separate unit and integration tests while keeping good autocompletion
-* [ ] Update Logging strategy
-* [ ] Review errors 
 * [ ] Create Good Seed Data
+* [ ] Document Public API (Maybe autogenerate documentation)
 * [ ] Get rid of test folder
-* [ ] Document PUblic things
+* [ ] Add oauth server
 * [ ] Create make run command and update README.md
 
 # Nice to Haves
