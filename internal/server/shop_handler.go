@@ -19,23 +19,23 @@ type Shop interface {
 }
 
 type ShopHandler struct {
-	engine *gin.Engine
-	shop   Shop
+	shop Shop
 }
 
-func NewShopHandler(engine *gin.Engine, shop Shop) *ShopHandler {
+func NewShopHandler(shop Shop) *ShopHandler {
 	return &ShopHandler{
-		engine: engine,
-		shop:   shop,
+		shop: shop,
 	}
 }
 
-func (h *ShopHandler) Routes() {
-	h.engine.GET("/orders", h.getOrders)
-	h.engine.GET("/orders/:id", h.getOrder)
-	h.engine.GET("/orders/:id/download", h.downloadOrder)
-	h.engine.POST("/orders", h.createOrder)
-	h.engine.POST("/stripe/webhook", h.handleStripeWebhook)
+func (h *ShopHandler) Routes() []Route {
+	return []Route{
+		{Method: http.MethodGet, Path: "/orders", Handler: h.getOrders, Public: false},
+		{Method: http.MethodGet, Path: "/orders/:id", Handler: h.getOrder, Public: false},
+		{Method: http.MethodGet, Path: "/orders/:id/download", Handler: h.downloadOrder, Public: false},
+		{Method: http.MethodPost, Path: "/orders", Handler: h.createOrder, Public: false},
+		{Method: http.MethodPost, Path: "/stripe/webhook", Handler: h.handleStripeWebhook, Public: true},
+	}
 }
 
 // getOrders godoc

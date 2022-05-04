@@ -12,7 +12,9 @@
 * [x] Add validation to usecase layer
 * [x] Add Authorization to usecase layer (and add userId to shop layer)
 * [x] Double check requests/responses function names looking for inconsistencies
-* [ ] Create a Route Wrapper
+* [x] Create a Route Wrapper
+* [ ] Create Errors Middleware
+* [ ] Create Swagger Middleware
 * [ ] Make the code compile again / Refactor Wire
 * [ ] Review tests
 * [ ] Add Logging, Observability

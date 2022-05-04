@@ -14,22 +14,22 @@ type Authenticator interface {
 	ResetPassword(context.Context, auth.PasswordResetRequest) error
 }
 
-type AuthenticatorHandler struct {
-	engine        *gin.Engine
+type AuthenticationHandler struct {
 	authenticator Authenticator
 }
 
-func NewAuthenticatorHandler(engine *gin.Engine, authenticator Authenticator) *AuthenticatorHandler {
-	return &AuthenticatorHandler{
-		engine:        engine,
+func NewAuthenticatorHandler(authenticator Authenticator) *AuthenticationHandler {
+	return &AuthenticationHandler{
 		authenticator: authenticator,
 	}
 }
 
-func (h *AuthenticatorHandler) RegisterRoutes() {
-	h.engine.POST("/register", h.register)
-	h.engine.POST("/login", h.login)
-	h.engine.POST("/password-reset", h.resetPassword)
+func (h *AuthenticationHandler) Routes() []Route {
+	return []Route{
+		{Method: http.MethodPost, Path: "/register", Handler: h.register, Public: true},
+		{Method: http.MethodPost, Path: "/login", Handler: h.login, Public: true},
+		{Method: http.MethodPatch, Path: "/password-reset", Handler: h.resetPassword, Public: true},
+	}
 }
 
 // register godoc
@@ -43,7 +43,7 @@ func (h *AuthenticatorHandler) RegisterRoutes() {
 // @Failure 401 {object} api.Error
 // @Failure 500 {object} api.Error
 // @Router /register [post]
-func (h *AuthenticatorHandler) register(c *gin.Context) {
+func (h *AuthenticationHandler) register(c *gin.Context) {
 	var request auth.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.Error(&common.ErrNotValid{Input: "RegisterRequest", Err: err})
@@ -70,7 +70,7 @@ func (h *AuthenticatorHandler) register(c *gin.Context) {
 // @Failure 401 {object} api.Error
 // @Failure 500 {object} api.Error
 // @Router /login [post]
-func (h *AuthenticatorHandler) login(c *gin.Context) {
+func (h *AuthenticationHandler) login(c *gin.Context) {
 	var request auth.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.Error(&common.ErrNotValid{Input: "LoginRequest", Err: err})
@@ -96,7 +96,7 @@ func (h *AuthenticatorHandler) login(c *gin.Context) {
 // @Failure 400 {object} api.Error
 // @Failure 500 {object} api.Error
 // @Router /password-reset [post]
-func (h *AuthenticatorHandler) resetPassword(c *gin.Context) {
+func (h *AuthenticationHandler) resetPassword(c *gin.Context) {
 	var request auth.PasswordResetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.Error(&common.ErrNotValid{Input: "PasswordResetRequest", Err: err})

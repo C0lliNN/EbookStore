@@ -17,25 +17,23 @@ type Catalog interface {
 }
 
 type CatalogHandler struct {
-	engine  *gin.Engine
 	catalog Catalog
 }
 
-func NewCatalogHandler(engine *gin.Engine, catalog Catalog) *CatalogHandler {
+func NewCatalogHandler(catalog Catalog) *CatalogHandler {
 	return &CatalogHandler{
-		engine:  engine,
 		catalog: catalog,
 	}
 }
 
-func (h *CatalogHandler) Routes() {
-	h.engine.GET("/books", h.getBooks)
-	h.engine.GET("/books/:id", h.getBook)
-
-	// Admin Routes
-	h.engine.POST("/books", h.createBook)
-	h.engine.PATCH("/books/:id", h.updateBook)
-	h.engine.DELETE("/books/:id", h.deleteBook)
+func (h *CatalogHandler) Routes() []Route {
+	return []Route{
+		{Method: http.MethodGet, Path: "/books", Handler: h.getBooks, Public: true},
+		{Method: http.MethodGet, Path: "/books/:id", Handler: h.getBook, Public: true},
+		{Method: http.MethodPost, Path: "/books", Handler: h.createBook, Public: false},
+		{Method: http.MethodPatch, Path: "/books/:id", Handler: h.createBook, Public: false},
+		{Method: http.MethodDelete, Path: "/books/:id", Handler: h.deleteBook, Public: false},
+	}
 }
 
 // getBooks godoc

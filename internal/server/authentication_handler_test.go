@@ -32,7 +32,7 @@ type AuthenticatorHandlerTestSuite struct {
 	context  *gin.Context
 	recorder *httptest.ResponseRecorder
 	db       *gorm.DB
-	handler  *AuthenticatorHandler
+	handler  *AuthenticationHandler
 }
 
 func (s *AuthenticatorHandlerTestSuite) SetupTest() {
