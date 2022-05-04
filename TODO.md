@@ -13,9 +13,11 @@
 * [x] Add Authorization to usecase layer (and add userId to shop layer)
 * [x] Double check requests/responses function names looking for inconsistencies
 * [x] Create a Route Wrapper
-* [ ] Create Errors Middleware
+* [x] Create Errors Middleware
+* [ ] Refactor Errors Middleware and Test it
 * [ ] Create Swagger Middleware
 * [ ] Make the code compile again / Refactor Wire
+* [ ] Remove admin middleware
 * [ ] Review tests
 * [ ] Add Logging, Observability
 * [ ] Review Swagger Documentation

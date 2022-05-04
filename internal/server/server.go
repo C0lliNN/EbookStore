@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Router                   *gin.Engine
 	AuthenticationMiddleware AuthenticationMiddleware
+	ErrorMiddleware          ErrorMiddleware
 	AuthenticationHandler    AuthenticationHandler
 	CatalogHandler           CatalogHandler
 	ShopHandler              ShopHandler
@@ -28,7 +29,7 @@ func (s *Server) Start() error {
 	router := s.Router
 
 	router.Use(gin.Recovery())
-	// Errors
+	router.Use(s.ErrorMiddleware.Handler())
 	// Swag Handler
 
 	routes := s.AuthenticationHandler.Routes()
