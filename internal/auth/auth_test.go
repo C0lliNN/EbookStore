@@ -190,7 +190,7 @@ func (s *AuthenticatorTestSuite) TestRegister_Successfully() {
 	response, err := s.authenticator.Register(context.TODO(), request)
 
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), auth.FromCredentials(auth.Credentials{Token: "token"}), response)
+	assert.Equal(s.T(), auth.NewCredentialsResponse(auth.Credentials{Token: "token"}), response)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
@@ -271,7 +271,7 @@ func (s *AuthenticatorTestSuite) TestLogin_Successfully() {
 	response, err := s.authenticator.Login(context.TODO(), request)
 
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), auth.FromCredentials(auth.Credentials{Token: "token"}), response)
+	assert.Equal(s.T(), auth.NewCredentialsResponse(auth.Credentials{Token: "token"}), response)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)

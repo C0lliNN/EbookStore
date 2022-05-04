@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestRegisterRequest_ToDomain(t *testing.T) {
+func TestRegisterRequest_User(t *testing.T) {
 	id := faker.UUIDHyphenated()
 	firstName := faker.FirstName()
 	lastName := faker.LastName()

@@ -11,7 +11,7 @@
 * [x] Flat shop folder
 * [x] Add validation to usecase layer
 * [x] Add Authorization to usecase layer (and add userId to shop layer)
-* [ ] Double check requests/responses function names looking for inconsistencies
+* [x] Double check requests/responses function names looking for inconsistencies
 * [ ] Create a Route Wrapper
 * [ ] Make the code compile again / Refactor Wire
 * [ ] Review tests

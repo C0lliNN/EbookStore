@@ -1,10 +1,9 @@
 package auth
 
-
 type CredentialsResponse struct {
-	Token string `json:"Tokener"`
+	Token string `json:"token"`
 }
 
-func FromCredentials(credentials Credentials) CredentialsResponse {
+func NewCredentialsResponse(credentials Credentials) CredentialsResponse {
 	return CredentialsResponse{Token: credentials.Token}
 }

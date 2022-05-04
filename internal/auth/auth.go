@@ -98,7 +98,7 @@ func (a *Authenticator) generateCredentialsForUser(user User) (CredentialsRespon
 		return CredentialsResponse{}, err
 	}
 
-	return FromCredentials(Credentials{Token: token}), nil
+	return NewCredentialsResponse(Credentials{Token: token}), nil
 }
 
 func (a *Authenticator) ResetPassword(ctx context.Context, request PasswordResetRequest) error {

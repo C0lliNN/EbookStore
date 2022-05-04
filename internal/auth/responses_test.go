@@ -6,13 +6,13 @@ import (
 	"testing"
 )
 
-func TestFromCredentials(t *testing.T) {
+func TestNewCredentialsResponse(t *testing.T) {
 	token := faker.Jwt()
 
 	credentials := Credentials{Token: token}
 
 	expected := CredentialsResponse{Token: token}
-	actual := FromCredentials(credentials)
+	actual := NewCredentialsResponse(credentials)
 
 	assert.Equal(t, expected, actual)
 }
