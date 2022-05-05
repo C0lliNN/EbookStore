@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"context"
-	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/shop"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -49,7 +48,7 @@ func (h *ShopHandler) Routes() []Route {
 func (h *ShopHandler) getOrders(c *gin.Context) {
 	var request shop.SearchOrders
 	if err := c.ShouldBindQuery(&request); err != nil {
-		c.Error(&common.ErrNotValid{Input: "SearchOrders", Err: err})
+		c.Error(err)
 		return
 	}
 
@@ -94,7 +93,7 @@ func (h *ShopHandler) getOrder(c *gin.Context) {
 func (h *ShopHandler) createOrder(c *gin.Context) {
 	var request shop.CreateOrder
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(&common.ErrNotValid{Input: "CreateOrder", Err: err})
+		c.Error(err)
 		return
 	}
 

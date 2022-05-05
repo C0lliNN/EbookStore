@@ -3,7 +3,6 @@ package persistence
 import (
 	"context"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/c0llinn/ebook-store/internal/shop"
 	"gorm.io/gorm"
@@ -59,7 +58,7 @@ func (r OrderRepository) FindByID(ctx context.Context, id string) (order shop.Or
 	result := r.db.First(&order, "id = ?", id)
 	if err = result.Error; err != nil {
 		log.Default().Errorf("error when trying to find order with id %s: %v", id, err)
-		err = &common.ErrEntityNotFound{Entity: "Order", Err: err}
+		err = &ErrEntityNotFound{entity: "order"}
 	}
 
 	return

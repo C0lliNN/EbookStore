@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/catalog"
-	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/log"
 	"gorm.io/gorm"
 	"strings"
@@ -58,7 +57,7 @@ func (r BookRepository) FindByID(ctx context.Context, id string) (book catalog.B
 	result := r.db.First(&book, "id = ?", id)
 	if err = result.Error; err != nil {
 		log.Default().Errorf("error trying to find book by id %s: %v", id, err)
-		err = &common.ErrEntityNotFound{Entity: "Book", Err: err}
+		err = &ErrEntityNotFound{entity: "book"}
 	}
 
 	return
@@ -92,7 +91,7 @@ func (r BookRepository) Delete(ctx context.Context, id string) error {
 	}
 
 	if result.RowsAffected <= 0 {
-		return &common.ErrEntityNotFound{Entity: "Book", Err: fmt.Errorf("no rows affected")}
+		return &ErrEntityNotFound{entity: "book"}
 	}
 
 	return nil

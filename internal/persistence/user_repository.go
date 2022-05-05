@@ -3,7 +3,6 @@ package persistence
 import (
 	"context"
 	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/jackc/pgconn"
 	"gorm.io/gorm"
@@ -22,8 +21,8 @@ func (r UserRepository) Save(ctx context.Context, user *auth.User) error {
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to save user: %v", err)
 
-		if parsed, ok := err.(*pgconn.PgError); ok && parsed.Code == "23505" {
-			return &common.ErrDuplicateKey{Key: "email", Err: err}
+		if isConstraintViolationError(err) {
+			return &ErrDuplicateKey{key: "email"}
 		}
 
 		return err
@@ -37,7 +36,7 @@ func (r UserRepository) FindByEmail(ctx context.Context, email string) (user aut
 	if err = result.Error; err != nil {
 		log.Default().Errorf("error trying to find user by email %s: %v", email, err)
 
-		err = &common.ErrEntityNotFound{Entity: "User", Err: err}
+		err = &ErrEntityNotFound{entity: "User"}
 	}
 
 	return
@@ -51,4 +50,9 @@ func (r UserRepository) Update(ctx context.Context, user *auth.User) error {
 	}
 
 	return nil
+}
+
+func isConstraintViolationError(err error) bool {
+	parsed, ok := err.(*pgconn.PgError)
+	return ok && parsed.Code == "23505"
 }

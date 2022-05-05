@@ -2,9 +2,14 @@ package server
 
 import (
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/common"
+	"github.com/c0llinn/ebook-store/internal/auth"
+	"github.com/c0llinn/ebook-store/internal/catalog"
 	"github.com/c0llinn/ebook-store/internal/log"
+	"github.com/c0llinn/ebook-store/internal/persistence"
+	"github.com/c0llinn/ebook-store/internal/shop"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
+	"net/http"
 )
 
 type ErrorMiddleware struct{}
@@ -14,57 +19,9 @@ func NewErrorMiddleware() *ErrorMiddleware {
 }
 
 type ErrorResponse struct {
-	Code    int    `json:"-"`
-	Message string `json:"message"`
-	Details string `json:"details"`
-}
-
-func fromNotValid(err *common.ErrNotValid) *ErrorResponse {
-	return &ErrorResponse{
-		Code:    400,
-		Message: "The provided payload is not valid",
-		Details: err.Error(),
-	}
-}
-
-func fromDuplicateKey(err *common.ErrDuplicateKey) *ErrorResponse {
-	return &ErrorResponse{
-		Code:    409,
-		Message: fmt.Sprintf("this %s is already being used", err.Key),
-		Details: err.Error(),
-	}
-}
-
-func fromEntityNotFound(err *common.ErrEntityNotFound) *ErrorResponse {
-	return &ErrorResponse{
-		Code:    404,
-		Message: fmt.Sprintf("%s with the provided parameters could not be found", err.Entity),
-		Details: err.Error(),
-	}
-}
-
-func fromWrongPassword(err *common.ErrWrongPassword) *ErrorResponse {
-	return &ErrorResponse{
-		Code:    401,
-		Message: "the provided password is invalid",
-		Details: err.Error(),
-	}
-}
-
-func fromOrderNotPaid(err *common.ErrOrderNotPaid) *ErrorResponse {
-	return &ErrorResponse{
-		Code:    402,
-		Message: "you are allowed to download unpaid orders",
-		Details: err.Error(),
-	}
-}
-
-func fromGeneric(err error) *ErrorResponse {
-	return &ErrorResponse{
-		Code:    500,
-		Message: "Some unexpected error happened",
-		Details: err.Error(),
-	}
+	Code    int      `json:"-"`
+	Message string   `json:"message"`
+	Details []string `json:"details,omitempty"`
 }
 
 func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
@@ -74,25 +31,67 @@ func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
 		if len(context.Errors) <= 0 {
 			return
 		}
-		log.FromContext(context).Warn("error found: ", context.Errors.Last().Err)
+		log.FromContext(context).Warn("an error occurred when processing the request: ", context.Errors.Last().Err)
 
 		var response *ErrorResponse
 
-		switch err := context.Errors.Last().Err.(type) {
-		case *common.ErrNotValid:
-			response = fromNotValid(err)
-		case *common.ErrDuplicateKey:
-			response = fromDuplicateKey(err)
-		case *common.ErrEntityNotFound:
-			response = fromEntityNotFound(err)
-		case *common.ErrWrongPassword:
-			response = fromWrongPassword(err)
-		case *common.ErrOrderNotPaid:
-			response = fromOrderNotPaid(err)
+		err := context.Errors.Last().Err
+		switch err {
+		case auth.ErrWrongPassword:
+			response = newErrorResponse(http.StatusUnauthorized, err.Error())
+		case catalog.ErrForbiddenCatalogAccess, shop.ErrForbiddenOrderAccess:
+			response = newErrorResponse(http.StatusForbidden, err.Error())
+		case fmt.Errorf("invalid request"):
+			response = newErrorResponse(http.StatusBadRequest, "invalid request body. check the documentation")
+		case shop.ErrOrderNotPaid:
+			response = newErrorResponse(http.StatusPaymentRequired, err.Error())
+		}
+
+		if response != nil {
+			context.AbortWithStatusJSON(response.Code, response)
+			return
+		}
+
+		switch err := err.(type) {
+		case *validator.ValidationErrors:
+			response = newValidationErrorResponse(err)
+		case *persistence.ErrDuplicateKey:
+			response = newErrorResponse(http.StatusConflict, err.Error())
+		case *persistence.ErrEntityNotFound:
+			response = newErrorResponse(http.StatusNotFound, err.Error())
 		default:
-			response = fromGeneric(err)
+			response = newGenericErrorResponse(err)
 		}
 
 		context.AbortWithStatusJSON(response.Code, response)
+	}
+}
+
+func newErrorResponse(code int, message string) *ErrorResponse {
+	return &ErrorResponse{
+		Code:    code,
+		Message: message,
+	}
+}
+
+func newValidationErrorResponse(errors *validator.ValidationErrors) *ErrorResponse {
+	details := make([]string, 0, len(*errors))
+
+	for _, err := range *errors {
+		details = append(details, fmt.Sprintf("the validation of the field %s for tag %s failed", err.Field(), err.Tag()))
+	}
+
+	return &ErrorResponse{
+		Code:    http.StatusBadRequest,
+		Message: "the payload is not valid",
+		Details: details,
+	}
+}
+
+func newGenericErrorResponse(err error) *ErrorResponse {
+	return &ErrorResponse{
+		Code:    http.StatusInternalServerError,
+		Message: "Some unexpected error happened",
+		Details: []string{err.Error()},
 	}
 }

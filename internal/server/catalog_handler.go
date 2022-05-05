@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"github.com/c0llinn/ebook-store/internal/catalog"
-	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -47,7 +46,7 @@ func (h *CatalogHandler) Routes() []Route {
 func (h *CatalogHandler) getBooks(c *gin.Context) {
 	var request catalog.SearchBooks
 	if err := c.ShouldBindQuery(&request); err != nil {
-		c.Error(&common.ErrNotValid{Input: "SearchBooks", Err: err})
+		c.Error(err)
 		return
 	}
 
@@ -94,7 +93,7 @@ func (h *CatalogHandler) getBook(c *gin.Context) {
 func (h *CatalogHandler) createBook(c *gin.Context) {
 	var request catalog.CreateBook
 	if err := c.ShouldBind(&request); err != nil {
-		c.Error(&common.ErrNotValid{Input: "CreateBook", Err: err})
+		c.Error(err)
 		return
 	}
 
@@ -148,7 +147,7 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 func (h *CatalogHandler) updateBook(c *gin.Context) {
 	var request catalog.UpdateBook
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(&common.ErrNotValid{Input: "UpdateBook", Err: err})
+		c.Error(err)
 		return
 	}
 

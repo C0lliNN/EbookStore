@@ -14,11 +14,11 @@
 * [x] Double check requests/responses function names looking for inconsistencies
 * [x] Create a Route Wrapper
 * [x] Create Errors Middleware
-* [ ] Refactor Errors Middleware and Test it
+* [x] Refactor Errors Middleware
 * [ ] Create Swagger Middleware
 * [ ] Make the code compile again / Refactor Wire
 * [ ] Remove admin middleware
-* [ ] Review tests
+* [ ] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
 * [ ] Add Logging, Observability
 * [ ] Review Swagger Documentation
 * [ ] Review errors (Update Server Error Mapping)

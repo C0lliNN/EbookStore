@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/common"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
@@ -46,7 +45,7 @@ func (h *AuthenticationHandler) Routes() []Route {
 func (h *AuthenticationHandler) register(c *gin.Context) {
 	var request auth.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(&common.ErrNotValid{Input: "RegisterRequest", Err: err})
+		c.Error(err)
 		return
 	}
 
@@ -73,7 +72,7 @@ func (h *AuthenticationHandler) register(c *gin.Context) {
 func (h *AuthenticationHandler) login(c *gin.Context) {
 	var request auth.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(&common.ErrNotValid{Input: "LoginRequest", Err: err})
+		c.Error(err)
 		return
 	}
 
@@ -99,7 +98,7 @@ func (h *AuthenticationHandler) login(c *gin.Context) {
 func (h *AuthenticationHandler) resetPassword(c *gin.Context) {
 	var request auth.PasswordResetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(&common.ErrNotValid{Input: "PasswordResetRequest", Err: err})
+		c.Error(err)
 		return
 	}
 
