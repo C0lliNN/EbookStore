@@ -23,7 +23,7 @@ func (s *SearchOrders) OrderQuery() OrderQuery {
 }
 
 type CreateOrder struct {
-	BookID string `json:"bookId" binding:"required,max=36"`
+	BookID string `json:"bookId" validate:"required,max=36"`
 }
 
 func (c CreateOrder) Order(orderId, userId string) Order {

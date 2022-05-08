@@ -32,14 +32,14 @@ func (s *SearchBooks) BookQuery() BookQuery {
 }
 
 type CreateBook struct {
-	Title       string    `form:"title" binding:"required,max=100"`
-	Description string    `form:"description" binding:"required"`
-	AuthorName  string    `form:"authorName" binding:"required,max=100"`
-	Price       int       `form:"price" binding:"required,gt=0"`
-	ReleaseDate time.Time `form:"releaseDate" binding:"required"`
+	Title       string    `form:"title" validate:"required,max=100"`
+	Description string    `form:"description" validate:"required"`
+	AuthorName  string    `form:"authorName" validate:"required,max=100"`
+	Price       int       `form:"price" validate:"required,gt=0"`
+	ReleaseDate time.Time `form:"releaseDate" validate:"required"`
 
-	PosterImage io.ReadSeeker
-	BookContent io.ReadSeeker
+	PosterImage io.ReadSeeker `form:"-" swaggerignore:"true"`
+	BookContent io.ReadSeeker `form:"-" swaggerignore:"true"`
 }
 
 func (c CreateBook) Book(id string) Book {
@@ -55,9 +55,9 @@ func (c CreateBook) Book(id string) Book {
 
 type UpdateBook struct {
 	ID          string
-	Title       *string `form:"title" binding:"omitempty,max=100"`
-	Description *string `form:"description" binding:"omitempty"`
-	AuthorName  *string `form:"authorName" binding:"omitempty,max=100"`
+	Title       *string `form:"title" validate:"omitempty,max=100"`
+	Description *string `form:"description" validate:"omitempty"`
+	AuthorName  *string `form:"authorName" validate:"omitempty,max=100"`
 }
 
 func (u UpdateBook) Update(existing Book) Book {

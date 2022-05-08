@@ -1,13 +1,53 @@
 basePath: /
 definitions:
-  api.Error:
+  auth.CredentialsResponse:
     properties:
-      details:
-        type: string
-      message:
+      token:
         type: string
     type: object
-  dto.BookResponse:
+  auth.LoginRequest:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 20
+        minLength: 6
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  auth.PasswordResetRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  auth.RegisterRequest:
+    properties:
+      email:
+        type: string
+      firstName:
+        maxLength: 150
+        type: string
+      lastName:
+        maxLength: 150
+        type: string
+      password:
+        maxLength: 20
+        minLength: 6
+        type: string
+      passwordConfirmation:
+        type: string
+    required:
+    - email
+    - firstName
+    - lastName
+    - password
+    - passwordConfirmation
+    type: object
+  catalog.BookResponse:
     properties:
       authorName:
         type: string
@@ -28,29 +68,65 @@ definitions:
       updatedAt:
         type: string
     type: object
-  dto.CreateOrder:
+  catalog.PaginatedBooksResponse:
+    properties:
+      currentPage:
+        type: integer
+      perPage:
+        type: integer
+      results:
+        items:
+          $ref: '#/definitions/catalog.BookResponse'
+        type: array
+      totalItems:
+        type: integer
+      totalPages:
+        type: integer
+    type: object
+  catalog.SearchBooks:
+    properties:
+      authorName:
+        type: string
+      description:
+        type: string
+      page:
+        type: integer
+      perPage:
+        type: integer
+      title:
+        type: string
+    type: object
+  catalog.UpdateBook:
+    properties:
+      authorName:
+        maxLength: 100
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      title:
+        maxLength: 100
+        type: string
+    type: object
+  server.ErrorResponse:
+    properties:
+      details:
+        items:
+          type: string
+        type: array
+      message:
+        type: string
+    type: object
+  shop.CreateOrder:
     properties:
       bookId:
+        maxLength: 36
         type: string
     required:
     - bookId
     type: object
-  dto.CredentialsResponse:
-    properties:
-      token:
-        type: string
-    type: object
-  dto.LoginRequest:
-    properties:
-      email:
-        type: string
-      password:
-        type: string
-    required:
-    - email
-    - password
-    type: object
-  dto.OrderResponse:
+  shop.OrderResponse:
     properties:
       bookId:
         type: string
@@ -71,7 +147,7 @@ definitions:
       userId:
         type: string
     type: object
-  dto.PaginatedBooksResponse:
+  shop.PaginatedOrdersResponse:
     properties:
       currentPage:
         type: integer
@@ -79,83 +155,20 @@ definitions:
         type: integer
       results:
         items:
-          $ref: '#/definitions/dto.BookResponse'
+          $ref: '#/definitions/shop.OrderResponse'
         type: array
       totalItems:
         type: integer
       totalPages:
         type: integer
     type: object
-  dto.PaginatedOrdersResponse:
-    properties:
-      currentPage:
-        type: integer
-      perPage:
-        type: integer
-      results:
-        items:
-          $ref: '#/definitions/dto.OrderResponse'
-        type: array
-      totalItems:
-        type: integer
-      totalPages:
-        type: integer
-    type: object
-  dto.PasswordResetRequest:
-    properties:
-      email:
-        type: string
-    required:
-    - email
-    type: object
-  dto.RegisterRequest:
-    properties:
-      email:
-        type: string
-      firstName:
-        type: string
-      lastName:
-        type: string
-      password:
-        type: string
-      passwordConfirmation:
-        type: string
-    required:
-    - email
-    - firstName
-    - lastName
-    - password
-    - passwordConfirmation
-    type: object
-  dto.SearchBooks:
-    properties:
-      authorName:
-        type: string
-      description:
-        type: string
-      page:
-        type: integer
-      perPage:
-        type: integer
-      title:
-        type: string
-    type: object
-  dto.SearchOrders:
+  shop.SearchOrders:
     properties:
       page:
         type: integer
       perPage:
         type: integer
       status:
-        type: string
-    type: object
-  dto.UpdateBook:
-    properties:
-      authorName:
-        type: string
-      description:
-        type: string
-      title:
         type: string
     type: object
 host: https://ebook-store2.herokuapp.com
@@ -179,18 +192,18 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.SearchBooks'
+          $ref: '#/definitions/catalog.SearchBooks'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.PaginatedBooksResponse'
+            $ref: '#/definitions/catalog.PaginatedBooksResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Fetch Books
       tags:
       - Catalog
@@ -199,6 +212,7 @@ paths:
       - multipart/form-data
       parameters:
       - in: formData
+        maxLength: 100
         name: authorName
         required: true
         type: string
@@ -215,6 +229,7 @@ paths:
         required: true
         type: string
       - in: formData
+        maxLength: 100
         name: title
         required: true
         type: string
@@ -234,15 +249,15 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.BookResponse'
+            $ref: '#/definitions/catalog.BookResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Create a new Book
       tags:
       - Catalog
@@ -262,11 +277,11 @@ paths:
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Delete a Book
       tags:
       - Catalog
@@ -283,15 +298,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.BookResponse'
+            $ref: '#/definitions/catalog.BookResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Fetch Book by ID
       tags:
       - Catalog
@@ -304,7 +319,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdateBook'
+          $ref: '#/definitions/catalog.UpdateBook'
       - description: Book ID
         in: path
         name: id
@@ -318,15 +333,15 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Update the provided Book
       tags:
       - Catalog
@@ -335,31 +350,31 @@ paths:
       consumes:
       - application/json
       parameters:
-      - description: Register Payload
+      - description: Login Payload
         in: body
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.LoginRequest'
+          $ref: '#/definitions/auth.LoginRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.CredentialsResponse'
+            $ref: '#/definitions/auth.CredentialsResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Login using email and password
       tags:
       - Auth
@@ -371,18 +386,18 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.SearchOrders'
+          $ref: '#/definitions/shop.SearchOrders'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.PaginatedOrdersResponse'
+            $ref: '#/definitions/shop.PaginatedOrdersResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Fetch Orders
       tags:
       - Shop
@@ -395,22 +410,22 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateOrder'
+          $ref: '#/definitions/shop.CreateOrder'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.OrderResponse'
+            $ref: '#/definitions/shop.OrderResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Create a new Order
       tags:
       - Shop
@@ -428,15 +443,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dto.OrderResponse'
+            $ref: '#/definitions/shop.OrderResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Fetch Order by ID
       tags:
       - Shop
@@ -448,7 +463,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateOrder'
+          $ref: '#/definitions/shop.CreateOrder'
       produces:
       - application/pdf
       responses:
@@ -457,15 +472,15 @@ paths:
         "402":
           description: Payment Required
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Download the book for the given Order
       tags:
       - Shop
@@ -479,7 +494,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.PasswordResetRequest'
+          $ref: '#/definitions/auth.PasswordResetRequest'
       produces:
       - application/json
       responses:
@@ -488,11 +503,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Reset the password for the given email
       tags:
       - Auth
@@ -506,26 +521,26 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/dto.RegisterRequest'
+          $ref: '#/definitions/auth.RegisterRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dto.CredentialsResponse'
+            $ref: '#/definitions/auth.CredentialsResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Register a new user
       tags:
       - Auth
@@ -541,7 +556,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/api.Error'
+            $ref: '#/definitions/server.ErrorResponse'
       summary: Handle stripe webhooks
       tags:
       - Shop

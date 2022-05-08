@@ -43,7 +43,7 @@ func (h *ShopHandler) Routes() []Route {
 // @Produce  json
 // @Param payload body shop.SearchOrders true "Filters"
 // @Success 200 {object} shop.PaginatedOrdersResponse
-// @Failure 500 {object} api.Error
+// @Failure 500 {object} ErrorResponse
 // @Router /orders [get]
 func (h *ShopHandler) getOrders(c *gin.Context) {
 	var request shop.SearchOrders
@@ -67,8 +67,8 @@ func (h *ShopHandler) getOrders(c *gin.Context) {
 // @Produce  json
 // @Param id path string true "orderId ID"
 // @Success 200 {object} shop.OrderResponse
-// @Failure 404 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /orders/{id} [get]
 func (h *ShopHandler) getOrder(c *gin.Context) {
 	response, err := h.shop.FindOrderByID(c, c.Param("id"))
@@ -87,8 +87,8 @@ func (h *ShopHandler) getOrder(c *gin.Context) {
 // @Produce  json
 // @Param payload body shop.CreateOrder true "Order Payload"
 // @Success 201 {object} shop.OrderResponse
-// @Failure 404 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /orders [post]
 func (h *ShopHandler) createOrder(c *gin.Context) {
 	var request shop.CreateOrder
@@ -110,11 +110,11 @@ func (h *ShopHandler) createOrder(c *gin.Context) {
 // @Summary Download the book for the given Order
 // @Tags Shop
 // @Produce  application/pdf
-// @Param payload body dto.CreateOrder true "Order Payload"
+// @Param payload body shop.CreateOrder true "Order Payload"
 // @Success 200 "Success"
-// @Failure 402 {object} api.Error
-// @Failure 404 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 402 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /orders/{id}/download [get]
 func (h *ShopHandler) downloadOrder(c *gin.Context) {
 	content, err := h.shop.GetOrderDeliverableContent(c, c.Param("id"))
@@ -138,7 +138,7 @@ func (h *ShopHandler) downloadOrder(c *gin.Context) {
 // @Accept json
 // @Produce  json
 // @Success 200 "Success"
-// @Success 500 {object} api.Error
+// @Success 500 {object} ErrorResponse
 // @Router /stripe/webhook [post]
 func (h *ShopHandler) handleStripeWebhook(c *gin.Context) {
 	var request shop.HandleStripeWebhook

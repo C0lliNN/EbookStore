@@ -15,8 +15,10 @@
 * [x] Create a Route Wrapper
 * [x] Create Errors Middleware
 * [x] Refactor Errors Middleware
-* [ ] Create Swagger Middleware
+* [x] Create Swagger Middleware
 * [ ] Make the code compile again / Refactor Wire
+* [ ] Place docs folder in root directory
+* [ ] Replace `c.Request.Context()` with just `c`
 * [ ] Remove admin middleware
 * [ ] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
 * [ ] Add Logging, Observability

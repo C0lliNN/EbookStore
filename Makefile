@@ -32,4 +32,4 @@ generate-mocks:
 	@mockery --all --output=./mocks --dir=internal --case=underscore --keeptree
 
 api-docs:
-	@cd cmd && swag init -g ../internal/api/server.go --dir ../internal --output ../internal/api/docs
+	@cd cmd && swag init -g ../internal/server/server.go --dir ../internal --output ../internal/docs

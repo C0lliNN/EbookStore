@@ -41,7 +41,7 @@ func (h *CatalogHandler) Routes() []Route {
 // @Produce  json
 // @Param payload body catalog.SearchBooks true "Filters"
 // @Success 200 {object} catalog.PaginatedBooksResponse
-// @Failure 500 {object} api.Error
+// @Failure 500 {object} ErrorResponse
 // @Router /books [get]
 func (h *CatalogHandler) getBooks(c *gin.Context) {
 	var request catalog.SearchBooks
@@ -65,8 +65,8 @@ func (h *CatalogHandler) getBooks(c *gin.Context) {
 // @Produce  json
 // @Param id path string true "Book ID"
 // @Success 200 {object} catalog.BookResponse
-// @Failure 404 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /books/{id} [get]
 func (h *CatalogHandler) getBook(c *gin.Context) {
 	response, err := h.catalog.FindBookByID(c.Request.Context(), c.Param("id"))
@@ -87,8 +87,8 @@ func (h *CatalogHandler) getBook(c *gin.Context) {
 // @Param poster formData file true "Book Poster"
 // @Param content formData file true "Book Content in PDF"
 // @Success 201 {object} catalog.BookResponse
-// @Failure 404 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /books [post]
 func (h *CatalogHandler) createBook(c *gin.Context) {
 	var request catalog.CreateBook
@@ -140,9 +140,9 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 // @Param payload body catalog.UpdateBook true "Book Payload"
 // @Param id path string true "Book ID"
 // @Success 204 "Success"
-// @Failure 400 {object} api.Error
-// @Failure 404 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 400 {object} ErrorResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /books/{id} [patch]
 func (h *CatalogHandler) updateBook(c *gin.Context) {
 	var request catalog.UpdateBook
@@ -166,8 +166,8 @@ func (h *CatalogHandler) updateBook(c *gin.Context) {
 // @Produce  json
 // @Param id path string true "Book ID"
 // @Success 204 "Success"
-// @Failure 404 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /books/{id} [delete]
 func (h *CatalogHandler) deleteBook(c *gin.Context) {
 	if err := h.catalog.DeleteBook(c.Request.Context(), c.Param("id")); err != nil {

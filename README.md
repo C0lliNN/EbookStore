@@ -55,3 +55,13 @@ go install github.com/vektra/mockery/v2@latest
 ```bash
 make generate-mocks
 ```
+
+## How to regenerate REST API documentation
+1. Install Swaggo
+```bash
+go install github.com/swaggo/swag/cmd/swag@latest
+```
+2. Generate Docs
+```bash
+make api-docs
+```

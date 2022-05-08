@@ -38,9 +38,9 @@ func (h *AuthenticationHandler) Routes() []Route {
 // @Produce  json
 // @Param payload body auth.RegisterRequest true "Register Payload"
 // @Success 201 {object} auth.CredentialsResponse
-// @Failure 400 {object} api.Error
-// @Failure 401 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /register [post]
 func (h *AuthenticationHandler) register(c *gin.Context) {
 	var request auth.RegisterRequest
@@ -65,9 +65,9 @@ func (h *AuthenticationHandler) register(c *gin.Context) {
 // @Produce  json
 // @Param payload body auth.LoginRequest true "Login Payload"
 // @Success 201 {object} auth.CredentialsResponse
-// @Failure 400 {object} api.Error
-// @Failure 401 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 400 {object} ErrorResponse
+// @Failure 401 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /login [post]
 func (h *AuthenticationHandler) login(c *gin.Context) {
 	var request auth.LoginRequest
@@ -92,8 +92,8 @@ func (h *AuthenticationHandler) login(c *gin.Context) {
 // @Produce  json
 // @Param payload body auth.PasswordResetRequest true "Register Payload"
 // @Success 204 "success"
-// @Failure 400 {object} api.Error
-// @Failure 500 {object} api.Error
+// @Failure 400 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
 // @Router /password-reset [post]
 func (h *AuthenticationHandler) resetPassword(c *gin.Context) {
 	var request auth.PasswordResetRequest
