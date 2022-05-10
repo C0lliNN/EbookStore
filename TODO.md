@@ -17,6 +17,7 @@
 * [x] Refactor Errors Middleware
 * [x] Create Swagger Middleware
 * [ ] Make the code compile again / Refactor Wire
+* [ ] Use pointers type for DI
 * [ ] Place docs folder in root directory
 * [ ] Replace `c.Request.Context()` with just `c`
 * [ ] Remove admin middleware

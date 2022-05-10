@@ -65,3 +65,13 @@ go install github.com/swaggo/swag/cmd/swag@latest
 ```bash
 make api-docs
 ```
+
+## How to recompile dependencies
+1. Install wire 
+```bash
+go install github.com/google/wire/cmd/wire@latest
+```
+2. Execute wire
+```bash
+make wire
+```

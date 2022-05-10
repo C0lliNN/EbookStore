@@ -23,15 +23,18 @@ import (
 // @BasePath /
 // @query.collection.format multi
 
+type Addr string
+type Timeout time.Duration
+
 type Config struct {
 	Router                   *gin.Engine
-	AuthenticationMiddleware AuthenticationMiddleware
-	ErrorMiddleware          ErrorMiddleware
-	AuthenticationHandler    AuthenticationHandler
-	CatalogHandler           CatalogHandler
-	ShopHandler              ShopHandler
-	Addr                     string
-	Timeout                  time.Duration
+	AuthenticationMiddleware *AuthenticationMiddleware
+	ErrorMiddleware          *ErrorMiddleware
+	AuthenticationHandler    *AuthenticationHandler
+	CatalogHandler           *CatalogHandler
+	ShopHandler              *ShopHandler
+	Addr                     Addr
+	Timeout                  Timeout
 }
 
 type Server struct {
@@ -65,9 +68,9 @@ func (s *Server) Start() error {
 
 	httpServer := &http.Server{
 		Handler:      router,
-		Addr:         s.Addr,
-		WriteTimeout: s.Timeout,
-		ReadTimeout:  s.Timeout,
+		Addr:         string(s.Addr),
+		WriteTimeout: time.Duration(s.Timeout),
+		ReadTimeout:  time.Duration(s.Timeout),
 	}
 
 	return httpServer.ListenAndServe()

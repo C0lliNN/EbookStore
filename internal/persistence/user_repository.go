@@ -12,11 +12,11 @@ type UserRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
-	return UserRepository{db: db}
+func NewUserRepository(db *gorm.DB) *UserRepository {
+	return &UserRepository{db: db}
 }
 
-func (r UserRepository) Save(ctx context.Context, user *auth.User) error {
+func (r *UserRepository) Save(ctx context.Context, user *auth.User) error {
 	result := r.db.Create(user)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to save user: %v", err)
@@ -31,7 +31,7 @@ func (r UserRepository) Save(ctx context.Context, user *auth.User) error {
 	return nil
 }
 
-func (r UserRepository) FindByEmail(ctx context.Context, email string) (user auth.User, err error) {
+func (r *UserRepository) FindByEmail(ctx context.Context, email string) (user auth.User, err error) {
 	result := r.db.First(&user, "email = ?", email)
 	if err = result.Error; err != nil {
 		log.Default().Errorf("error trying to find user by email %s: %v", email, err)
@@ -42,7 +42,7 @@ func (r UserRepository) FindByEmail(ctx context.Context, email string) (user aut
 	return
 }
 
-func (r UserRepository) Update(ctx context.Context, user *auth.User) error {
+func (r *UserRepository) Update(ctx context.Context, user *auth.User) error {
 	result := r.db.Updates(user).Where("id = ?", user.ID)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to update user: %v", err)

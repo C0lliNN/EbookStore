@@ -15,11 +15,11 @@ type AuthenticationMiddleware struct {
 	token TokenHandler
 }
 
-func NewAuthenticationMiddleware(token TokenHandler) AuthenticationMiddleware {
-	return AuthenticationMiddleware{token}
+func NewAuthenticationMiddleware(token TokenHandler) *AuthenticationMiddleware {
+	return &AuthenticationMiddleware{token}
 }
 
-func (m AuthenticationMiddleware) Handler() gin.HandlerFunc {
+func (m *AuthenticationMiddleware) Handler() gin.HandlerFunc {
 	return func(context *gin.Context) {
 		header := context.GetHeader("Authorization")
 		if header == "" {

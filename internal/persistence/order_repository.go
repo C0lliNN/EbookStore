@@ -13,11 +13,11 @@ type OrderRepository struct {
 	db *gorm.DB
 }
 
-func NewOrderRepository(db *gorm.DB) OrderRepository {
-	return OrderRepository{db: db}
+func NewOrderRepository(db *gorm.DB) *OrderRepository {
+	return &OrderRepository{db: db}
 }
 
-func (r OrderRepository) FindByQuery(ctx context.Context, query shop.OrderQuery) (paginated shop.PaginatedOrders, err error) {
+func (r *OrderRepository) FindByQuery(ctx context.Context, query shop.OrderQuery) (paginated shop.PaginatedOrders, err error) {
 	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
 	result := r.db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Order("created_at DESC").Find(&paginated.Orders)
 	if err = result.Error; err != nil {
@@ -38,7 +38,7 @@ func (r OrderRepository) FindByQuery(ctx context.Context, query shop.OrderQuery)
 	return
 }
 
-func (r OrderRepository) createConditionsFromCriteria(criteria []shop.Criteria) string {
+func (r *OrderRepository) createConditionsFromCriteria(criteria []shop.Criteria) string {
 	conditions := make([]string, 0, len(criteria))
 
 	for _, c := range criteria {
@@ -54,7 +54,7 @@ func (r OrderRepository) createConditionsFromCriteria(criteria []shop.Criteria) 
 	return strings.Join(conditions, " AND ")
 }
 
-func (r OrderRepository) FindByID(ctx context.Context, id string) (order shop.Order, err error) {
+func (r *OrderRepository) FindByID(ctx context.Context, id string) (order shop.Order, err error) {
 	result := r.db.First(&order, "id = ?", id)
 	if err = result.Error; err != nil {
 		log.Default().Errorf("error when trying to find order with id %s: %v", id, err)
@@ -64,7 +64,7 @@ func (r OrderRepository) FindByID(ctx context.Context, id string) (order shop.Or
 	return
 }
 
-func (r OrderRepository) Create(ctx context.Context, order *shop.Order) error {
+func (r *OrderRepository) Create(ctx context.Context, order *shop.Order) error {
 	result := r.db.Create(order)
 	if err := result.Error; err != nil {
 		log.Default().Error("error trying to create an order: ", err)
@@ -74,7 +74,7 @@ func (r OrderRepository) Create(ctx context.Context, order *shop.Order) error {
 	return nil
 }
 
-func (r OrderRepository) Update(ctx context.Context, order *shop.Order) error {
+func (r *OrderRepository) Update(ctx context.Context, order *shop.Order) error {
 	result := r.db.Updates(order).Where("id = ?", order.ID)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to update the order %s: %v", order.ID, err)

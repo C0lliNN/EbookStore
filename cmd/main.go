@@ -8,7 +8,7 @@ func init() {
 }
 
 func main() {
-	server := CreateWebServer()
+	server := NewServer()
 
-	panic(server.ListenAndServe())
+	panic(server.Start())
 }
