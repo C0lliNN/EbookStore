@@ -19,14 +19,14 @@ var statusMap = map[stripe.PaymentIntentStatus]shop.OrderStatus{
 	stripe.PaymentIntentStatusSucceeded:             shop.Paid,
 }
 
-type StripeClient byte
+type StripeClient struct {}
 
-func NewStripeClient() StripeClient {
+func NewStripeClient() *StripeClient {
 	stripe.Key = viper.GetString("STRIPE_API_KEY")
-	return StripeClient(0)
+	return &StripeClient{}
 }
 
-func (c StripeClient) CreatePaymentIntentForOrder(ctx context.Context, order *shop.Order) error {
+func (c *StripeClient) CreatePaymentIntentForOrder(ctx context.Context, order *shop.Order) error {
 	params := &stripe.PaymentIntentParams{
 		Amount:   stripe.Int64(order.Total),
 		Currency: stripe.String(string(stripe.CurrencyUSD)),

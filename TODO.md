@@ -17,7 +17,7 @@
 * [x] Refactor Errors Middleware
 * [x] Create Swagger Middleware
 * [x] Make the code compile again / Refactor Wire
-* [ ] Use pointers type for DI
+* [x] Use pointers type for DI
 * [ ] Fix Swagger Endpoint
 * [ ] Place docs folder in root directory
 * [ ] Refactor migrations folder
@@ -34,6 +34,7 @@
 * [ ] Document Public API (Maybe autogenerate documentation)
 * [ ] Get rid of test folder
 * [ ] Add oauth server
+* [ ] Refactor make command
 * [ ] Create make run command and update README.md
 
 # Nice to Haves

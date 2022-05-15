@@ -5,14 +5,14 @@ import (
 	"time"
 )
 
-type FilenameGenerator byte
+type FilenameGenerator struct{}
 
-func NewFilenameGenerator() FilenameGenerator {
-	return 0
+func NewFilenameGenerator() *FilenameGenerator {
+	return &FilenameGenerator{}
 }
 
-func (g FilenameGenerator) NewUniqueName(filename string) string {
+func (g *FilenameGenerator) NewUniqueName(name string) string {
 	unix := time.Now().UTC().Unix()
 
-	return fmt.Sprintf("%s_%d", filename, unix)
+	return fmt.Sprintf("%s_%d", name, unix)
 }

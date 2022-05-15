@@ -33,3 +33,6 @@ generate-mocks:
 
 api-docs:
 	@cd cmd && swag init -g ../internal/server/server.go --dir ../internal --output ../internal/docs
+
+start_server:
+	@cd cmd && go run .

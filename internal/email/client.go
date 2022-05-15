@@ -20,18 +20,18 @@ const (
 						<p>If you did ask for this change, please contact us!</p>`
 )
 
-type Client struct {
+type SESEmailClient struct {
 	session *session.Session
 	sns     *ses.SES
 }
 
-func NewEmailClient(sns *ses.SES) Client {
-	return Client{sns: sns}
+func NewSESEmailClient(sns *ses.SES) *SESEmailClient {
+	return &SESEmailClient{sns: sns}
 }
 
-func (c Client) SendPasswordResetEmail(ctx context.Context, user auth.User, newPassword string) error {
+func (c *SESEmailClient) SendPasswordResetEmail(ctx context.Context, user auth.User, newPassword string) error {
 	sourceEmail := viper.GetString("AWS_SES_SOURCE_EMAIL")
-	messageBody, err := getMessageBody(user, newPassword)
+	messageBody, err := c.getMessageBody(user, newPassword)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func (c Client) SendPasswordResetEmail(ctx context.Context, user auth.User, newP
 	return err
 }
 
-func getMessageBody(user auth.User, newPassword string) (string, error) {
+func (c *SESEmailClient) getMessageBody(user auth.User, newPassword string) (string, error) {
 	messageBody := bytes.NewBufferString("")
 
 	tmpl := template.Must(template.New("Password Request Template").Parse(emailBodyTemplate))

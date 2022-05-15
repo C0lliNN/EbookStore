@@ -8,11 +8,11 @@ import (
 
 type PasswordGenerator struct{}
 
-func NewPasswordGenerator() PasswordGenerator {
-	return PasswordGenerator{}
+func NewPasswordGenerator() *PasswordGenerator {
+	return &PasswordGenerator{}
 }
 
-func (g PasswordGenerator) NewPassword() string {
+func (g *PasswordGenerator) NewPassword() string {
 	rand.Seed(time.Now().UnixNano())
 
 	chars := []rune("ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" + "0123456789")

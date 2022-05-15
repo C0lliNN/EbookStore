@@ -16,11 +16,11 @@ type S3Client struct {
 	bucket  Bucket
 }
 
-func NewS3Client(service *s3.S3, bucket Bucket) S3Client {
-	return S3Client{service: service, bucket: bucket}
+func NewS3Client(service *s3.S3, bucket Bucket) *S3Client {
+	return &S3Client{service: service, bucket: bucket}
 }
 
-func (c S3Client) GeneratePreSignedUrl(ctx context.Context, key string) (string, error) {
+func (c *S3Client) GeneratePreSignedUrl(ctx context.Context, key string) (string, error) {
 	request, _ := c.service.GetObjectRequest(&s3.GetObjectInput{
 		Bucket: aws.String(string(c.bucket)),
 		Key:    aws.String(key),
@@ -34,7 +34,7 @@ func (c S3Client) GeneratePreSignedUrl(ctx context.Context, key string) (string,
 	return url, err
 }
 
-func (c S3Client) SaveFile(ctx context.Context, key string, contentType string, content io.ReadSeeker) error {
+func (c *S3Client) SaveFile(ctx context.Context, key string, contentType string, content io.ReadSeeker) error {
 	_, err := c.service.PutObject(&s3.PutObjectInput{
 		Key:         aws.String(key),
 		Bucket:      aws.String(string(c.bucket)),
@@ -49,7 +49,7 @@ func (c S3Client) SaveFile(ctx context.Context, key string, contentType string, 
 	return nil
 }
 
-func (c S3Client) RetrieveFile(ctx context.Context, key string) (io.ReadCloser, error) {
+func (c *S3Client) RetrieveFile(ctx context.Context, key string) (io.ReadCloser, error) {
 	output, err := c.service.GetObject(&s3.GetObjectInput{
 		Key:    aws.String(key),
 		Bucket: aws.String(string(c.bucket)),

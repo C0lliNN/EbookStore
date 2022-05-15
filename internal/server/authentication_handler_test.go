@@ -46,7 +46,7 @@ func (s *AuthenticatorHandlerTestSuite) SetupTest() {
 	userRepository := persistence.NewUserRepository(s.db)
 	jwtWrapper := token.NewJWTWrapper(token.NewHMACSecret())
 	ses := config.NewSNSService()
-	emailClient := email.NewEmailClient(ses)
+	emailClient := email.NewSESEmailClient(ses)
 	passwordGenerator := generator.NewPasswordGenerator()
 	bcryptWrapper := hash.NewBcryptWrapper()
 	idGenerator := generator.NewUUIDGenerator()
