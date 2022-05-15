@@ -49,7 +49,7 @@ func (h *AuthenticationHandler) register(c *gin.Context) {
 		return
 	}
 
-	response, err := h.authenticator.Register(c.Request.Context(), request)
+	response, err := h.authenticator.Register(c, request)
 	if err != nil {
 		c.Error(err)
 		return
@@ -76,7 +76,7 @@ func (h *AuthenticationHandler) login(c *gin.Context) {
 		return
 	}
 
-	response, err := h.authenticator.Login(c.Request.Context(), request)
+	response, err := h.authenticator.Login(c, request)
 	if err != nil {
 		c.Error(err)
 		return
@@ -102,7 +102,7 @@ func (h *AuthenticationHandler) resetPassword(c *gin.Context) {
 		return
 	}
 
-	if err := h.authenticator.ResetPassword(c.Request.Context(), request); err != nil {
+	if err := h.authenticator.ResetPassword(c, request); err != nil {
 		c.Error(err)
 		return
 	}

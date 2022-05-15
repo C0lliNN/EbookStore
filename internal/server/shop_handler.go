@@ -149,7 +149,7 @@ func (h *ShopHandler) handleStripeWebhook(c *gin.Context) {
 
 	if request.Type == "payment_intent.succeeded" {
 		orderID := request.Data["object"].(map[string]interface{})["metadata"].(map[string]interface{})["orderID"].(string)
-		if err := h.shop.CompleteOrder(c.Request.Context(), orderID); err != nil {
+		if err := h.shop.CompleteOrder(c, orderID); err != nil {
 			c.Error(err)
 			return
 		}

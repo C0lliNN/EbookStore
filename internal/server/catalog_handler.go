@@ -50,7 +50,7 @@ func (h *CatalogHandler) getBooks(c *gin.Context) {
 		return
 	}
 
-	response, err := h.catalog.FindBooks(c.Request.Context(), request)
+	response, err := h.catalog.FindBooks(c, request)
 	if err != nil {
 		c.Error(err)
 		return
@@ -69,7 +69,7 @@ func (h *CatalogHandler) getBooks(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /books/{id} [get]
 func (h *CatalogHandler) getBook(c *gin.Context) {
-	response, err := h.catalog.FindBookByID(c.Request.Context(), c.Param("id"))
+	response, err := h.catalog.FindBookByID(c, c.Param("id"))
 	if err != nil {
 		c.Error(err)
 		return
@@ -123,7 +123,7 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 	request.PosterImage = posterFile
 	request.BookContent = contentFile
 
-	response, err := h.catalog.CreateBook(c.Request.Context(), request)
+	response, err := h.catalog.CreateBook(c, request)
 	if err != nil {
 		c.Error(err)
 		return
@@ -152,7 +152,7 @@ func (h *CatalogHandler) updateBook(c *gin.Context) {
 	}
 
 	request.ID = c.Param("id")
-	if err := h.catalog.UpdateBook(c.Request.Context(), request); err != nil {
+	if err := h.catalog.UpdateBook(c, request); err != nil {
 		c.Error(err)
 		return
 	}
@@ -170,7 +170,7 @@ func (h *CatalogHandler) updateBook(c *gin.Context) {
 // @Failure 500 {object} ErrorResponse
 // @Router /books/{id} [delete]
 func (h *CatalogHandler) deleteBook(c *gin.Context) {
-	if err := h.catalog.DeleteBook(c.Request.Context(), c.Param("id")); err != nil {
+	if err := h.catalog.DeleteBook(c, c.Param("id")); err != nil {
 		c.Error(err)
 		return
 	}
