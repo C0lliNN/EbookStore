@@ -2,6 +2,7 @@ package server
 
 import (
 	_ "github.com/c0llinn/ebook-store/docs"
+	"github.com/c0llinn/ebook-store/internal/migrator"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -28,6 +29,7 @@ type Addr string
 type Timeout time.Duration
 
 type Config struct {
+	Migrator                 *migrator.Migrator
 	Router                   *gin.Engine
 	AuthenticationMiddleware *AuthenticationMiddleware
 	ErrorMiddleware          *ErrorMiddleware
@@ -47,6 +49,8 @@ func New(c Config) *Server {
 }
 
 func (s *Server) Start() error {
+	s.Migrator.Sync()
+
 	router := s.Router
 
 	router.Use(gin.Recovery())

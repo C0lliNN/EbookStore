@@ -22,7 +22,7 @@
 * [x] Place docs folder in root directory
 * [x] Remove admin middleware
 * [x] Replace `c.Request.Context()` with just `c`
-* [ ] Refactor migrations folder
+* [x] Refactor migrations folder
 * [ ] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
 * [ ] Add Logging, Observability
 * [ ] Review Swagger Documentation

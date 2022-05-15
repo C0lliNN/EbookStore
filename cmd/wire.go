@@ -10,6 +10,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/email"
 	"github.com/c0llinn/ebook-store/internal/generator"
 	"github.com/c0llinn/ebook-store/internal/hash"
+	"github.com/c0llinn/ebook-store/internal/migrator"
 	"github.com/c0llinn/ebook-store/internal/payment"
 	"github.com/c0llinn/ebook-store/internal/persistence"
 	"github.com/c0llinn/ebook-store/internal/server"
@@ -63,6 +64,11 @@ var Set = wire.NewSet(
 	wire.Bind(new(shop.IDGenerator), new(*generator.UUIDGenerator)),
 	wire.NewSet(wire.Struct(new(shop.Config), "*")),
 	shop.New,
+
+	config.NewMigrationDatabaseURL,
+	config.NewMigrationSource,
+	wire.NewSet(wire.Struct(new(migrator.Config), "*")),
+	migrator.New,
 
 	config.NewServerEngine,
 	config.NewServerAddr,
