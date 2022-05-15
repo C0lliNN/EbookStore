@@ -16,9 +16,11 @@
 * [x] Create Errors Middleware
 * [x] Refactor Errors Middleware
 * [x] Create Swagger Middleware
-* [ ] Make the code compile again / Refactor Wire
+* [x] Make the code compile again / Refactor Wire
 * [ ] Use pointers type for DI
+* [ ] Fix Swagger Endpoint
 * [ ] Place docs folder in root directory
+* [ ] Refactor migrations folder
 * [ ] Replace `c.Request.Context()` with just `c`
 * [ ] Remove admin middleware
 * [ ] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
