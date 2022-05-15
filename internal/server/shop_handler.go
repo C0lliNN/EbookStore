@@ -41,7 +41,7 @@ func (h *ShopHandler) Routes() []Route {
 // @Summary Fetch Orders
 // @Tags Shop
 // @Produce  json
-// @Param payload body shop.SearchOrders true "Filters"
+// @Param params query shop.SearchOrders true "Filters"
 // @Success 200 {object} shop.PaginatedOrdersResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /orders [get]

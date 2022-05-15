@@ -32,7 +32,7 @@ generate-mocks:
 	@mockery --all --output=./mocks --dir=internal --case=underscore --keeptree
 
 api-docs:
-	@cd cmd && swag init -g ../internal/server/server.go --dir ../internal --output ../internal/docs
+	@swag init -g internal/server/server.go --parseInternal  --generatedTime
 
 start_server:
 	@cd cmd && go run .

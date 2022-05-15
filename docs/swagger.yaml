@@ -83,19 +83,6 @@ definitions:
       totalPages:
         type: integer
     type: object
-  catalog.SearchBooks:
-    properties:
-      authorName:
-        type: string
-      description:
-        type: string
-      page:
-        type: integer
-      perPage:
-        type: integer
-      title:
-        type: string
-    type: object
   catalog.UpdateBook:
     properties:
       authorName:
@@ -162,16 +149,7 @@ definitions:
       totalPages:
         type: integer
     type: object
-  shop.SearchOrders:
-    properties:
-      page:
-        type: integer
-      perPage:
-        type: integer
-      status:
-        type: string
-    type: object
-host: https://ebook-store2.herokuapp.com
+host: http://localhost:8080
 info:
   contact:
     email: raphael_professional@yahoo.com
@@ -187,12 +165,21 @@ paths:
   /books:
     get:
       parameters:
-      - description: Filters
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/catalog.SearchBooks'
+      - in: query
+        name: authorName
+        type: string
+      - in: query
+        name: description
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: perPage
+        type: integer
+      - in: query
+        name: title
+        type: string
       produces:
       - application/json
       responses:
@@ -381,12 +368,15 @@ paths:
   /orders:
     get:
       parameters:
-      - description: Filters
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/shop.SearchOrders'
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: perPage
+        type: integer
+      - in: query
+        name: status
+        type: string
       produces:
       - application/json
       responses:

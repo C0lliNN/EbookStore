@@ -1,6 +1,7 @@
 package server
 
 import (
+	_ "github.com/c0llinn/ebook-store/docs"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -19,7 +20,7 @@ import (
 // @license.name Apache 2.0
 // @license.url https://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host https://ebook-store2.herokuapp.com
+// @host http://localhost:8080
 // @BasePath /
 // @query.collection.format multi
 
@@ -50,6 +51,11 @@ func (s *Server) Start() error {
 
 	router.Use(gin.Recovery())
 	router.Use(s.ErrorMiddleware.Handler())
+
+	// This is redirect is for convenience purposes. It's easy to remember /docs
+	router.GET("/docs", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
+	})
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	routes := s.AuthenticationHandler.Routes()

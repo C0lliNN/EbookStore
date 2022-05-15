@@ -18,11 +18,11 @@
 * [x] Create Swagger Middleware
 * [x] Make the code compile again / Refactor Wire
 * [x] Use pointers type for DI
-* [ ] Fix Swagger Endpoint
-* [ ] Place docs folder in root directory
-* [ ] Refactor migrations folder
+* [x] Fix Swagger Endpoint
+* [x] Place docs folder in root directory
+* [x] Remove admin middleware
 * [ ] Replace `c.Request.Context()` with just `c`
-* [ ] Remove admin middleware
+* [ ] Refactor migrations folder
 * [ ] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
 * [ ] Add Logging, Observability
 * [ ] Review Swagger Documentation

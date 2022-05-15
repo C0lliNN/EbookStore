@@ -39,7 +39,7 @@ func (h *CatalogHandler) Routes() []Route {
 // @Summary Fetch Books
 // @Tags Catalog
 // @Produce  json
-// @Param payload body catalog.SearchBooks true "Filters"
+// @Param params query catalog.SearchBooks true "Filters"
 // @Success 200 {object} catalog.PaginatedBooksResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /books [get]

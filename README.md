@@ -30,7 +30,7 @@ A fully-featured REST API developed in Golang for an online book store.
 * [Localstack](https://localstack.cloud/)
 * [Testify](https://github.com/stretchr/testify)
 
-## How to run
+## How to Run Locally
 1. Execute docker containers
 ```bash
 docker-compose up -d
@@ -41,9 +41,9 @@ export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 ```
 
-3. Execute app
+3. Execute HTTP Server
 ```bash
-cd cmd && go run .
+make start_server
 ```
 
 ## How to regenerate mocks
@@ -59,7 +59,7 @@ make generate-mocks
 ## How to regenerate REST API documentation
 1. Install Swaggo
 ```bash
-go install github.com/swaggo/swag/cmd/swag@latest
+go install github.com/swaggo/swag/cmd/swag@v1.7.8
 ```
 2. Generate Docs
 ```bash
