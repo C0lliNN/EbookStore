@@ -1,6 +1,3 @@
-//go:build unit
-// +build unit
-
 package generator
 
 import (
@@ -9,7 +6,7 @@ import (
 )
 
 func TestPasswordGenerator_NewPassword(t *testing.T) {
-	password := PasswordGenerator{}.NewPassword()
+	password := NewPasswordGenerator().NewPassword()
 
 	assert.Len(t, password, 8)
 }

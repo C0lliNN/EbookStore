@@ -1,10 +1,7 @@
-//go:build unit
-// +build unit
-
 package token
 
 import (
-	"github.com/c0llinn/ebook-store/internal/auth/model"
+	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -26,12 +23,12 @@ func TestJWTWrapperRun(t *testing.T) {
 }
 
 func (s *JWTWrapperTestSuite) TestGenerateTokenForUser() {
-	user := model.User{
+	user := auth.User{
 		ID:        "some-id",
 		Email:     "test@test.com",
 		FirstName: "first",
 		LastName:  "last",
-		Role:      model.Admin,
+		Role:      auth.Admin,
 	}
 
 	expected := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbiI6dHJ1ZSwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwiaWQiOiJzb21lLWlkIiwibmFtZSI6ImZpcnN0IGxhc3QifQ.OLYJtZCJzlKbzJ9jXRrY9cjndGMItSrYIWij2bFnevI"
@@ -44,12 +41,12 @@ func (s *JWTWrapperTestSuite) TestGenerateTokenForUser() {
 func (s *JWTWrapperTestSuite) TestExtractUserFromToken() {
 	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhZG1pbiI6dHJ1ZSwiZW1haWwiOiJ0ZXN0QHRlc3QuY29tIiwiaWQiOiJzb21lLWlkIiwibmFtZSI6ImZpcnN0IGxhc3QifQ.OLYJtZCJzlKbzJ9jXRrY9cjndGMItSrYIWij2bFnevI"
 
-	expected := model.User{
+	expected := auth.User{
 		ID:        "some-id",
 		Email:     "test@test.com",
 		FirstName: "first",
 		LastName:  "last",
-		Role:      model.Admin,
+		Role:      auth.Admin,
 	}
 	actual, err := s.jwtWrapper.ExtractUserFromToken(token)
 

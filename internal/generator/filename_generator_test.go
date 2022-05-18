@@ -1,6 +1,3 @@
-//go:build unit
-// +build unit
-
 package generator
 
 import (
@@ -9,7 +6,7 @@ import (
 )
 
 func TestFilenameGenerator_NewUniqueName(t *testing.T) {
-	name := FilenameGenerator(0).NewUniqueName("clean_code")
+	name := NewFilenameGenerator().NewUniqueName("clean_code")
 
 	assert.Regexp(t, ".+_\\d", name)
 }

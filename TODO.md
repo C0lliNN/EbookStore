@@ -41,6 +41,6 @@
 * Handle Stripe Webhook in a good way
 * Handle file extensions in a more isolated way
 * Handle shop -> catalog connection isolating the BookResponse object
-* Use testcontainers in integration tests
-
+* Handle more than one image per book
+* Use Cart in Shop 
 (Update Handler tests)

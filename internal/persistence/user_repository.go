@@ -4,7 +4,7 @@ import (
 	"context"
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/c0llinn/ebook-store/internal/log"
-	"github.com/jackc/pgconn"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
 
@@ -53,6 +53,6 @@ func (r *UserRepository) Update(ctx context.Context, user *auth.User) error {
 }
 
 func isConstraintViolationError(err error) bool {
-	parsed, ok := err.(*pgconn.PgError)
+	parsed, ok := err.(*pq.Error)
 	return ok && parsed.Code == "23505"
 }

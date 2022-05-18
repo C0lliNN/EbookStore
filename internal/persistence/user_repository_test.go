@@ -1,36 +1,50 @@
-//go:build integration
-// +build integration
-
-package persistence
+package persistence_test
 
 import (
-	"github.com/c0llinn/ebook-store/internal/auth/model"
-	"github.com/c0llinn/ebook-store/internal/common"
-	config2 "github.com/c0llinn/ebook-store/internal/config"
+	"context"
+	"github.com/c0llinn/ebook-store/internal/auth"
+	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/persistence"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
 	"testing"
 )
 
 type UserRepositoryTestSuite struct {
 	suite.Suite
-	repo UserRepository
+	repo      *persistence.UserRepository
+	db        *gorm.DB
+	container *test.PostgresContainer
 }
 
-func (s *UserRepositoryTestSuite) SetupTest() {
-	test.SetEnvironmentVariables()
-	config2.InitLogger()
-	config2.LoadMigrations("file:../../../migrations")
+func (s *UserRepositoryTestSuite) SetupSuite() {
+	ctx := context.TODO()
 
-	conn := config2.NewConnection()
-	s.repo = UserRepository{conn}
+	var err error
+	s.container, err = test.NewPostgresContainer(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	viper.SetDefault("DATABASE_URI", s.container.URI)
+
+	s.db = config.NewConnection()
+	s.repo = persistence.NewUserRepository(s.db)
+}
+
+func (s *UserRepositoryTestSuite) TearDownSuite() {
+	ctx := context.TODO()
+
+	s.container.Terminate(ctx)
 }
 
 func (s *UserRepositoryTestSuite) TearDownTest() {
-	s.repo.db.Delete(&model.User{}, "1 = 1")
+	s.db.Delete(&auth.User{}, "1 = 1")
 }
 
 func TestUserRepositoryTest(t *testing.T) {
@@ -38,62 +52,76 @@ func TestUserRepositoryTest(t *testing.T) {
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_SaveSuccessfully() {
+	ctx := context.TODO()
+
 	user := factory.NewUser()
 
-	err := s.repo.Save(&user)
+	err := s.repo.Save(ctx, &user)
 
 	assert.Nil(s.T(), err)
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_SaveWithDuplicateEmail() {
+	ctx := context.TODO()
+
 	user := factory.NewUser()
 
-	err := s.repo.Save(&user)
+	err := s.repo.Save(ctx, &user)
 	assert.Nil(s.T(), err)
 
-	err = s.repo.Save(&user)
-	assert.IsType(s.T(), &common.ErrDuplicateKey{}, err)
+	user.ID = "new-id"
+
+	err = s.repo.Save(ctx, &user)
+	assert.IsType(s.T(), &persistence.ErrDuplicateKey{}, err)
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailSuccessfully() {
+	ctx := context.TODO()
+
 	expected := factory.NewUser()
 
-	err := s.repo.Save(&expected)
+	err := s.repo.Save(ctx, &expected)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByEmail(expected.Email)
+	actual, err := s.repo.FindByEmail(ctx, expected.Email)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailNotFound() {
-	_, err := s.repo.FindByEmail("test@test.com")
+	ctx := context.TODO()
 
-	assert.IsType(s.T(), &common.ErrEntityNotFound{}, err)
+	_, err := s.repo.FindByEmail(ctx, "test@test.com")
+
+	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, err)
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_UpdateSuccessfully() {
+	ctx := context.TODO()
+
 	user := factory.NewUser()
 
-	err := s.repo.Save(&user)
+	err := s.repo.Save(ctx, &user)
 	require.Nil(s.T(), err)
 
 	user.FirstName = "new name"
 	user.LastName = "new last name"
 
-	err = s.repo.Update(&user)
+	err = s.repo.Update(ctx, &user)
 	require.Nil(s.T(), err)
 
-	persisted, err := s.repo.FindByEmail(user.Email)
+	persisted, err := s.repo.FindByEmail(ctx, user.Email)
 	require.Nil(s.T(), err)
 
 	assert.Equal(s.T(), user, persisted)
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_UpdateWhenUserDoesNotExist() {
+	ctx := context.TODO()
+
 	user := factory.NewUser()
 
-	err := s.repo.Update(&user)
+	err := s.repo.Update(ctx, &user)
 	assert.Nil(s.T(), err)
 }

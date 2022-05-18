@@ -1,58 +1,91 @@
-//go:build integration
-// +build integration
-
-package persistence
+package persistence_test
 
 import (
-	"github.com/c0llinn/ebook-store/internal/common"
-	config2 "github.com/c0llinn/ebook-store/internal/config"
+	"context"
+	"github.com/c0llinn/ebook-store/internal/config"
+	"github.com/c0llinn/ebook-store/internal/persistence"
 	"github.com/c0llinn/ebook-store/internal/shop"
 	"github.com/c0llinn/ebook-store/test"
-	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/google/uuid"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
 	"testing"
 )
 
 type OrderRepositoryTestSuite struct {
 	suite.Suite
-	repo OrderRepository
+	db        *gorm.DB
+	repo      *persistence.OrderRepository
+	container *test.PostgresContainer
 }
 
-func (s *OrderRepositoryTestSuite) SetupTest() {
-	test.SetEnvironmentVariables()
-	config2.InitLogger()
-	config2.LoadMigrations("file:../../../migrations")
+func (s *OrderRepositoryTestSuite) SetupSuite() {
+	ctx := context.TODO()
 
-	conn := config2.NewConnection()
-	s.repo = OrderRepository{conn}
+	var err error
+	s.container, err = test.NewPostgresContainer(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	viper.SetDefault("DATABASE_URI", s.container.URI)
+
+	s.db = config.NewConnection()
+	s.repo = persistence.NewOrderRepository(s.db)
 }
 
 func TestOrderRepositoryRun(t *testing.T) {
 	suite.Run(t, new(OrderRepositoryTestSuite))
 }
 
+func (s *OrderRepositoryTestSuite) TearDownSuite() {
+	ctx := context.TODO()
+
+	s.container.Terminate(ctx)
+}
+
 func (s *OrderRepositoryTestSuite) TearDownTest() {
-	s.repo.db.Delete(&shop.Order{}, "1 = 1")
+	s.db.Delete(&shop.Order{}, "1 = 1")
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
-	order1 := factory.NewOrder()
-	order2 := factory.NewOrder()
-	order3 := factory.NewOrder()
+	order1 := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order2 := shop.Order{
+		ID:     "some-id2",
+		Status: shop.Pending,
+		Total:  4000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order3 := shop.Order{
+		ID:     "some-id3",
+		Status: shop.Pending,
+		Total:  3500,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
 
-	err := s.repo.Create(&order1)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order1)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order2)
+	err = s.repo.Create(ctx, &order2)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order3)
+	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(shop.OrderQuery{})
+	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -64,20 +97,40 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithLimit() {
-	order1 := factory.NewOrder()
-	order2 := factory.NewOrder()
-	order3 := factory.NewOrder()
+	order1 := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order2 := shop.Order{
+		ID:     "some-id2",
+		Status: shop.Pending,
+		Total:  4000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order3 := shop.Order{
+		ID:     "some-id3",
+		Status: shop.Pending,
+		Total:  3500,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
 
-	err := s.repo.Create(&order1)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order1)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order2)
+	err = s.repo.Create(ctx, &order2)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order3)
+	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(shop.OrderQuery{Limit: 1})
+	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{Limit: 1})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 1, actual.Limit)
@@ -88,20 +141,40 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithLimit() {
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithOffset() {
-	order1 := factory.NewOrder()
-	order2 := factory.NewOrder()
-	order3 := factory.NewOrder()
+	order1 := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order2 := shop.Order{
+		ID:     "some-id2",
+		Status: shop.Pending,
+		Total:  4000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order3 := shop.Order{
+		ID:     "some-id3",
+		Status: shop.Pending,
+		Total:  3500,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
 
-	err := s.repo.Create(&order1)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order1)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order2)
+	err = s.repo.Create(ctx, &order2)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order3)
+	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(shop.OrderQuery{Offset: 1})
+	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{Offset: 1})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -113,21 +186,40 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithOffset() {
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithStatus() {
-	order1 := factory.NewOrder()
-	order1.Status = shop.Paid
-	order2 := factory.NewOrder()
-	order3 := factory.NewOrder()
+	order1 := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order2 := shop.Order{
+		ID:     "some-id2",
+		Status: shop.Pending,
+		Total:  4000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order3 := shop.Order{
+		ID:     "some-id3",
+		Status: shop.Pending,
+		Total:  3500,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
 
-	err := s.repo.Create(&order1)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order1)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order2)
+	err = s.repo.Create(ctx, &order2)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order3)
+	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(shop.OrderQuery{Status: shop.Paid})
+	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{Status: shop.Paid})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -138,20 +230,40 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithStatus() {
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithBookID() {
-	order1 := factory.NewOrder()
-	order2 := factory.NewOrder()
-	order3 := factory.NewOrder()
+	order1 := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id2",
+		UserID: "user-id",
+	}
+	order2 := shop.Order{
+		ID:     "some-id2",
+		Status: shop.Pending,
+		Total:  4000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order3 := shop.Order{
+		ID:     "some-id3",
+		Status: shop.Pending,
+		Total:  3500,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
 
-	err := s.repo.Create(&order1)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order1)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order2)
+	err = s.repo.Create(ctx, &order2)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order3)
+	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(shop.OrderQuery{BookID: order1.BookID})
+	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{BookID: order1.BookID})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -162,20 +274,40 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithBookID() {
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithUserID() {
-	order1 := factory.NewOrder()
-	order2 := factory.NewOrder()
-	order3 := factory.NewOrder()
+	order1 := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id2",
+		UserID: "user-id2",
+	}
+	order2 := shop.Order{
+		ID:     "some-id2",
+		Status: shop.Pending,
+		Total:  4000,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
+	order3 := shop.Order{
+		ID:     "some-id3",
+		Status: shop.Pending,
+		Total:  3500,
+		BookID: "book-id",
+		UserID: "user-id",
+	}
 
-	err := s.repo.Create(&order1)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order1)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order2)
+	err = s.repo.Create(ctx, &order2)
 	require.Nil(s.T(), err)
 
-	err = s.repo.Create(&order3)
+	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(shop.OrderQuery{UserID: order1.UserID})
+	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{UserID: order1.UserID})
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 0, actual.Limit)
@@ -186,56 +318,89 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithUserID() {
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByID_Successfully() {
-	order := factory.NewOrder()
+	order := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id2",
+		UserID: "user-id2",
+	}
 
-	err := s.repo.Create(&order)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByID(order.ID)
+	actual, err := s.repo.FindByID(ctx, order.ID)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), order.ID, actual.ID)
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByID_WithError() {
-	_, err := s.repo.FindByID(uuid.NewString())
+	ctx := context.TODO()
 
-	assert.IsType(s.T(), &common.ErrEntityNotFound{}, err)
+	_, err := s.repo.FindByID(ctx, uuid.NewString())
+	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, err)
 }
 
 func (s *OrderRepositoryTestSuite) TestCreate_Successfully() {
-	order := factory.NewOrder()
+	order := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id2",
+		UserID: "user-id2",
+	}
 
-	err := s.repo.Create(&order)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order)
 	assert.Nil(s.T(), err)
 
-	persisted, err := s.repo.FindByID(order.ID)
+	persisted, err := s.repo.FindByID(ctx, order.ID)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), order.ID, persisted.ID)
 }
 
 func (s *OrderRepositoryTestSuite) TestCreate_WithError() {
-	order := factory.NewOrder()
+	order := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id2",
+		UserID: "user-id2",
+	}
 
-	err := s.repo.Create(&order)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order)
 	assert.Nil(s.T(), err)
 
-	err = s.repo.Create(&order)
+	err = s.repo.Create(ctx, &order)
 	assert.NotNil(s.T(), err)
 }
 
 func (s *OrderRepositoryTestSuite) TestUpdate_Successfully() {
-	order := factory.NewOrder()
+	order := shop.Order{
+		ID:     "some-id1",
+		Status: shop.Paid,
+		Total:  5000,
+		BookID: "book-id2",
+		UserID: "user-id2",
+	}
 
-	err := s.repo.Create(&order)
+	ctx := context.TODO()
+
+	err := s.repo.Create(ctx, &order)
 	assert.Nil(s.T(), err)
 
 	order.Status = shop.Paid
-	err = s.repo.Update(&order)
+	err = s.repo.Update(ctx, &order)
 	assert.Nil(s.T(), err)
 
-	persisted, err := s.repo.FindByID(order.ID)
+	persisted, err := s.repo.FindByID(ctx, order.ID)
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), shop.Paid, persisted.Status)

@@ -10,7 +10,7 @@ services:
     ports:
       - "5433:5432"
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:0.14.2
     ports:
       - "5566-5599:4566-4599"
     environment:

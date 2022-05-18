@@ -7,11 +7,11 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
-type DatabaseURL string
+type DatabaseURI string
 type Source string
 
 type Config struct {
-	DatabaseURL DatabaseURL
+	DatabaseURI DatabaseURI
 	Source      Source
 }
 
@@ -25,7 +25,7 @@ func New(c Config) *Migrator {
 
 // Sync Applies new database migrations
 func (m *Migrator) Sync() {
-	mi, err := migrate.New(string(m.Source), string(m.DatabaseURL))
+	mi, err := migrate.New(string(m.Source), string(m.DatabaseURI))
 
 	if err != nil {
 		log.Default().Fatalf("An error happened when trying to sync migrations: %v", err)

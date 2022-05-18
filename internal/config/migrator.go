@@ -7,8 +7,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewMigrationDatabaseURL() migrator.DatabaseURL {
-	return migrator.DatabaseURL(viper.GetString("DATABASE_URL"))
+func NewMigrationDatabaseURI() migrator.DatabaseURI {
+	return migrator.DatabaseURI(viper.GetString("DATABASE_URI"))
 }
 
 func NewMigrationSource() migrator.Source {

@@ -1,4 +1,4 @@
-package server
+package server_test
 
 import (
 	"bytes"
@@ -11,6 +11,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/generator"
 	"github.com/c0llinn/ebook-store/internal/hash"
 	"github.com/c0llinn/ebook-store/internal/persistence"
+	"github.com/c0llinn/ebook-store/internal/server"
 	"github.com/c0llinn/ebook-store/internal/token"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
@@ -32,12 +33,12 @@ type AuthenticatorHandlerTestSuite struct {
 	context  *gin.Context
 	recorder *httptest.ResponseRecorder
 	db       *gorm.DB
-	handler  *AuthenticationHandler
+	handler  *server.AuthenticationHandler
 }
 
 func (s *AuthenticatorHandlerTestSuite) SetupTest() {
 	test.SetEnvironmentVariables()
-	s.T().Log(viper.GetString("DATABASE_URL"))
+	s.T().Log(viper.GetString("DATABASE_URI"))
 	config.LoadMigrations("file:../../migrations")
 
 	s.db = config.NewConnection()

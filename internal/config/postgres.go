@@ -9,7 +9,7 @@ import (
 )
 
 func NewConnection() *gorm.DB {
-	db, err := sql.Open("postgres", viper.GetString("DATABASE_URL"))
+	db, err := sql.Open("postgres", viper.GetString("DATABASE_URI"))
 	if err != nil {
 		log.Default().Fatalf("postgres connection has failed: %v", err)
 		return nil
@@ -21,14 +21,8 @@ func NewConnection() *gorm.DB {
 	})
 
 	conn, err := gorm.Open(dialector, &gorm.Config{})
-
 	if err != nil {
-		log.Default().Fatalf("postgres connection has failed: %v", err)
-		return nil
-	}
-
-	if err = db.Ping(); err != nil {
-		log.Default().Fatalf("ping has failed: %v", err)
+		log.Default().Fatalf("postgres connection has failed: %T %v", err, err)
 		return nil
 	}
 

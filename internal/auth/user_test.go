@@ -1,6 +1,3 @@
-//go:build unit
-// +build unit
-
 package auth
 
 import (
@@ -17,4 +14,10 @@ func TestUser_IsAdminWhenRoleIsAdmin(t *testing.T) {
 	user := User{Role: Admin}
 
 	assert.True(t, user.IsAdmin())
+}
+
+func TestUser_FullName(t *testing.T) {
+	user := User{FirstName: "Raphael", LastName: "Collin"}
+
+	assert.Equal(t, "Raphael Collin", user.FullName())
 }

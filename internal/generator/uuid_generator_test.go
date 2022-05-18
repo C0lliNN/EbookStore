@@ -1,6 +1,3 @@
-//go:build unit
-// +build unit
-
 package generator
 
 import (
@@ -9,7 +6,7 @@ import (
 )
 
 func TestUUIDGenerator_NewID(t *testing.T) {
-	id := UUIDGenerator{}.NewID()
+	id := NewUUIDGenerator().NewID()
 
 	assert.Len(t, id, 36)
 }

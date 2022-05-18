@@ -1,17 +1,13 @@
-//go:build unit
-// +build unit
-
 package hash
 
 import (
-	"fmt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestBcryptWrapper_HashPassword(t *testing.T) {
-	hashedPassword, err := BcryptWrapper{}.HashPassword("some-password")
+	hashedPassword, err := NewBcryptWrapper().HashPassword("some-password")
 
 	assert.Nil(t, err)
 	assert.Len(t, hashedPassword, 60)
@@ -21,7 +17,7 @@ func TestBcryptWrapper_CompareHashAndPasswordWithInvalidPassword(t *testing.T) {
 	hashedPassword := "some-hashed-password"
 	password := "password"
 
-	err := BcryptWrapper{}.CompareHashAndPassword(hashedPassword, password)
+	err := NewBcryptWrapper().CompareHashAndPassword(hashedPassword, password)
 
 	assert.NotNil(t, err)
 }
@@ -29,11 +25,9 @@ func TestBcryptWrapper_CompareHashAndPasswordWithInvalidPassword(t *testing.T) {
 func TestBcryptWrapper_CompareHashAndPasswordWithValidPassword(t *testing.T) {
 	password := "some-password"
 
-	hashedPassword, err := BcryptWrapper{}.HashPassword(password)
+	hashedPassword, err := NewBcryptWrapper().HashPassword(password)
 	require.Nil(t, err)
 
-	fmt.Println(hashedPassword, password)
-
-	err = BcryptWrapper{}.CompareHashAndPassword(hashedPassword, password)
+	err = NewBcryptWrapper().CompareHashAndPassword(hashedPassword, password)
 	assert.Nil(t, err)
 }

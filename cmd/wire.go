@@ -65,7 +65,7 @@ var Set = wire.NewSet(
 	wire.NewSet(wire.Struct(new(shop.Config), "*")),
 	shop.New,
 
-	config.NewMigrationDatabaseURL,
+	config.NewMigrationDatabaseURI,
 	config.NewMigrationSource,
 	wire.NewSet(wire.Struct(new(migrator.Config), "*")),
 	migrator.New,

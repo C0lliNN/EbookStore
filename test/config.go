@@ -12,7 +12,7 @@ func SetEnvironmentVariables() {
 	viper.SetDefault("PORT", "8081")
 	viper.SetDefault("ENV", "local")
 
-	viper.SetDefault("DATABASE_URL", "postgres://postgres:postgres@localhost:5433/postgres?sslmode=disable")
+	viper.SetDefault("DATABASE_URI", "postgres://postgres:postgres@localhost:5433/postgres?sslmode=disable")
 	viper.SetDefault("POSTGRES_HOST", "localhost")
 	viper.SetDefault("POSTGRES_PORT", "5433")
 	viper.SetDefault("POSTGRES_USERNAME", "postgres")
