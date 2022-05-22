@@ -61,7 +61,7 @@ func (s *Server) Start() error {
 	router.Use(s.ErrorMiddleware.Handler())
 	router.Use(s.LoggerMiddleware.Handler())
 
-	// This is redirect is for convenience purposes. It's easy to remember /docs
+	// This redirect is for convenience purposes. It's easy to remember /docs
 	router.GET("/docs", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/swagger/index.html")
 	})

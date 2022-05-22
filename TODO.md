@@ -36,10 +36,9 @@
 * [ ] Try to use context.Context in Stripe
 * [ ] Test app manually
 * [ ] Make test pass
-* [ ] Create Good Seed Data
-* [ ] Get rid of test folder
-* [ ] Refactor make command
-* [ ] Create make run command and update README.md
+* [ ] Create Seed Script
+* [ ] Refactor makefile
+* [ ] Update README.md
 
 # Nice to Haves
 * Handle Stripe Webhook in a good way
@@ -49,3 +48,4 @@
 * Use Cart in Shop 
 * Add oauth server
 * Add more integration tests
+* Use Specification in Query Commands
