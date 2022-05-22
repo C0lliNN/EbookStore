@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/catalog"
+	mocks2 "github.com/c0llinn/ebook-store/internal/mocks/shop"
 	"github.com/c0llinn/ebook-store/internal/shop"
-	mocks "github.com/c0llinn/ebook-store/mocks/shop"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"io"
@@ -27,20 +27,20 @@ const (
 
 type ShopTestSuite struct {
 	suite.Suite
-	repo           *mocks.Repository
-	paymentClient  *mocks.PaymentClient
-	catalogService *mocks.CatalogService
-	idGenerator    *mocks.IDGenerator
-	validator      *mocks.Validator
+	repo           *mocks2.Repository
+	paymentClient  *mocks2.PaymentClient
+	catalogService *mocks2.CatalogService
+	idGenerator    *mocks2.IDGenerator
+	validator      *mocks2.Validator
 	shop           *shop.Shop
 }
 
 func (s *ShopTestSuite) SetupTest() {
-	s.repo = new(mocks.Repository)
-	s.paymentClient = new(mocks.PaymentClient)
-	s.catalogService = new(mocks.CatalogService)
-	s.idGenerator = new(mocks.IDGenerator)
-	s.validator = new(mocks.Validator)
+	s.repo = new(mocks2.Repository)
+	s.paymentClient = new(mocks2.PaymentClient)
+	s.catalogService = new(mocks2.CatalogService)
+	s.idGenerator = new(mocks2.IDGenerator)
+	s.validator = new(mocks2.Validator)
 
 	s.shop = shop.New(shop.Config{
 		Repository:     s.repo,

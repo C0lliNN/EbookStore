@@ -3,9 +3,8 @@ package server_test
 import (
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/auth"
+	"github.com/c0llinn/ebook-store/internal/mocks/server"
 	"github.com/c0llinn/ebook-store/internal/server"
-	mocks "github.com/c0llinn/ebook-store/mocks/server"
-
 	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

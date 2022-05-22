@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/auth"
-	mocks "github.com/c0llinn/ebook-store/mocks/auth"
+	mocks2 "github.com/c0llinn/ebook-store/internal/mocks/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -25,24 +25,24 @@ const (
 
 type AuthenticatorTestSuite struct {
 	suite.Suite
-	token             *mocks.TokenHandler
-	repo              *mocks.Repository
-	emailClient       *mocks.EmailClient
-	passwordGenerator *mocks.PasswordGenerator
-	hash              *mocks.HashHandler
-	idGenerator       *mocks.IDGenerator
-	validator         *mocks.Validator
+	token             *mocks2.TokenHandler
+	repo              *mocks2.Repository
+	emailClient       *mocks2.EmailClient
+	passwordGenerator *mocks2.PasswordGenerator
+	hash              *mocks2.HashHandler
+	idGenerator       *mocks2.IDGenerator
+	validator         *mocks2.Validator
 	authenticator     *auth.Authenticator
 }
 
 func (s *AuthenticatorTestSuite) SetupTest() {
-	s.token = new(mocks.TokenHandler)
-	s.repo = new(mocks.Repository)
-	s.emailClient = new(mocks.EmailClient)
-	s.passwordGenerator = new(mocks.PasswordGenerator)
-	s.hash = new(mocks.HashHandler)
-	s.idGenerator = new(mocks.IDGenerator)
-	s.validator = new(mocks.Validator)
+	s.token = new(mocks2.TokenHandler)
+	s.repo = new(mocks2.Repository)
+	s.emailClient = new(mocks2.EmailClient)
+	s.passwordGenerator = new(mocks2.PasswordGenerator)
+	s.hash = new(mocks2.HashHandler)
+	s.idGenerator = new(mocks2.IDGenerator)
+	s.validator = new(mocks2.Validator)
 
 	config := auth.Config{
 		Repository:        s.repo,

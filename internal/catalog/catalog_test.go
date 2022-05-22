@@ -5,7 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/catalog"
-	mocks "github.com/c0llinn/ebook-store/mocks/catalog"
+	mocks2 "github.com/c0llinn/ebook-store/internal/mocks/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"io"
@@ -30,20 +30,20 @@ const (
 
 type CatalogTestSuite struct {
 	suite.Suite
-	repo              *mocks.Repository
-	storageClient     *mocks.StorageClient
-	filenameGenerator *mocks.FilenameGenerator
-	idGenerator       *mocks.IDGenerator
-	validator         *mocks.Validator
+	repo              *mocks2.Repository
+	storageClient     *mocks2.StorageClient
+	filenameGenerator *mocks2.FilenameGenerator
+	idGenerator       *mocks2.IDGenerator
+	validator         *mocks2.Validator
 	catalog           *catalog.Catalog
 }
 
 func (s *CatalogTestSuite) SetupTest() {
-	s.repo = new(mocks.Repository)
-	s.storageClient = new(mocks.StorageClient)
-	s.filenameGenerator = new(mocks.FilenameGenerator)
-	s.idGenerator = new(mocks.IDGenerator)
-	s.validator = new(mocks.Validator)
+	s.repo = new(mocks2.Repository)
+	s.storageClient = new(mocks2.StorageClient)
+	s.filenameGenerator = new(mocks2.FilenameGenerator)
+	s.idGenerator = new(mocks2.IDGenerator)
+	s.validator = new(mocks2.Validator)
 
 	config := catalog.Config{
 		Repository:        s.repo,
