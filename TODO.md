@@ -23,7 +23,9 @@
 * [x] Remove admin middleware
 * [x] Replace `c.Request.Context()` with just `c`
 * [x] Refactor migrations folder
+* [ ] Add health-check
 * [ ] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
+* [ ] Create a repository testsuite
 * [ ] Add Logging, Observability
 * [ ] Review Swagger Documentation
 * [ ] Review errors (Update Server Error Mapping)

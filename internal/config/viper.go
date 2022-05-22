@@ -1,25 +1,33 @@
 package config
 
 import (
-	"fmt"
 	"github.com/spf13/viper"
+	"log"
 	"os"
 )
 
-func InitConfiguration() {
-	if os.Getenv("ENV") == "production" {
-		viper.AutomaticEnv()
+func LoadConfiguration() {
+	switch os.Getenv("ENV") {
+	case "production":
+		{
+			viper.AutomaticEnv()
 
-		fmt.Println("Configuration loaded from environment variables")
-	} else {
-		viper.AddConfigPath("..")
-		viper.SetConfigName("env")
-
-		err := viper.ReadInConfig()
-		if err != nil {
-			panic(fmt.Errorf("fatal error %w", err))
+			log.Println("configuration loaded from environment variables")
+			return
 		}
-
-		fmt.Printf("Configuration loaded from %s", viper.ConfigFileUsed())
+	case "test":
+		{
+			viper.AddConfigPath("../..")
+			viper.SetConfigName("env-test")
+		}
+	default: // local is the default
+		viper.AddConfigPath("..")
+		viper.SetConfigName("env-local")
 	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("configuration loaded from ", viper.ConfigFileUsed())
 }

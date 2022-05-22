@@ -6,6 +6,8 @@ import (
 	"github.com/c0llinn/ebook-store/internal/migrator"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"log"
+	"path/filepath"
 )
 
 type PostgresContainer struct {
@@ -20,7 +22,6 @@ func NewPostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 		WaitingFor: wait.ForAll(
 			wait.ForListeningPort("5432/tcp"),
 			wait.ForLog("database system is ready to accept connections"),
-			wait.ForHealthCheck(),
 		),
 		Env: map[string]string{
 			"POSTGRES_DB":       "postgres",
@@ -58,21 +59,25 @@ type LocalstackContainer struct {
 }
 
 func NewLocalstackContainer(ctx context.Context) (*LocalstackContainer, error) {
+	setupPath, err := filepath.Abs("../../scripts/setup_localstack.sh")
+	if err != nil {
+		return nil, err
+	}
+
 	req := testcontainers.ContainerRequest{
 		Image:        "localstack/localstack:0.14.2",
-		ExposedPorts: []string{"5566/tcp"},
-		WaitingFor: wait.ForAll(
-			wait.ForLog("Initialization has finished!"),
-		),
+		ExposedPorts: []string{"4566/tcp"},
+		WaitingFor:   wait.ForLog("Initialization has finished!"),
 		Env: map[string]string{
 			"DEFAULT_REGION": "us-east-2",
 			"SERVICES":       "ses,s3",
 			"START_WEB":      "0",
 		},
-		Mounts: testcontainers.Mounts(testcontainers.BindMount("../../scripts/setup_localstack.sh", "/docker-entrypoint-initaws.d/init.sh")),
+		Mounts: testcontainers.Mounts(testcontainers.BindMount(setupPath, "/docker-entrypoint-initaws.d/init.sh")),
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
+		Logger:           log.Default(),
 		ContainerRequest: req,
 		Started:          true,
 	})
@@ -80,7 +85,7 @@ func NewLocalstackContainer(ctx context.Context) (*LocalstackContainer, error) {
 		return nil, err
 	}
 
-	mappedPort, err := container.MappedPort(ctx, "5566")
+	mappedPort, err := container.MappedPort(ctx, "4566")
 	if err != nil {
 		return nil, err
 	}

@@ -12,5 +12,5 @@ func NewMigrationDatabaseURI() migrator.DatabaseURI {
 }
 
 func NewMigrationSource() migrator.Source {
-	return "file:../migrations"
+	return migrator.Source(viper.GetString("MIGRATION_SOURCE"))
 }
