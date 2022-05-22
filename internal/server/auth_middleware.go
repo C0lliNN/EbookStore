@@ -48,7 +48,8 @@ func (m *AuthenticationMiddleware) Handler() gin.HandlerFunc {
 			return
 		}
 
-		context.Set("user", user)
+		context.Set("userId", user.ID)
+		context.Set("admin", user.IsAdmin())
 		context.Next()
 	}
 }

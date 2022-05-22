@@ -27,13 +27,13 @@
 * [x] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
 * [x] Create a repository testsuite
 * [ ] Add Logging, Observability
-* [ ] Review Swagger Documentation
-* [ ] Review errors (Update Server Error Mapping)
+* [x] Review Swagger Documentation
+* [x] Review errors (Update Server Error Mapping)
 * [ ] Reduce number of multi-argument functions
 * [ ] Review pointer/concrete types in struct and as receivers (tests included)
-* [ ] Find a way to separate unit and integration tests while keeping good autocompletion
+* [x] Find a way to separate unit and integration tests while keeping good autocompletion
 * [ ] Create Good Seed Data
-* [ ] Document Public API (Maybe autogenerate documentation)
+* [x] Document Public API (Maybe autogenerate documentation)
 * [ ] Get rid of test folder
 * [ ] Add oauth server
 * [ ] Add more integration tests

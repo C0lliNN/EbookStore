@@ -1,11 +1,10 @@
 package log
 
-// A simple package with initialization
-
 import (
 	"context"
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"strings"
 )
 
@@ -15,14 +14,18 @@ var (
 )
 
 func init() {
-	d, err := zap.NewDevelopment()
+	devConfig := zap.NewDevelopmentConfig()
+	devConfig.DisableCaller = true
+	devConfig.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
+
+	d, err := devConfig.Build()
 	if err != nil {
 		panic(err)
 	}
 
 	dev = d.Sugar()
 
-	p, err := zap.NewProduction()
+	p, err := zap.NewProduction(zap.WithCaller(false))
 	if err != nil {
 		panic(err)
 	}
@@ -34,9 +37,16 @@ func init() {
 func FromContext(ctx context.Context) *zap.SugaredLogger {
 	logger := Default()
 
-	logger.With()
+	userId := "no-user"
+	if id, ok := ctx.Value("userId").(string); ok {
+		userId = id
+	}
 
-	return logger
+
+	return logger.With(
+		"requestId", ctx.Value("requestId"),
+		"userId", userId,
+	)
 }
 
 // Default returns a logger based on the environment. It should only be used when context.Context is not available

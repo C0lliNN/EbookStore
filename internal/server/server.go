@@ -31,7 +31,9 @@ type Timeout time.Duration
 type Config struct {
 	Migrator                 *migrator.Migrator
 	Router                   *gin.Engine
-	HealthcheckHandler *HealthcheckHandler
+	CorrelationIDMiddleware *CorrelationIDMiddleware
+	HealthcheckHandler       *HealthcheckHandler
+	LoggerMiddleware         *LoggerMiddleware
 	AuthenticationMiddleware *AuthenticationMiddleware
 	ErrorMiddleware          *ErrorMiddleware
 	AuthenticationHandler    *AuthenticationHandler
@@ -54,8 +56,10 @@ func (s *Server) Start() error {
 
 	router := s.Router
 
+	router.Use(s.CorrelationIDMiddleware.Handler())
 	router.Use(gin.Recovery())
 	router.Use(s.ErrorMiddleware.Handler())
+	router.Use(s.LoggerMiddleware.Handler())
 
 	// This is redirect is for convenience purposes. It's easy to remember /docs
 	router.GET("/docs", func(c *gin.Context) {
