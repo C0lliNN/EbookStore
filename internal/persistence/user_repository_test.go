@@ -3,51 +3,32 @@ package persistence_test
 import (
 	"context"
 	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/config"
 	"github.com/c0llinn/ebook-store/internal/persistence"
-	"github.com/c0llinn/ebook-store/test"
 	"github.com/c0llinn/ebook-store/test/factory"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/gorm"
 	"testing"
 )
 
 type UserRepositoryTestSuite struct {
-	suite.Suite
+	RepositoryTestSuite
 	repo      *persistence.UserRepository
-	db        *gorm.DB
-	container *test.PostgresContainer
 }
 
 func (s *UserRepositoryTestSuite) SetupSuite() {
-	ctx := context.TODO()
+	s.RepositoryTestSuite.SetupSuite()
 
-	var err error
-	s.container, err = test.NewPostgresContainer(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	viper.SetDefault("DATABASE_URI", s.container.URI)
-
-	s.db = config.NewConnection()
 	s.repo = persistence.NewUserRepository(s.db)
 }
-
-func (s *UserRepositoryTestSuite) TearDownSuite() {
-	ctx := context.TODO()
-
-	s.container.Terminate(ctx)
-}
-
 func (s *UserRepositoryTestSuite) TearDownTest() {
 	s.db.Delete(&auth.User{}, "1 = 1")
 }
 
 func TestUserRepositoryTest(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	suite.Run(t, new(UserRepositoryTestSuite))
 }
 

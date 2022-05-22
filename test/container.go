@@ -3,7 +3,6 @@ package test
 import (
 	"context"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/migrator"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"log"
@@ -43,9 +42,6 @@ func NewPostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 		return nil, err
 	}
 	uri := fmt.Sprintf("postgres://postgres:postgres@%s/postgres?sslmode=disable", addr)
-
-	m := migrator.New(migrator.Config{DatabaseURI: migrator.DatabaseURI(uri), Source: "file:../../migrations"})
-	m.Sync()
 
 	return &PostgresContainer{
 		Container: container,
@@ -92,6 +88,6 @@ func NewLocalstackContainer(ctx context.Context) (*LocalstackContainer, error) {
 
 	return &LocalstackContainer{
 		Container: container,
-		Port:      string(mappedPort),
+		Port:      mappedPort.Port(),
 	}, nil
 }

@@ -27,7 +27,7 @@ func (h *AuthenticationHandler) Routes() []Route {
 	return []Route{
 		{Method: http.MethodPost, Path: "/register", Handler: h.register, Public: true},
 		{Method: http.MethodPost, Path: "/login", Handler: h.login, Public: true},
-		{Method: http.MethodPatch, Path: "/password-reset", Handler: h.resetPassword, Public: true},
+		{Method: http.MethodPost, Path: "/password-reset", Handler: h.resetPassword, Public: true},
 	}
 }
 

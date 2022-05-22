@@ -3,52 +3,34 @@ package persistence_test
 import (
 	"context"
 	"github.com/c0llinn/ebook-store/internal/catalog"
-	"github.com/c0llinn/ebook-store/internal/config"
 	"github.com/c0llinn/ebook-store/internal/persistence"
-	"github.com/c0llinn/ebook-store/test"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/gorm"
 	"testing"
 	"time"
 )
 
 type BookRepositoryTestSuite struct {
-	suite.Suite
-	container *test.PostgresContainer
-	db        *gorm.DB
+	RepositoryTestSuite
 	repo      *persistence.BookRepository
 }
 
 func (s *BookRepositoryTestSuite) SetupSuite() {
-	ctx := context.TODO()
+	s.RepositoryTestSuite.SetupSuite()
 
-	var err error
-	s.container, err = test.NewPostgresContainer(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	viper.SetDefault("DATABASE_URI", s.container.URI)
-
-	s.db = config.NewConnection()
 	s.repo = persistence.NewBookRepository(s.db)
 }
 
 func TestBookRepositoryRun(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	suite.Run(t, new(BookRepositoryTestSuite))
 }
 
 func (s *BookRepositoryTestSuite) TearDownTest() {
 	s.db.Delete(&catalog.Book{}, "1 = 1")
-}
-
-func (s *BookRepositoryTestSuite) TearDownSuite() {
-	ctx := context.TODO()
-
-	s.container.Terminate(ctx)
 }
 
 func (s *BookRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {

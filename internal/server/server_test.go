@@ -21,18 +21,21 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
+	"net/http"
 	"time"
 )
 
-type ServerTest struct {
+type ServerSuiteTest struct {
 	suite.Suite
 	baseURL             string
 	postgresContainer   *test.PostgresContainer
 	localstackContainer *test.LocalstackContainer
+	db *gorm.DB
 	server              *server.Server
 }
 
-func (s *ServerTest) SetupSuite() {
+func (s *ServerSuiteTest) SetupSuite() {
 	config.LoadConfiguration()
 
 	var err error
@@ -53,30 +56,35 @@ func (s *ServerTest) SetupSuite() {
 	viper.Set("AWS_S3_ENDPOINT", fmt.Sprintf("http://s3.localhost.localstack.cloud:%v", s.localstackContainer.Port))
 
 	s.baseURL = fmt.Sprintf("http://%v", viper.GetString("SERVER_ADDR"))
-	s.server = newServer()
+	s.createServer()
 
 	go func() {
 		s.server.Start()
 	}()
 
 	require.Eventually(s.T(), func() bool {
-		s.server.
-	}, time.Second*2, time.Millisecond*100)
+		response, err := http.Get(s.baseURL + "/healthcheck")
+		if err != nil {
+			return false
+		}
+
+		return response.StatusCode == http.StatusOK
+	}, time.Second*15, time.Millisecond*500)
 }
 
-func (s *ServerTest) TearDownSuite() {
+func (s *ServerSuiteTest) TearDownSuite() {
 	ctx := context.TODO()
 
 	s.postgresContainer.Terminate(ctx)
 	s.localstackContainer.Terminate(ctx)
 }
 
-func newServer() *server.Server {
-	databaseURL := config.NewMigrationDatabaseURI()
-	migrationSource := config.NewMigrationSource()
+func (s *ServerSuiteTest) createServer() {
+	databaseURI := config.NewMigrationDatabaseURI()
+	source := config.NewMigrationSource()
 	migratorConfig := migrator.Config{
-		DatabaseURI: databaseURL,
-		Source:      migrationSource,
+		DatabaseURI: databaseURI,
+		Source:      source,
 	}
 	migratorMigrator := migrator.New(migratorConfig)
 	engine := config.NewServerEngine()
@@ -85,9 +93,10 @@ func newServer() *server.Server {
 	authenticationMiddleware := server.NewAuthenticationMiddleware(jwtWrapper)
 	errorMiddleware := server.NewErrorMiddleware()
 	db := config.NewConnection()
+	healthcheckHandler := server.NewHeathcheckHandler(db)
 	userRepository := persistence.NewUserRepository(db)
 	bcryptWrapper := hash.NewBcryptWrapper()
-	ses := config.NewSNSService()
+	ses := config.NewSESService()
 	sesEmailClient := email.NewSESEmailClient(ses)
 	passwordGenerator := generator.NewPasswordGenerator()
 	uuidGenerator := generator.NewUUIDGenerator()
@@ -133,6 +142,7 @@ func newServer() *server.Server {
 	serverConfig := server.Config{
 		Migrator:                 migratorMigrator,
 		Router:                   engine,
+		HealthcheckHandler:       healthcheckHandler,
 		AuthenticationMiddleware: authenticationMiddleware,
 		ErrorMiddleware:          errorMiddleware,
 		AuthenticationHandler:    authenticationHandler,
@@ -142,5 +152,6 @@ func newServer() *server.Server {
 		Timeout:                  timeout,
 	}
 
-	return server.New(serverConfig)
+	s.db = db
+	s.server = server.New(serverConfig)
 }

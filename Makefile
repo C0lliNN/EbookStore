@@ -3,13 +3,14 @@
 dependency:
 	@go get -v ./...
 
-integration-test: export AWS_ACCESS_KEY_ID=test
-integration-test: export AWS_SECRET_ACCESS_KEY=test
-integration-test: docker-up dependency
-	@go test -tags=integration ./...
+test: export ENV=test
+test: export AWS_ACCESS_KEY_ID=test
+test: export AWS_SECRET_ACCESS_KEY=test
+test: dependency
+	@go test ./...
 
 unit-test: dependency
-	@go test -tags=unit ./...
+	@go test -short ./...
 
 docker-up:
 	@docker-compose --file=docker-compose.test.yml --project-name ebook-store-test up -d

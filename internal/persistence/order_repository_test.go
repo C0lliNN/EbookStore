@@ -2,49 +2,31 @@ package persistence_test
 
 import (
 	"context"
-	"github.com/c0llinn/ebook-store/internal/config"
 	"github.com/c0llinn/ebook-store/internal/persistence"
 	"github.com/c0llinn/ebook-store/internal/shop"
-	"github.com/c0llinn/ebook-store/test"
 	"github.com/google/uuid"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/gorm"
 	"testing"
 )
 
 type OrderRepositoryTestSuite struct {
-	suite.Suite
-	db        *gorm.DB
+	RepositoryTestSuite
 	repo      *persistence.OrderRepository
-	container *test.PostgresContainer
 }
 
 func (s *OrderRepositoryTestSuite) SetupSuite() {
-	ctx := context.TODO()
+	s.RepositoryTestSuite.SetupSuite()
 
-	var err error
-	s.container, err = test.NewPostgresContainer(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	viper.SetDefault("DATABASE_URI", s.container.URI)
-
-	s.db = config.NewConnection()
 	s.repo = persistence.NewOrderRepository(s.db)
 }
 
 func TestOrderRepositoryRun(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
 	suite.Run(t, new(OrderRepositoryTestSuite))
-}
-
-func (s *OrderRepositoryTestSuite) TearDownSuite() {
-	ctx := context.TODO()
-
-	s.container.Terminate(ctx)
 }
 
 func (s *OrderRepositoryTestSuite) TearDownTest() {

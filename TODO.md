@@ -23,9 +23,9 @@
 * [x] Remove admin middleware
 * [x] Replace `c.Request.Context()` with just `c`
 * [x] Refactor migrations folder
-* [ ] Add health-check
-* [ ] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
-* [ ] Create a repository testsuite
+* [x] Add health-check
+* [x] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
+* [x] Create a repository testsuite
 * [ ] Add Logging, Observability
 * [ ] Review Swagger Documentation
 * [ ] Review errors (Update Server Error Mapping)
@@ -36,6 +36,7 @@
 * [ ] Document Public API (Maybe autogenerate documentation)
 * [ ] Get rid of test folder
 * [ ] Add oauth server
+* [ ] Add more integration tests
 * [ ] Refactor make command
 * [ ] Create make run command and update README.md
 

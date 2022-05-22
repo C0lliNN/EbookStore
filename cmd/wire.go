@@ -24,7 +24,7 @@ import (
 var Set = wire.NewSet(
 	config.NewConnection,
 	generator.NewUUIDGenerator,
-	config.NewSNSService,
+	config.NewSESService,
 	generator.NewPasswordGenerator,
 	config.NewHMACSecret,
 	persistence.NewUserRepository,
@@ -74,6 +74,7 @@ var Set = wire.NewSet(
 	config.NewServerAddr,
 	config.NewServerTimeout,
 	server.NewErrorMiddleware,
+	server.NewHeathcheckHandler,
 	server.NewAuthenticationMiddleware,
 	server.NewAuthenticatorHandler,
 	server.NewCatalogHandler,

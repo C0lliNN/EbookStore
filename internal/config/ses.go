@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewSNSService() *ses.SES {
+func NewSESService() *ses.SES {
 	var endpoint *string
 	if env := viper.GetString("AWS_SES_ENDPOINT"); env != "" {
 		endpoint = aws.String(env)

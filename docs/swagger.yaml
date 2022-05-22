@@ -332,6 +332,18 @@ paths:
       summary: Update the provided Book
       tags:
       - Catalog
+  /healthcheck:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: REST API Healtcheck
   /login:
     post:
       consumes:

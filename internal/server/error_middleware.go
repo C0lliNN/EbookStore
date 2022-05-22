@@ -31,11 +31,11 @@ func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
 		if len(context.Errors) <= 0 {
 			return
 		}
-		log.FromContext(context).Warn("an error occurred when processing the request: ", context.Errors.Last().Err)
+		err := context.Errors.Last().Err
+
+		log.FromContext(context).Warnf("an error occurred when processing the request: %v", err)
 
 		var response *ErrorResponse
-
-		err := context.Errors.Last().Err
 		switch err {
 		case auth.ErrWrongPassword:
 			response = newErrorResponse(http.StatusUnauthorized, err.Error())
@@ -53,7 +53,7 @@ func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
 		}
 
 		switch err := err.(type) {
-		case *validator.ValidationErrors:
+		case validator.ValidationErrors:
 			response = newValidationErrorResponse(err)
 		case *persistence.ErrDuplicateKey:
 			response = newErrorResponse(http.StatusConflict, err.Error())
@@ -74,10 +74,10 @@ func newErrorResponse(code int, message string) *ErrorResponse {
 	}
 }
 
-func newValidationErrorResponse(errors *validator.ValidationErrors) *ErrorResponse {
-	details := make([]string, 0, len(*errors))
+func newValidationErrorResponse(errors validator.ValidationErrors) *ErrorResponse {
+	details := make([]string, 0, len(errors))
 
-	for _, err := range *errors {
+	for _, err := range errors {
 		details = append(details, fmt.Sprintf("the validation of the field %s for tag %s failed", err.Field(), err.Tag()))
 	}
 

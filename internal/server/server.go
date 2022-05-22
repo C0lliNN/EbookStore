@@ -31,6 +31,7 @@ type Timeout time.Duration
 type Config struct {
 	Migrator                 *migrator.Migrator
 	Router                   *gin.Engine
+	HealthcheckHandler *HealthcheckHandler
 	AuthenticationMiddleware *AuthenticationMiddleware
 	ErrorMiddleware          *ErrorMiddleware
 	AuthenticationHandler    *AuthenticationHandler
@@ -63,6 +64,7 @@ func (s *Server) Start() error {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	routes := s.AuthenticationHandler.Routes()
+	routes = append(routes, s.HealthcheckHandler.Routes()...)
 	routes = append(routes, s.CatalogHandler.Routes()...)
 	routes = append(routes, s.ShopHandler.Routes()...)
 
