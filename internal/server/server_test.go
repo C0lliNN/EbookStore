@@ -88,16 +88,19 @@ func (s *ServerSuiteTest) createServer() {
 	}
 	migratorMigrator := migrator.New(migratorConfig)
 	engine := config.NewServerEngine()
+	correlationIDMiddleware := server.NewCorrelationIDMiddleware()
+	db := config.NewConnection()
+	healthcheckHandler := server.NewHeathcheckHandler(db)
+	loggerMiddleware := server.NewLoggerMiddleware()
 	hmacSecret := config.NewHMACSecret()
 	jwtWrapper := token.NewJWTWrapper(hmacSecret)
 	authenticationMiddleware := server.NewAuthenticationMiddleware(jwtWrapper)
 	errorMiddleware := server.NewErrorMiddleware()
-	db := config.NewConnection()
-	healthcheckHandler := server.NewHeathcheckHandler(db)
 	userRepository := persistence.NewUserRepository(db)
 	bcryptWrapper := hash.NewBcryptWrapper()
-	ses := config.NewSESService()
-	sesEmailClient := email.NewSESEmailClient(ses)
+	awsConfig := config.NewAWSConfig()
+	client := config.NewSESClient(awsConfig)
+	emailEmail := email.NewSESEmailClient(client)
 	passwordGenerator := generator.NewPasswordGenerator()
 	uuidGenerator := generator.NewUUIDGenerator()
 	validatorValidator := validator.New()
@@ -105,7 +108,7 @@ func (s *ServerSuiteTest) createServer() {
 		Repository:        userRepository,
 		Tokener:           jwtWrapper,
 		Hasher:            bcryptWrapper,
-		EmailClient:       sesEmailClient,
+		EmailClient:       emailEmail,
 		PasswordGenerator: passwordGenerator,
 		IDGenerator:       uuidGenerator,
 		Validator:         validatorValidator,
@@ -113,13 +116,19 @@ func (s *ServerSuiteTest) createServer() {
 	authenticator := auth.New(authConfig)
 	authenticationHandler := server.NewAuthenticatorHandler(authenticator)
 	bookRepository := persistence.NewBookRepository(db)
-	s3 := config.NewS3Service()
+	s3Client := config.NewS3Client(awsConfig)
+	presignClient := config.NewPresignClient(s3Client)
 	bucket := config.NewBucket()
-	s3Client := storage.NewS3Client(s3, bucket)
+	storageConfig := storage.Config{
+		S3Client:      s3Client,
+		PresignClient: presignClient,
+		Bucket:        bucket,
+	}
+	storageStorage := storage.NewStorage(storageConfig)
 	filenameGenerator := generator.NewFilenameGenerator()
 	catalogConfig := catalog.Config{
 		Repository:        bookRepository,
-		StorageClient:     s3Client,
+		StorageClient:     storageStorage,
 		FilenameGenerator: filenameGenerator,
 		IDGenerator:       uuidGenerator,
 		Validator:         validatorValidator,
@@ -142,7 +151,9 @@ func (s *ServerSuiteTest) createServer() {
 	serverConfig := server.Config{
 		Migrator:                 migratorMigrator,
 		Router:                   engine,
+		CorrelationIDMiddleware:  correlationIDMiddleware,
 		HealthcheckHandler:       healthcheckHandler,
+		LoggerMiddleware:         loggerMiddleware,
 		AuthenticationMiddleware: authenticationMiddleware,
 		ErrorMiddleware:          errorMiddleware,
 		AuthenticationHandler:    authenticationHandler,
@@ -151,7 +162,8 @@ func (s *ServerSuiteTest) createServer() {
 		Addr:                     addr,
 		Timeout:                  timeout,
 	}
+	serverServer := server.New(serverConfig)
 
 	s.db = db
-	s.server = server.New(serverConfig)
+	s.server = serverServer
 }

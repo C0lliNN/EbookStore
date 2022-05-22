@@ -3,9 +3,9 @@ package email
 import (
 	"bytes"
 	"context"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/ses"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ses"
+	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/spf13/viper"
 	"html/template"
@@ -20,37 +20,36 @@ const (
 						<p>If you did ask for this change, please contact us!</p>`
 )
 
-type SESEmailClient struct {
-	session *session.Session
-	sns     *ses.SES
+type Email struct {
+	Client *ses.Client
 }
 
-func NewSESEmailClient(sns *ses.SES) *SESEmailClient {
-	return &SESEmailClient{sns: sns}
+func NewSESEmailClient(client *ses.Client) *Email {
+	return &Email{Client: client}
 }
 
-func (c *SESEmailClient) SendPasswordResetEmail(ctx context.Context, user auth.User, newPassword string) error {
+func (e *Email) SendPasswordResetEmail(ctx context.Context, user auth.User, newPassword string) error {
 	sourceEmail := viper.GetString("AWS_SES_SOURCE_EMAIL")
-	messageBody, err := c.getMessageBody(user, newPassword)
+	messageBody, err := e.getMessageBody(user, newPassword)
 	if err != nil {
 		return err
 	}
 
 	input := &ses.SendEmailInput{
-		Destination: &ses.Destination{
-			CcAddresses: []*string{},
-			ToAddresses: []*string{
-				aws.String(user.Email),
+		Destination: &types.Destination{
+			CcAddresses: nil,
+			ToAddresses: []string{
+				user.Email,
 			},
 		},
-		Message: &ses.Message{
-			Body: &ses.Body{
-				Html: &ses.Content{
+		Message: &types.Message{
+			Body: &types.Body{
+				Html: &types.Content{
 					Charset: aws.String(charset),
 					Data:    aws.String(messageBody),
 				},
 			},
-			Subject: &ses.Content{
+			Subject: &types.Content{
 				Charset: aws.String(charset),
 				Data:    aws.String(subject),
 			},
@@ -58,12 +57,12 @@ func (c *SESEmailClient) SendPasswordResetEmail(ctx context.Context, user auth.U
 		Source: aws.String(sourceEmail),
 	}
 
-	_, err = c.sns.SendEmail(input)
+	_, err = e.Client.SendEmail(ctx, input)
 
 	return err
 }
 
-func (c *SESEmailClient) getMessageBody(user auth.User, newPassword string) (string, error) {
+func (e *Email) getMessageBody(user auth.User, newPassword string) (string, error) {
 	messageBody := bytes.NewBufferString("")
 
 	tmpl := template.Must(template.New("Password Request Template").Parse(emailBodyTemplate))

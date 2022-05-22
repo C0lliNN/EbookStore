@@ -16,7 +16,7 @@ import (
 
 type StorageClientTestSuite struct {
 	suite.Suite
-	client storage.S3Client
+	storage   *storage.Storage
 	container *test.LocalstackContainer
 }
 
@@ -33,7 +33,11 @@ func (s *StorageClientTestSuite) SetupSuite() {
 
 	viper.Set("AWS_S3_ENDPOINT", fmt.Sprintf("http://s3.localhost.localstack.cloud:%v", s.container.Port))
 
-	s.client = storage.S3Client{Service: config.NewS3Service(), Bucket: storage.Bucket(viper.GetString("AWS_S3_BUCKET"))}
+	s.storage = storage.NewStorage(storage.Config{
+		S3Client:      config.NewS3Client(config.NewAWSConfig()),
+		PresignClient: config.NewPresignClient(config.NewS3Client(config.NewAWSConfig())),
+		Bucket:        storage.Bucket(viper.GetString("AWS_S3_BUCKET")),
+	})
 }
 
 func (s *StorageClientTestSuite) TearDownSuite() {
@@ -52,7 +56,7 @@ func TestStorageClientTestSuiteRun(t *testing.T) {
 func (s *StorageClientTestSuite) TestGeneratePreSignedUrl() {
 	key := "some-key"
 
-	url, err := s.client.GeneratePreSignedUrl(context.TODO(), key)
+	url, err := s.storage.GeneratePreSignedUrl(context.TODO(), key)
 
 	assert.Nil(s.T(), err)
 	assert.NotEmpty(s.T(), url)
@@ -62,7 +66,7 @@ func (s *StorageClientTestSuite) TestSaveFile() {
 	key := "some-key"
 	content := bytes.NewReader([]byte("this is the content of a book"))
 
-	err := s.client.SaveFile(context.TODO(), key, "text/plain", content)
+	err := s.storage.SaveFile(context.TODO(), key, "text/plain", content)
 
 	assert.Nil(s.T(), err)
 }
@@ -72,10 +76,10 @@ func (s *StorageClientTestSuite) TestRetrieveFile() {
 	byts := []byte("this is the content of a book")
 	content := bytes.NewReader(byts)
 
-	err := s.client.SaveFile(context.TODO(), key, "text/plain", content)
+	err := s.storage.SaveFile(context.TODO(), key, "text/plain", content)
 	assert.Nil(s.T(), err)
 
-	reader, err := s.client.RetrieveFile(context.TODO(), key)
+	reader, err := s.storage.RetrieveFile(context.TODO(), key)
 	assert.Nil(s.T(), err)
 
 	actual, err := ioutil.ReadAll(reader)

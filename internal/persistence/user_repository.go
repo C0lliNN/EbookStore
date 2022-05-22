@@ -2,8 +2,8 @@ package persistence
 
 import (
 	"context"
+	"errors"
 	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/log"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
 )
@@ -17,10 +17,8 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 }
 
 func (r *UserRepository) Save(ctx context.Context, user *auth.User) error {
-	result := r.db.Create(user)
+	result := r.db.WithContext(ctx).Create(user)
 	if err := result.Error; err != nil {
-		log.Default().Errorf("error trying to save user: %v", err)
-
 		if isConstraintViolationError(err) {
 			return &ErrDuplicateKey{key: "email"}
 		}
@@ -32,20 +30,19 @@ func (r *UserRepository) Save(ctx context.Context, user *auth.User) error {
 }
 
 func (r *UserRepository) FindByEmail(ctx context.Context, email string) (user auth.User, err error) {
-	result := r.db.First(&user, "email = ?", email)
+	result := r.db.WithContext(ctx).First(&user, "email = ?", email)
 	if err = result.Error; err != nil {
-		log.Default().Errorf("error trying to find user by email %s: %v", email, err)
-
-		err = &ErrEntityNotFound{entity: "User"}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = &ErrEntityNotFound{entity: "User"}
+		}
 	}
 
 	return
 }
 
 func (r *UserRepository) Update(ctx context.Context, user *auth.User) error {
-	result := r.db.Updates(user).Where("id = ?", user.ID)
+	result := r.db.WithContext(ctx).Save(user)
 	if err := result.Error; err != nil {
-		log.Default().Errorf("error trying to update user: %v", err)
 		return err
 	}
 

@@ -2,6 +2,7 @@ package persistence
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/c0llinn/ebook-store/internal/catalog"
 	"github.com/c0llinn/ebook-store/internal/log"
@@ -18,17 +19,17 @@ func NewBookRepository(db *gorm.DB) *BookRepository {
 }
 
 func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuery) (paginated catalog.PaginatedBooks, err error) {
+	db := r.db.WithContext(ctx)
+
 	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
 
-	result := r.db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Find(&paginated.Books)
+	result := db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Find(&paginated.Books)
 	if err = result.Error; err != nil {
-		log.Default().Errorf("error trying to find books by query: %v", err)
 		return
 	}
 
 	var count int64
-	if err = r.db.Model(&catalog.Book{}).Where(conditions).Count(&count).Error; err != nil {
-		log.Default().Errorf("error trying to count books: %v", err)
+	if err = db.Model(&catalog.Book{}).Where(conditions).Count(&count).Error; err != nil {
 		return
 	}
 
@@ -54,17 +55,18 @@ func (r *BookRepository) createConditionsFromCriteria(criteria []catalog.Criteri
 }
 
 func (r *BookRepository) FindByID(ctx context.Context, id string) (book catalog.Book, err error) {
-	result := r.db.First(&book, "id = ?", id)
+	result := r.db.WithContext(ctx).First(&book, "id = ?", id)
 	if err = result.Error; err != nil {
-		log.Default().Errorf("error trying to find book by id %s: %v", id, err)
-		err = &ErrEntityNotFound{entity: "book"}
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = &ErrEntityNotFound{entity: "book"}
+		}
 	}
 
 	return
 }
 
 func (r *BookRepository) Create(ctx context.Context, book *catalog.Book) error {
-	result := r.db.Create(book)
+	result := r.db.WithContext(ctx).Create(book)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to create a book: %v", err)
 		return err
@@ -74,9 +76,8 @@ func (r *BookRepository) Create(ctx context.Context, book *catalog.Book) error {
 }
 
 func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
-	result := r.db.Updates(book).Where("id = ?", book.ID)
+	result := r.db.WithContext(ctx).Save(book)
 	if err := result.Error; err != nil {
-		log.Default().Errorf("error trying to update the book wiht id %s: %v", book.ID, err)
 		return err
 	}
 
@@ -84,9 +85,8 @@ func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
 }
 
 func (r *BookRepository) Delete(ctx context.Context, id string) error {
-	result := r.db.Delete(&catalog.Book{}, "id = ?", id)
+	result := r.db.WithContext(ctx).Delete(&catalog.Book{}, "id = ?", id)
 	if err := result.Error; err != nil {
-		log.Default().Errorf("error trying to delete the book with id %s: %v", id, err)
 		return err
 	}
 

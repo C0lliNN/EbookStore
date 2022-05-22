@@ -26,17 +26,18 @@
 * [x] Add health-check
 * [x] Review tests (Noticing Naming, Pointer, files that are not tested, check coverage)
 * [x] Create a repository testsuite
-* [ ] Add Logging, Observability
+* [x] Add Logging, Observability
 * [x] Review Swagger Documentation
 * [x] Review errors (Update Server Error Mapping)
-* [ ] Reduce number of multi-argument functions
-* [ ] Review pointer/concrete types in struct and as receivers (tests included)
+* [x] Reduce number of multi-argument functions
+* [x] Review pointer/concrete types in struct and as receivers (tests included)
 * [x] Find a way to separate unit and integration tests while keeping good autocompletion
-* [ ] Create Good Seed Data
 * [x] Document Public API (Maybe autogenerate documentation)
+* [ ] Try to use context.Context in Stripe
+* [ ] Test app manually
+* [ ] Make test pass
+* [ ] Create Good Seed Data
 * [ ] Get rid of test folder
-* [ ] Add oauth server
-* [ ] Add more integration tests
 * [ ] Refactor make command
 * [ ] Create make run command and update README.md
 
@@ -44,6 +45,7 @@
 * Handle Stripe Webhook in a good way
 * Handle file extensions in a more isolated way
 * Handle shop -> catalog connection isolating the BookResponse object
-* Handle more than one image per book
+* Handle more than one image per book (Use Presigning instead of receiving images in the request body)
 * Use Cart in Shop 
-(Update Handler tests)
+* Add oauth server
+* Add more integration tests
