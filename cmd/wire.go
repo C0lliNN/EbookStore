@@ -60,10 +60,10 @@ var Set = wire.NewSet(
 	catalog.New,
 
 	persistence.NewOrderRepository,
-	payment.NewStripeClient,
+	payment.NewStripePaymentService,
 	wire.Bind(new(shop.Repository), new(*persistence.OrderRepository)),
 	wire.Bind(new(shop.Validator), new(*validator.Validator)),
-	wire.Bind(new(shop.PaymentClient), new(*payment.StripeClient)),
+	wire.Bind(new(shop.PaymentClient), new(*payment.StripePaymentService)),
 	wire.Bind(new(shop.CatalogService), new(*catalog.Catalog)),
 	wire.Bind(new(shop.IDGenerator), new(*generator.UUIDGenerator)),
 	wire.NewSet(wire.Struct(new(shop.Config), "*")),

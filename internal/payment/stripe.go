@@ -19,15 +19,16 @@ var statusMap = map[stripe.PaymentIntentStatus]shop.OrderStatus{
 	stripe.PaymentIntentStatusSucceeded:             shop.Paid,
 }
 
-type StripeClient struct {}
+type StripePaymentService struct{}
 
-func NewStripeClient() *StripeClient {
+func NewStripePaymentService() *StripePaymentService {
 	stripe.Key = viper.GetString("STRIPE_API_KEY")
-	return &StripeClient{}
+	return &StripePaymentService{}
 }
 
-func (c *StripeClient) CreatePaymentIntentForOrder(ctx context.Context, order *shop.Order) error {
+func (c *StripePaymentService) CreatePaymentIntentForOrder(ctx context.Context, order *shop.Order) error {
 	params := &stripe.PaymentIntentParams{
+		Params:   stripe.Params{Context: ctx},
 		Amount:   stripe.Int64(order.Total),
 		Currency: stripe.String(string(stripe.CurrencyUSD)),
 		PaymentMethodTypes: []*string{
@@ -39,7 +40,7 @@ func (c *StripeClient) CreatePaymentIntentForOrder(ctx context.Context, order *s
 	params.AddMetadata("userID", order.UserID)
 	pi, err := paymentintent.New(params)
 	if err != nil {
-		log.Default().Errorf("stripe intent creation failed for order %s: %v", pi.ID, err)
+		log.FromContext(ctx).Errorf("stripe intent creation failed for order %s: %v", pi.ID, err)
 		return err
 	}
 

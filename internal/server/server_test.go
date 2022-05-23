@@ -31,7 +31,7 @@ type ServerSuiteTest struct {
 	baseURL             string
 	postgresContainer   *test.PostgresContainer
 	localstackContainer *test.LocalstackContainer
-	db *gorm.DB
+	db                  *gorm.DB
 	server              *server.Server
 }
 
@@ -136,7 +136,7 @@ func (s *ServerSuiteTest) createServer() {
 	catalogCatalog := catalog.New(catalogConfig)
 	catalogHandler := server.NewCatalogHandler(catalogCatalog)
 	orderRepository := persistence.NewOrderRepository(db)
-	stripeClient := payment.NewStripeClient()
+	stripeClient := payment.NewStripePaymentService()
 	shopConfig := shop.Config{
 		Repository:     orderRepository,
 		PaymentClient:  stripeClient,
