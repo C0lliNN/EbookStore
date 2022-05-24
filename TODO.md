@@ -33,8 +33,8 @@
 * [x] Review pointer/concrete types in struct and as receivers (tests included)
 * [x] Find a way to separate unit and integration tests while keeping good autocompletion
 * [x] Document Public API (Maybe autogenerate documentation)
-* [ ] Try to use context.Context in Stripe
-* [ ] Test app manually
+* [x] Try to use context.Context in Stripe
+* [x] Test app manually (Save final postman collection somewhere)
 * [ ] Make test pass
 * [ ] Create Seed Script
 * [ ] Refactor makefile
@@ -48,4 +48,6 @@
 * Use Cart in Shop 
 * Add oauth server
 * Add more integration tests
+* Use Stripe-CLI to the local environment (including a how to update payment intent in the cli)
+* Make Stripe Webhook endpoint safe by querying Stripe API using the provided information instead of asserting it's true
 * Use Specification in Query Commands

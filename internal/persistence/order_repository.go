@@ -8,6 +8,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/shop"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 type OrderRepository struct {
@@ -19,6 +20,9 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
 }
 
 func (r *OrderRepository) FindByQuery(ctx context.Context, query shop.OrderQuery) (paginated shop.PaginatedOrders, err error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	db := r.db.WithContext(ctx)
 	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
 
@@ -56,6 +60,9 @@ func (r *OrderRepository) createConditionsFromCriteria(criteria []shop.Criteria)
 }
 
 func (r *OrderRepository) FindByID(ctx context.Context, id string) (order shop.Order, err error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	result := r.db.WithContext(ctx).First(&order, "id = ?", id)
 	if err = result.Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -67,6 +74,9 @@ func (r *OrderRepository) FindByID(ctx context.Context, id string) (order shop.O
 }
 
 func (r *OrderRepository) Create(ctx context.Context, order *shop.Order) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	result := r.db.WithContext(ctx).Create(order)
 	if err := result.Error; err != nil {
 		log.Default().Error("error trying to create an order: ", err)
@@ -77,6 +87,9 @@ func (r *OrderRepository) Create(ctx context.Context, order *shop.Order) error {
 }
 
 func (r *OrderRepository) Update(ctx context.Context, order *shop.Order) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	result := r.db.WithContext(ctx).Save(order).Where("id = ?", order.ID)
 	if err := result.Error; err != nil {
 		return err

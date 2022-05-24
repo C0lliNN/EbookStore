@@ -35,5 +35,8 @@ generate-mocks:
 api-docs:
 	@swag init -g internal/server/server.go --parseInternal  --generatedTime
 
+start_server: export ENV=local
+start_server: export AWS_ACCESS_KEY_ID=test
+start_server: export AWS_SECRET_ACCESS_KEY=test
 start_server:
 	@cd cmd && go run .

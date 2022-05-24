@@ -6,6 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/c0llinn/ebook-store/internal/log"
 	"io"
+	"time"
 )
 
 type Config struct {
@@ -25,6 +26,9 @@ func NewStorage(c Config) *Storage {
 }
 
 func (c *Storage) GeneratePreSignedUrl(ctx context.Context, key string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	presignResult, err := c.PresignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(string(c.Bucket)),
 		Key:    aws.String(key),
@@ -39,6 +43,9 @@ func (c *Storage) GeneratePreSignedUrl(ctx context.Context, key string) (string,
 }
 
 func (c *Storage) SaveFile(ctx context.Context, key string, contentType string, content io.ReadSeeker) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	_, err := c.S3Client.PutObject(ctx, &s3.PutObjectInput{
 		Key:         aws.String(key),
 		Bucket:      aws.String(string(c.Bucket)),

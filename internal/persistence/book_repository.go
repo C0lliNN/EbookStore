@@ -8,6 +8,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/log"
 	"gorm.io/gorm"
 	"strings"
+	"time"
 )
 
 type BookRepository struct {
@@ -19,6 +20,9 @@ func NewBookRepository(db *gorm.DB) *BookRepository {
 }
 
 func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuery) (paginated catalog.PaginatedBooks, err error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	db := r.db.WithContext(ctx)
 
 	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
@@ -55,6 +59,9 @@ func (r *BookRepository) createConditionsFromCriteria(criteria []catalog.Criteri
 }
 
 func (r *BookRepository) FindByID(ctx context.Context, id string) (book catalog.Book, err error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	result := r.db.WithContext(ctx).First(&book, "id = ?", id)
 	if err = result.Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -66,6 +73,9 @@ func (r *BookRepository) FindByID(ctx context.Context, id string) (book catalog.
 }
 
 func (r *BookRepository) Create(ctx context.Context, book *catalog.Book) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	result := r.db.WithContext(ctx).Create(book)
 	if err := result.Error; err != nil {
 		log.Default().Errorf("error trying to create a book: %v", err)
@@ -76,6 +86,9 @@ func (r *BookRepository) Create(ctx context.Context, book *catalog.Book) error {
 }
 
 func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	result := r.db.WithContext(ctx).Save(book)
 	if err := result.Error; err != nil {
 		return err
@@ -85,6 +98,9 @@ func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
 }
 
 func (r *BookRepository) Delete(ctx context.Context, id string) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	result := r.db.WithContext(ctx).Delete(&catalog.Book{}, "id = ?", id)
 	if err := result.Error; err != nil {
 		return err

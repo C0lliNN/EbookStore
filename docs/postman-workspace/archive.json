@@ -1,0 +1,30 @@
+{
+  "collection": {
+    "00b64a05-54bd-4048-867f-903ed11fff7a": true,
+    "01be2570-1511-4373-8b33-61a2c00ebfc1": true,
+    "098f922f-3531-49e3-9454-aae39c4fc2ef": true,
+    "14805feb-d501-4164-b028-587671d4ba77": true,
+    "17b31e53-a214-4514-bb38-0e8bff937274": true,
+    "40101ce6-7491-4e67-8c38-70b8741bb52d": true,
+    "41184806-2558-4a63-8d06-662e340700f8": true,
+    "474a58ed-11d6-496d-bae4-5845a7b280e0": true,
+    "534c8f9b-2311-4435-9f0f-057e7fd432e5": true,
+    "53bc160a-e840-4636-b8dc-4696b0137f24": true,
+    "61810825-5f5d-4fec-b0f3-f108d0520ceb": true,
+    "717d3215-cfb5-4e6a-ad75-0a91d2c21f25": true,
+    "74f647ba-4a95-4236-9209-6d74a89565fe": true,
+    "87444908-e102-433f-ac28-cfcdad197c1c": true,
+    "9792cd2f-bec3-4217-89d2-3a8070e45760": true,
+    "9de6681c-f541-4bc9-937b-48c92c03301a": true,
+    "b09697ac-dfaf-43d0-a939-61cebb075e1b": true,
+    "d68ace0f-9e3a-4b1d-a5bd-c0d930b854b4": true,
+    "e15a7852-98e9-4571-bf5b-929020937979": true,
+    "ea331ecc-b43a-4963-8102-b5e3966c88d4": true
+  },
+  "environment": {
+    "3b34c490-54e4-43d5-acf7-7d02509b6190": true,
+    "75537bea-7424-4605-9a54-94f5b8dcb557": true,
+    "b50efec9-ffb1-487c-9b42-418abea78ad8": true,
+    "e5d5990d-f058-4265-9e08-7f04b0e15295": true
+  }
+}

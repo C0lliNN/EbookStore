@@ -9,6 +9,7 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/spf13/viper"
 	"html/template"
+	"time"
 )
 
 const (
@@ -29,6 +30,9 @@ func NewSESEmailClient(client *ses.Client) *Email {
 }
 
 func (e *Email) SendPasswordResetEmail(ctx context.Context, user auth.User, newPassword string) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	sourceEmail := viper.GetString("AWS_SES_SOURCE_EMAIL")
 	messageBody, err := e.getMessageBody(user, newPassword)
 	if err != nil {

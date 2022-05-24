@@ -42,7 +42,6 @@ func FromContext(ctx context.Context) *zap.SugaredLogger {
 		userId = id
 	}
 
-
 	return logger.With(
 		"requestId", ctx.Value("requestId"),
 		"userId", userId,

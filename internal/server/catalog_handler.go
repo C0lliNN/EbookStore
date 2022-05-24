@@ -30,7 +30,7 @@ func (h *CatalogHandler) Routes() []Route {
 		{Method: http.MethodGet, Path: "/books", Handler: h.getBooks, Public: true},
 		{Method: http.MethodGet, Path: "/books/:id", Handler: h.getBook, Public: true},
 		{Method: http.MethodPost, Path: "/books", Handler: h.createBook, Public: false},
-		{Method: http.MethodPatch, Path: "/books/:id", Handler: h.createBook, Public: false},
+		{Method: http.MethodPatch, Path: "/books/:id", Handler: h.updateBook, Public: false},
 		{Method: http.MethodDelete, Path: "/books/:id", Handler: h.deleteBook, Public: false},
 	}
 }

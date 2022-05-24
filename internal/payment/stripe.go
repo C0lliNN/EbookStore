@@ -7,6 +7,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/stripe/stripe-go/v72"
 	"github.com/stripe/stripe-go/v72/paymentintent"
+	"time"
 )
 
 var statusMap = map[stripe.PaymentIntentStatus]shop.OrderStatus{
@@ -27,6 +28,9 @@ func NewStripePaymentService() *StripePaymentService {
 }
 
 func (c *StripePaymentService) CreatePaymentIntentForOrder(ctx context.Context, order *shop.Order) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
 	params := &stripe.PaymentIntentParams{
 		Params:   stripe.Params{Context: ctx},
 		Amount:   stripe.Int64(order.Total),

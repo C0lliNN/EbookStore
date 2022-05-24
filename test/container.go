@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
-	"log"
 	"path/filepath"
 )
 
@@ -73,7 +72,6 @@ func NewLocalstackContainer(ctx context.Context) (*LocalstackContainer, error) {
 	}
 
 	container, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		Logger:           log.Default(),
 		ContainerRequest: req,
 		Started:          true,
 	})
