@@ -82,8 +82,8 @@ func (s *AuthMiddlewareTestSuite) TestHandler_WithValidToken() {
 	s.middleware.Handler()(s.context)
 	assert.False(s.T(), s.context.IsAborted())
 
-	actual, _ := s.context.Get("user")
-	assert.Equal(s.T(), user, actual.(auth.User))
+	assert.Equal(s.T(), user.ID, s.context.Value("userId").(string))
+	assert.Equal(s.T(), user.IsAdmin(), s.context.Value("admin").(bool))
 
 	s.token.AssertNumberOfCalls(s.T(), extractUserFromTokenMethod, 1)
 }

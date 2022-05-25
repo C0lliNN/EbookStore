@@ -3,20 +3,32 @@
 dependency:
 	@go get -v ./...
 
+docker-up:
+	@docker-compose up -d
+
+docker-down:
+	@docker-compose down
+
+start_server: export ENV=local
+start_server: export AWS_ACCESS_KEY_ID=test
+start_server: export AWS_SECRET_ACCESS_KEY=test
+start_server:
+	@cd cmd && go run .
+
 test: export ENV=test
 test: export AWS_ACCESS_KEY_ID=test
 test: export AWS_SECRET_ACCESS_KEY=test
 test: dependency
 	@go test ./...
 
+test_no_cache: export ENV=test
+test_no_cache: export AWS_ACCESS_KEY_ID=test
+test_no_cache: export AWS_SECRET_ACCESS_KEY=test
+test_no_cache: dependency
+	@go test ./... -count=1
+
 unit-test: dependency
 	@go test -short ./...
-
-docker-up:
-	@docker-compose up -d
-
-docker-down:
-	@docker-compose down
 
 migrate-up:
 	@migrate -source file:./migration -database postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable up
@@ -32,9 +44,3 @@ generate-mocks:
 
 api-docs:
 	@swag init -g internal/server/server.go --parseInternal  --generatedTime
-
-start_server: export ENV=local
-start_server: export AWS_ACCESS_KEY_ID=test
-start_server: export AWS_SECRET_ACCESS_KEY=test
-start_server:
-	@cd cmd && go run .
