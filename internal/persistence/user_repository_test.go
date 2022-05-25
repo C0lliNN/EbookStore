@@ -4,16 +4,16 @@ import (
 	"context"
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/c0llinn/ebook-store/internal/persistence"
-	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"testing"
+	"time"
 )
 
 type UserRepositoryTestSuite struct {
 	RepositoryTestSuite
-	repo      *persistence.UserRepository
+	repo *persistence.UserRepository
 }
 
 func (s *UserRepositoryTestSuite) SetupSuite() {
@@ -35,7 +35,15 @@ func TestUserRepositoryTest(t *testing.T) {
 func (s *UserRepositoryTestSuite) TestUserRepository_SaveSuccessfully() {
 	ctx := context.TODO()
 
-	user := factory.NewUser()
+	user := auth.User{
+		ID:        "some-id",
+		FirstName: "Raphael",
+		LastName:  "Collin",
+		Email:     "raphael@test.com",
+		Role:      auth.Customer,
+		Password:  "password",
+		CreatedAt: time.Now().Unix(),
+	}
 
 	err := s.repo.Save(ctx, &user)
 
@@ -45,7 +53,15 @@ func (s *UserRepositoryTestSuite) TestUserRepository_SaveSuccessfully() {
 func (s *UserRepositoryTestSuite) TestUserRepository_SaveWithDuplicateEmail() {
 	ctx := context.TODO()
 
-	user := factory.NewUser()
+	user := auth.User{
+		ID:        "some-id",
+		FirstName: "Raphael",
+		LastName:  "Collin",
+		Email:     "raphael@test.com",
+		Role:      auth.Customer,
+		Password:  "password",
+		CreatedAt: time.Now().Unix(),
+	}
 
 	err := s.repo.Save(ctx, &user)
 	assert.Nil(s.T(), err)
@@ -59,7 +75,15 @@ func (s *UserRepositoryTestSuite) TestUserRepository_SaveWithDuplicateEmail() {
 func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailSuccessfully() {
 	ctx := context.TODO()
 
-	expected := factory.NewUser()
+	expected := auth.User{
+		ID:        "some-id",
+		FirstName: "Raphael",
+		LastName:  "Collin",
+		Email:     "raphael@test.com",
+		Role:      auth.Customer,
+		Password:  "password",
+		CreatedAt: time.Now().Unix(),
+	}
 
 	err := s.repo.Save(ctx, &expected)
 	require.Nil(s.T(), err)
@@ -81,7 +105,15 @@ func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailNotFound() {
 func (s *UserRepositoryTestSuite) TestUserRepository_UpdateSuccessfully() {
 	ctx := context.TODO()
 
-	user := factory.NewUser()
+	user := auth.User{
+		ID:        "some-id",
+		FirstName: "Raphael",
+		LastName:  "Collin",
+		Email:     "raphael@test.com",
+		Role:      auth.Customer,
+		Password:  "password",
+		CreatedAt: time.Now().Unix(),
+	}
 
 	err := s.repo.Save(ctx, &user)
 	require.Nil(s.T(), err)
@@ -101,7 +133,15 @@ func (s *UserRepositoryTestSuite) TestUserRepository_UpdateSuccessfully() {
 func (s *UserRepositoryTestSuite) TestUserRepository_UpdateWhenUserDoesNotExist() {
 	ctx := context.TODO()
 
-	user := factory.NewUser()
+	user := auth.User{
+		ID:        "some-id",
+		FirstName: "Raphael",
+		LastName:  "Collin",
+		Email:     "raphael@test.com",
+		Role:      auth.Customer,
+		Password:  "password",
+		CreatedAt: time.Now().Unix(),
+	}
 
 	err := s.repo.Update(ctx, &user)
 	assert.Nil(s.T(), err)

@@ -6,8 +6,10 @@ import (
 	"github.com/c0llinn/ebook-store/internal/migrator"
 	"github.com/c0llinn/ebook-store/test"
 	"github.com/spf13/viper"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
+	"time"
 )
 
 type RepositoryTestSuite struct {
@@ -26,15 +28,24 @@ func (s *RepositoryTestSuite) SetupSuite() {
 	}
 
 	viper.SetDefault("DATABASE_URI", s.container.URI)
+	s.db = config.NewConnection()
+
+	require.Eventually(s.T(), func() bool {
+		db, err := s.db.DB()
+		if err != nil {
+			return false
+		}
+
+		return db.Ping() == nil
+	}, time.Second*10, time.Millisecond*100)
 
 	m := migrator.New(migrator.Config{
 		DatabaseURI: migrator.DatabaseURI(s.container.URI),
-		Source: "file:../../migrations",
+		Source:      "file:../../migrations",
 	})
 
 	m.Sync()
 
-	s.db = config.NewConnection()
 }
 
 func (s *RepositoryTestSuite) TearDownSuite() {

@@ -35,7 +35,7 @@
 * [x] Document Public API (Maybe autogenerate documentation)
 * [x] Try to use context.Context in Stripe
 * [x] Test app manually (Save final postman collection somewhere)
-* [ ] Make test pass
+* [ ] Make test pass (Also remove user_factory)
 * [ ] Create Seed Script
 * [ ] Refactor makefile
 * [ ] Update README.md

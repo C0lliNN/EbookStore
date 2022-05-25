@@ -5,13 +5,13 @@ import (
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/c0llinn/ebook-store/internal/mocks/server"
 	"github.com/c0llinn/ebook-store/internal/server"
-	"github.com/c0llinn/ebook-store/test/factory"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 const extractUserFromTokenMethod = "ExtractUserFromToken"
@@ -68,7 +68,15 @@ func (s *AuthMiddlewareTestSuite) TestHandler_WithInvalidToken() {
 func (s *AuthMiddlewareTestSuite) TestHandler_WithValidToken() {
 	s.context.Request.Header.Set("Authorization", "Bearer token")
 
-	user := factory.NewUser()
+	user := auth.User{
+		ID:        "some-id",
+		FirstName: "Raphael",
+		LastName:  "Collin",
+		Email:     "raphael@test.com",
+		Role:      auth.Customer,
+		Password:  "password",
+		CreatedAt: time.Now().Unix(),
+	}
 	s.token.On(extractUserFromTokenMethod, "token").Return(user, nil)
 
 	s.middleware.Handler()(s.context)
