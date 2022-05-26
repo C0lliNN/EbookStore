@@ -36,7 +36,7 @@
 * [x] Try to use context.Context in Stripe
 * [x] Test app manually (Save final postman collection somewhere)
 * [x] Make test pass (Also remove user_factory)
-* [ ] Create Seed Script
+* [x] Create Seed Script
 * [x] Refactor makefile
 * [ ] Update README.md
 
@@ -51,3 +51,4 @@
 * Use Stripe-CLI to the local environment (including a how to update payment intent in the cli)
 * Make Stripe Webhook endpoint safe by querying Stripe API using the provided information instead of asserting it's true
 * Use Specification in Query Commands
+* Improve mocks location

@@ -33,17 +33,23 @@ A fully-featured REST API developed in Golang for an online book store.
 ## How to Run Locally
 1. Execute docker containers
 ```bash
-docker-compose up -d
-```
-2. In order to execute AWS S3 locally, it is necessary to export the following environment variables:
-```bash
-export AWS_ACCESS_KEY_ID=test
-export AWS_SECRET_ACCESS_KEY=test
+make docker-up
 ```
 
-3. Execute HTTP Server
+2. Execute REST HTTP Server
 ```bash
 make start_server
+```
+
+## How Generate Seed Data
+1. Execute docker containers
+```bash
+make docker-up
+```
+
+2. Clean database and generate seed data 
+```bash
+make generate_seed_data
 ```
 
 ## How to regenerate mocks
