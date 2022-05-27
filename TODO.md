@@ -52,3 +52,4 @@
 * Make Stripe Webhook endpoint safe by querying Stripe API using the provided information instead of asserting it's true
 * Use Specification in Query Commands
 * Improve mocks location
+* Create Auth, Catalog and Shop Diagrams

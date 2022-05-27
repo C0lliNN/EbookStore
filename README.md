@@ -8,10 +8,7 @@ A fully-featured REST API developed in Golang for an ebook store.
 * [Tech/Libraries](#techlibraries)
 * [High-level Documentation](#high-level-documentation)
   * [System Context Diagram](#system-context-diagram)
-  * [Server-side Container Diagram](#server-side-container-diagram)
-  * [Auth Component Diagram](#auth-component-diagram)
-  * [Catalog Component Diagram](#catalog-component-diagram)
-  * [Shop Component Diagram](#shop-component-diagram)
+  * [Backend Container Diagram](#backend-container-diagram)
   * [Design Principles / Techniques](#design-principles--techniques)
 * [Local Development](#local-development)
   * [How to Run Locally](#how-to-run-locally)
@@ -52,17 +49,17 @@ A fully-featured REST API developed in Golang for an ebook store.
 This is a high-level technical documentation about how this application is structured. The diagrams follow the [C4 model](https://c4model.com/)
 
 ### System Context Diagram
+![](https://i.ibb.co/Kykm454/TzmXLRz.png)
 
-### Server-side Container Diagram
-
-### Auth Component Diagram
-
-### Catalog Component Diagram
-
-### Shop Component Diagram
+### Backend Container Diagram
+![](https://i.ibb.co/LS9pSDK/image.png)
 
 ### Design Principles / Techniques
-
+* SOLID Principles
+* Hexagonal Architecture
+* Domain Driver Design
+* Package by Feature
+* Test-Driven-Development
 
 ## Local Development
 
