@@ -38,7 +38,9 @@
 * [x] Make test pass (Also remove user_factory)
 * [x] Create Seed Script
 * [x] Refactor makefile
-* [ ] Update README.md
+* [x] Update README.md
+* [ ] Add golangci-lint
+* [ ] Create prod Dockerfile and deploy folder/script
 
 # Nice to Haves
 * Handle Stripe Webhook in a good way
