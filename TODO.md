@@ -41,6 +41,8 @@
 * [x] Update README.md
 * [ ] Add golangci-lint
 * [ ] Create prod Dockerfile and deploy folder/script
+* [ ] Add error wrapping
+* [ ] Implement graceful shutdown
 
 # Nice to Haves
 * Handle Stripe Webhook in a good way
