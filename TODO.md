@@ -43,6 +43,7 @@
 * [ ] Create prod Dockerfile and deploy folder/script
 * [ ] Add error wrapping
 * [ ] Implement graceful shutdown
+* [ ] Change module path to just github.com/ebookstore
 
 # Nice to Haves
 * Handle Stripe Webhook in a good way
