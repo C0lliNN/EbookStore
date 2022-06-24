@@ -44,6 +44,9 @@
 * [ ] Add error wrapping
 * [ ] Implement graceful shutdown
 * [ ] Change module path to just github.com/ebookstore
+* [ ] Consider Moving DTO to the HTTP Handlers (Naming them Requests and Use Commands in the UseCase Layer)
+* [ ] Consider Using one file per usecase
+* [ ] Version API
 
 # Nice to Haves
 * Handle Stripe Webhook in a good way
