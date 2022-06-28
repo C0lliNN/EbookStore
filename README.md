@@ -13,6 +13,7 @@ A fully-featured REST API developed in Golang for an ebook store.
 * [Local Development](#local-development)
   * [How to Run Locally](#how-to-run-locally)
   * [How to Lint Project](#how-to-lint-project)
+  * [How to Use Husky Git pre-commit hook](#how-to-use-husky-git-pre-commit-hook)
   * [How Generate Seed Data](#how-generate-seed-data)
   * [How to Regenerate Mocks](#how-generate-seed-data)
   * [How to Regenerate REST API Documentation](#how-to-regenerate-rest-api-documentation)
@@ -85,6 +86,17 @@ go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 2. Execute `lint` target
 ```shell
 make lint
+```
+
+### How to Use Husky Git pre-commit hook
+Pre-commit hooks are very useful to prevent commits with bad code.
+1. Install Husky
+```shell
+go install github.com/go-courier/husky/cmd/husky@latest
+```
+2. Init Husky
+```shell
+husky init
 ```
 
 ### How Generate Seed Data

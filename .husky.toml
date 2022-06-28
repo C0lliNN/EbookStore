@@ -1,0 +1,17 @@
+# version-file which will write or read current semver
+version-file = "internal/version/version"
+
+# hook scripts
+[hooks]
+
+# git hook pre commit
+pre-commit = [
+    "golangci-lint run",
+    "husky lint-staged",
+]
+
+[lint-staged]
+"*.go" = [
+    "goimports -l -w",
+    "gofmt -l -w",
+]
