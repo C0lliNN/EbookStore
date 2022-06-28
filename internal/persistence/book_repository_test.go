@@ -13,7 +13,7 @@ import (
 
 type BookRepositoryTestSuite struct {
 	RepositoryTestSuite
-	repo      *persistence.BookRepository
+	repo *persistence.BookRepository
 }
 
 func (s *BookRepositoryTestSuite) SetupSuite() {
@@ -59,7 +59,9 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
 	}
 
 	err := s.repo.Create(ctx, &book1)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book2)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
@@ -96,7 +98,9 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithTitle() {
 	}
 
 	err := s.repo.Create(ctx, &book1)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book2)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
@@ -135,7 +139,9 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithDescription() {
 	}
 
 	err := s.repo.Create(ctx, &book1)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book2)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
@@ -174,7 +180,9 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithAuthorName() {
 	}
 
 	err := s.repo.Create(ctx, &book1)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book2)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
@@ -213,7 +221,9 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithLimit() {
 	}
 
 	err := s.repo.Create(ctx, &book1)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book2)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
@@ -254,7 +264,9 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithOffset() {
 	}
 
 	err := s.repo.Create(ctx, &book1)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book2)
+	require.Nil(s.T(), err)
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
@@ -332,10 +344,11 @@ func (s *BookRepositoryTestSuite) TestUpdate_Successfully() {
 	}
 
 	err := s.repo.Create(ctx, &book)
-	assert.Nil(s.T(), err)
+	require.Nil(s.T(), err)
 
 	book.Title = "new title"
 	err = s.repo.Update(ctx, &book)
+	require.Nil(s.T(), err)
 
 	persisted, err := s.repo.FindByID(ctx, book.ID)
 	assert.Nil(s.T(), err)

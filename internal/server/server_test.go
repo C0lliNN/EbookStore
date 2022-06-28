@@ -59,7 +59,7 @@ func (s *ServerSuiteTest) SetupSuite() {
 	s.createServer()
 
 	go func() {
-		s.server.Start()
+		_ = s.server.Start()
 	}()
 
 	require.Eventually(s.T(), func() bool {
@@ -75,8 +75,8 @@ func (s *ServerSuiteTest) SetupSuite() {
 func (s *ServerSuiteTest) TearDownSuite() {
 	ctx := context.TODO()
 
-	s.postgresContainer.Terminate(ctx)
-	s.localstackContainer.Terminate(ctx)
+	_ = s.postgresContainer.Terminate(ctx)
+	_ = s.localstackContainer.Terminate(ctx)
 }
 
 func (s *ServerSuiteTest) createServer() {

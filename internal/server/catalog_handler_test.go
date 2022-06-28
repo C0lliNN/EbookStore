@@ -1,3 +1,4 @@
+//nolint:unused
 package server_test
 
 import (
@@ -38,16 +39,16 @@ func (s *CatalogHandlerTestSuite) TestCreateBook_Failure() {
 	payload := new(bytes.Buffer)
 	mp := multipart.NewWriter(payload)
 
-	mp.SetBoundary("---WebKitFormBoundary7MA4YWxkTrZu0gW")
-	mp.WriteField("title", "Domain Driver Design")
-	mp.WriteField("description", "Complexity")
-	mp.WriteField("authorName", "Eric Evans")
-	mp.WriteField("price", "40000")
-	mp.WriteField("releaseDate", time.Date(2002, time.October, 28, 0, 0, 0, 0, time.UTC).String())
-	mp.CreateFormFile("posterImage", "poster.png")
-	mp.CreateFormFile("bookContent", "content.pdf")
+	_ = mp.SetBoundary("---WebKitFormBoundary7MA4YWxkTrZu0gW")
+	_ = mp.WriteField("title", "Domain Driver Design")
+	_ = mp.WriteField("description", "Complexity")
+	_ = mp.WriteField("authorName", "Eric Evans")
+	_ = mp.WriteField("price", "40000")
+	_ = mp.WriteField("releaseDate", time.Date(2002, time.October, 28, 0, 0, 0, 0, time.UTC).String())
+	_, _ = mp.CreateFormFile("posterImage", "poster.png")
+	_, _ = mp.CreateFormFile("bookContent", "content.pdf")
 
-	request, err := http.NewRequest(http.MethodPost, s.baseURL + "/books", payload)
+	request, err := http.NewRequest(http.MethodPost, s.baseURL+"/books", payload)
 	require.Nil(s.T(), err)
 	request.Header.Add("Content-Type", "multipart/form-data;boundary=---WebKitFormBoundary7MA4YWxkTrZu0gW")
 	request.Header.Add("Authorization", fmt.Sprintf("Bearer %v", token))

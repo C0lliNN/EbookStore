@@ -45,13 +45,13 @@ func (h *AuthenticationHandler) Routes() []Route {
 func (h *AuthenticationHandler) register(c *gin.Context) {
 	var request auth.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	response, err := h.authenticator.Register(c, request)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -72,13 +72,13 @@ func (h *AuthenticationHandler) register(c *gin.Context) {
 func (h *AuthenticationHandler) login(c *gin.Context) {
 	var request auth.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	response, err := h.authenticator.Login(c, request)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -98,12 +98,12 @@ func (h *AuthenticationHandler) login(c *gin.Context) {
 func (h *AuthenticationHandler) resetPassword(c *gin.Context) {
 	var request auth.PasswordResetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	if err := h.authenticator.ResetPassword(c, request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 

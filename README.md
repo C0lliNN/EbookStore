@@ -12,6 +12,7 @@ A fully-featured REST API developed in Golang for an ebook store.
   * [Design Principles / Techniques](#design-principles--techniques)
 * [Local Development](#local-development)
   * [How to Run Locally](#how-to-run-locally)
+  * [How to Lint Project](#how-to-lint-project)
   * [How Generate Seed Data](#how-generate-seed-data)
   * [How to Regenerate Mocks](#how-generate-seed-data)
   * [How to Regenerate REST API Documentation](#how-to-regenerate-rest-api-documentation)
@@ -75,6 +76,16 @@ make start_server
 ```
 
 3. Open `http://localhost:8080/docs` in your browser
+
+### How to Lint Project
+1. Install golangci-lint
+```bash
+go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+```
+2. Execute `lint` target
+```shell
+make lint
+```
 
 ### How Generate Seed Data
 1. Execute docker containers

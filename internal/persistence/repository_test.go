@@ -51,5 +51,5 @@ func (s *RepositoryTestSuite) SetupSuite() {
 func (s *RepositoryTestSuite) TearDownSuite() {
 	ctx := context.TODO()
 
-	s.container.Terminate(ctx)
+	_ = s.container.Terminate(ctx)
 }

@@ -5,5 +5,5 @@ type CredentialsResponse struct {
 }
 
 func NewCredentialsResponse(credentials Credentials) CredentialsResponse {
-	return CredentialsResponse{Token: credentials.Token}
+	return CredentialsResponse(credentials)
 }

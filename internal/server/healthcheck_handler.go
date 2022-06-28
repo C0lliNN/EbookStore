@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type HealthcheckHandler struct{
+type HealthcheckHandler struct {
 	db *gorm.DB
 }
 
@@ -29,12 +29,12 @@ func (h *HealthcheckHandler) Routes() []Route {
 func (h *HealthcheckHandler) healthcheck(c *gin.Context) {
 	db, err := h.db.DB()
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	if err = db.Ping(); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 

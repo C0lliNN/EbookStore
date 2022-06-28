@@ -46,13 +46,13 @@ func (h *CatalogHandler) Routes() []Route {
 func (h *CatalogHandler) getBooks(c *gin.Context) {
 	var request catalog.SearchBooks
 	if err := c.ShouldBindQuery(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	response, err := h.catalog.FindBooks(c, request)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -71,7 +71,7 @@ func (h *CatalogHandler) getBooks(c *gin.Context) {
 func (h *CatalogHandler) getBook(c *gin.Context) {
 	response, err := h.catalog.FindBookByID(c, c.Param("id"))
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -93,30 +93,30 @@ func (h *CatalogHandler) getBook(c *gin.Context) {
 func (h *CatalogHandler) createBook(c *gin.Context) {
 	var request catalog.CreateBook
 	if err := c.ShouldBind(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	poster, err := c.FormFile("poster")
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	posterFile, err := poster.Open()
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	content, err := c.FormFile("content")
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 	}
 
 	contentFile, err := content.Open()
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -125,7 +125,7 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 
 	response, err := h.catalog.CreateBook(c, request)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -147,13 +147,13 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 func (h *CatalogHandler) updateBook(c *gin.Context) {
 	var request catalog.UpdateBook
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	request.ID = c.Param("id")
 	if err := h.catalog.UpdateBook(c, request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -171,7 +171,7 @@ func (h *CatalogHandler) updateBook(c *gin.Context) {
 // @Router /books/{id} [delete]
 func (h *CatalogHandler) deleteBook(c *gin.Context) {
 	if err := h.catalog.DeleteBook(c, c.Param("id")); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 

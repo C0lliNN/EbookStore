@@ -43,7 +43,7 @@ func (s *StorageClientTestSuite) SetupSuite() {
 func (s *StorageClientTestSuite) TearDownSuite() {
 	ctx := context.TODO()
 
-	s.container.Terminate(ctx)
+	_ = s.container.Terminate(ctx)
 }
 
 func TestStorageClientTestSuiteRun(t *testing.T) {

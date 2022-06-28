@@ -48,13 +48,13 @@ func (h *ShopHandler) Routes() []Route {
 func (h *ShopHandler) getOrders(c *gin.Context) {
 	var request shop.SearchOrders
 	if err := c.ShouldBindQuery(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	response, err := h.shop.FindOrders(c, request)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *ShopHandler) getOrders(c *gin.Context) {
 func (h *ShopHandler) getOrder(c *gin.Context) {
 	response, err := h.shop.FindOrderByID(c, c.Param("id"))
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -93,13 +93,13 @@ func (h *ShopHandler) getOrder(c *gin.Context) {
 func (h *ShopHandler) createOrder(c *gin.Context) {
 	var request shop.CreateOrder
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	response, err := h.shop.CreateOrder(c, request)
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -119,13 +119,13 @@ func (h *ShopHandler) createOrder(c *gin.Context) {
 func (h *ShopHandler) downloadOrder(c *gin.Context) {
 	content, err := h.shop.GetOrderDeliverableContent(c, c.Param("id"))
 	if err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	buffer := new(bytes.Buffer)
 	if _, err = buffer.ReadFrom(content); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
@@ -143,14 +143,14 @@ func (h *ShopHandler) downloadOrder(c *gin.Context) {
 func (h *ShopHandler) handleStripeWebhook(c *gin.Context) {
 	var request shop.HandleStripeWebhook
 	if err := c.ShouldBindJSON(&request); err != nil {
-		c.Error(err)
+		_ = c.Error(err)
 		return
 	}
 
 	if request.Type == "payment_intent.succeeded" {
 		orderID := request.Data["object"].(map[string]interface{})["metadata"].(map[string]interface{})["orderID"].(string)
 		if err := h.shop.CompleteOrder(c, orderID); err != nil {
-			c.Error(err)
+			_ = c.Error(err)
 			return
 		}
 	}

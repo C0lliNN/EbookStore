@@ -21,6 +21,10 @@ test: export AWS_SECRET_ACCESS_KEY=test
 test: dependency
 	@go test ./...
 
+
+lint:
+	golangci-lint run
+
 test_no_cache: export ENV=test
 test_no_cache: export AWS_ACCESS_KEY_ID=test
 test_no_cache: export AWS_SECRET_ACCESS_KEY=test

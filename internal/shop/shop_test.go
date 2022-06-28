@@ -1,3 +1,4 @@
+//nolint:staticcheck
 package shop_test
 
 import (
