@@ -39,11 +39,11 @@
 * [x] Create Seed Script
 * [x] Refactor makefile
 * [x] Update README.md
-* [ ] Add golangci-lint
-* [ ] Create prod Dockerfile and deploy folder/script
+* [x] Add golangci-lint
 * [ ] Add error wrapping
 * [ ] Implement graceful shutdown
 * [ ] Change module path to just github.com/ebookstore
+* [ ] Create prod Dockerfile and deploy folder/script
 * [ ] Consider Moving DTO to the HTTP Handlers (Naming them Requests and Use Commands in the UseCase Layer)
 * [ ] Consider Using one file per usecase
 * [ ] Version API
