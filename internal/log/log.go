@@ -2,10 +2,11 @@ package log
 
 import (
 	"context"
+	"strings"
+
 	"github.com/spf13/viper"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"strings"
 )
 
 var (
@@ -37,7 +38,7 @@ func init() {
 func FromContext(ctx context.Context) *zap.SugaredLogger {
 	logger := Default()
 
-	userId := "no-user"
+	userId := ""
 	if id, ok := ctx.Value("userId").(string); ok {
 		userId = id
 	}

@@ -43,15 +43,25 @@
 * [ ] Add error wrapping
 * [ ] Implement graceful shutdown
 * [ ] Change module path to just github.com/ebookstore
+* [ ] Rate Limiting
+* [ ] Review Logging, Monitoring
+* [ ] Review CORS
+* [ ] Review SQL Injection Concerns
+* [ ] Validate Data Size in All Requests
 * [ ] Create prod Dockerfile and deploy folder/script
 * [ ] Consider Moving DTO to the HTTP Handlers (Naming them Requests and Use Commands in the UseCase Layer)
-* [ ] Consider Using one file per usecase
 * [ ] Version API
-* [ ] Rate Limiting
-* [ ] Review SQL Injection Concerns
-* [ ] Review CORS
-* [ ] Validate Data Size in All Requests
-* [ ] Review Logging, Monitoring
+* [ ] Consider Using one file per usecase
+* [ ] Apply Unit of Work Pattern
+* [ ] Search About Hot reloading in Go
+* [ ] Try to implement Criteria in a good way
+* [ ] Define Custom Error Struct to be used in ShouldBind structures
+* [ ] Consider Creating Tech Features section in the README.md
+
+ADD wrapping in shop_handler
+adjust error_middleware
+add new error types for binding errors, and open files stuff
+NEXT Steps: FIX code in error_middleware. Run tests again
 
 # Nice to Haves
 * Handle Stripe Webhook in a good way

@@ -1,6 +1,10 @@
 package validator
 
-import "github.com/go-playground/validator/v10"
+import (
+	"fmt"
+
+	"github.com/go-playground/validator/v10"
+)
 
 type Validator struct {
 	validate *validator.Validate
@@ -13,5 +17,9 @@ func New() *Validator {
 }
 
 func (v *Validator) Validate(i interface{}) error {
-	return v.validate.Struct(i)
+	if err := v.validate.Struct(i); err != nil {
+		return fmt.Errorf("Validate) failed validating struct: %w", err)
+	}
+
+	return nil
 }

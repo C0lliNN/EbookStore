@@ -3,13 +3,15 @@ package email
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"html/template"
+	"time"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ses"
 	"github.com/aws/aws-sdk-go-v2/service/ses/types"
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/spf13/viper"
-	"html/template"
-	"time"
 )
 
 const (
@@ -36,7 +38,7 @@ func (e *Email) SendPasswordResetEmail(ctx context.Context, user auth.User, newP
 	sourceEmail := viper.GetString("AWS_SES_SOURCE_EMAIL")
 	messageBody, err := e.getMessageBody(user, newPassword)
 	if err != nil {
-		return err
+		return fmt.Errorf("SendPasswordResetEmail) failed getting email message body: %w", err)
 	}
 
 	input := &ses.SendEmailInput{
@@ -61,9 +63,11 @@ func (e *Email) SendPasswordResetEmail(ctx context.Context, user auth.User, newP
 		Source: aws.String(sourceEmail),
 	}
 
-	_, err = e.Client.SendEmail(ctx, input)
+	if _, err = e.Client.SendEmail(ctx, input); err != nil {
+		return fmt.Errorf("SendPasswordResetEmail) failed sending email")
+	}
 
-	return err
+	return nil
 }
 
 func (e *Email) getMessageBody(user auth.User, newPassword string) (string, error) {
@@ -79,7 +83,7 @@ func (e *Email) getMessageBody(user auth.User, newPassword string) (string, erro
 	})
 
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("getMessageBody) failed parsing template: %w", err)
 	}
 
 	return messageBody.String(), nil

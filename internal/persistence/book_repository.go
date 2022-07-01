@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/catalog"
-	"github.com/c0llinn/ebook-store/internal/log"
-	"gorm.io/gorm"
 	"strings"
 	"time"
+
+	"github.com/c0llinn/ebook-store/internal/catalog"
+	"gorm.io/gorm"
 )
 
 type BookRepository struct {
@@ -19,7 +19,7 @@ func NewBookRepository(db *gorm.DB) *BookRepository {
 	return &BookRepository{db: db}
 }
 
-func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuery) (paginated catalog.PaginatedBooks, err error) {
+func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuery) (catalog.PaginatedBooks, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
@@ -27,20 +27,21 @@ func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuer
 
 	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
 
+	paginated := catalog.PaginatedBooks{}
 	result := db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Find(&paginated.Books)
-	if err = result.Error; err != nil {
-		return
+	if err := result.Error; err != nil {
+		return catalog.PaginatedBooks{}, fmt.Errorf("FindByQuery) failed running select query: %w", err)
 	}
 
 	var count int64
-	if err = db.Model(&catalog.Book{}).Where(conditions).Count(&count).Error; err != nil {
-		return
+	if err := db.Model(&catalog.Book{}).Where(conditions).Count(&count).Error; err != nil {
+		return catalog.PaginatedBooks{}, fmt.Errorf("FindByQuery) failed running count query: %w", err)
 	}
 
 	paginated.Limit = query.Limit
 	paginated.Offset = query.Offset
 	paginated.TotalBooks = count
-	return
+	return paginated, nil
 }
 
 func (r *BookRepository) createConditionsFromCriteria(criteria []catalog.Criteria) string {
@@ -58,18 +59,21 @@ func (r *BookRepository) createConditionsFromCriteria(criteria []catalog.Criteri
 	return strings.Join(conditions, " AND ")
 }
 
-func (r *BookRepository) FindByID(ctx context.Context, id string) (book catalog.Book, err error) {
+func (r *BookRepository) FindByID(ctx context.Context, id string) (catalog.Book, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
+	book := catalog.Book{}
 	result := r.db.WithContext(ctx).First(&book, "id = ?", id)
-	if err = result.Error; err != nil {
+	if err := result.Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			err = &ErrEntityNotFound{entity: "book"}
 		}
+
+		return catalog.Book{}, fmt.Errorf("FindByID) failed running select query: %w", err)
 	}
 
-	return
+	return book, nil
 }
 
 func (r *BookRepository) Create(ctx context.Context, book *catalog.Book) error {
@@ -78,8 +82,7 @@ func (r *BookRepository) Create(ctx context.Context, book *catalog.Book) error {
 
 	result := r.db.WithContext(ctx).Create(book)
 	if err := result.Error; err != nil {
-		log.Default().Errorf("error trying to create a book: %v", err)
-		return err
+		return fmt.Errorf("Create) failed running insert statement: %w", err)
 	}
 
 	return nil
@@ -91,7 +94,7 @@ func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
 
 	result := r.db.WithContext(ctx).Save(book)
 	if err := result.Error; err != nil {
-		return err
+		return fmt.Errorf("Update) failed running update statement: %w", err)
 	}
 
 	return nil
@@ -103,11 +106,11 @@ func (r *BookRepository) Delete(ctx context.Context, id string) error {
 
 	result := r.db.WithContext(ctx).Delete(&catalog.Book{}, "id = ?", id)
 	if err := result.Error; err != nil {
-		return err
+		return fmt.Errorf("Delete) failed running delete statement: %w", err)
 	}
 
 	if result.RowsAffected <= 0 {
-		return &ErrEntityNotFound{entity: "book"}
+		return fmt.Errorf("Delete) no rows affected: %w", &ErrEntityNotFound{entity: "book"})
 	}
 
 	return nil

@@ -1,9 +1,11 @@
 package server
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 type HealthcheckHandler struct {
@@ -29,12 +31,12 @@ func (h *HealthcheckHandler) Routes() []Route {
 func (h *HealthcheckHandler) healthcheck(c *gin.Context) {
 	db, err := h.db.DB()
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("healthcheck) failed getting database connection: %w", err))
 		return
 	}
 
 	if err = db.Ping(); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("healthcheck) failed pinging database: %w", err))
 		return
 	}
 

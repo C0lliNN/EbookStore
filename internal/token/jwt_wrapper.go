@@ -2,9 +2,10 @@ package token
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/golang-jwt/jwt"
-	"strings"
 )
 
 type HMACSecret []byte
@@ -25,23 +26,30 @@ func (w *JWTWrapper) GenerateTokenForUser(user auth.User) (string, error) {
 		"admin": user.IsAdmin(),
 	})
 
-	return token.SignedString([]byte(w.secret))
+	signedString, err := token.SignedString([]byte(w.secret))
+	if err != nil {
+		return "", fmt.Errorf("GenerateTokenForUser) failed generating token for user: %w", err)
+	}
+
+	return signedString, nil
 }
 
-func (w *JWTWrapper) ExtractUserFromToken(tokenString string) (user auth.User, err error) {
+func (w *JWTWrapper) ExtractUserFromToken(tokenString string) (auth.User, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("ExtractUserFromToken) unexpected signing method: %v", token.Header["alg"])
 		}
 
 		return []byte(w.secret), nil
 	})
 
 	if err != nil {
-		return
+		return auth.User{}, fmt.Errorf("ExtractUserFromToken) failed parsing jwt token")
 	}
 
+	user := auth.User{}
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+
 		user.ID = claims["id"].(string)
 		user.FirstName = strings.Split(claims["name"].(string), " ")[0]
 		user.LastName = strings.Split(claims["name"].(string), " ")[1]
@@ -54,5 +62,5 @@ func (w *JWTWrapper) ExtractUserFromToken(tokenString string) (user auth.User, e
 		}
 	}
 
-	return
+	return user, nil
 }

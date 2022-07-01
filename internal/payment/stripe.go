@@ -2,12 +2,13 @@ package payment
 
 import (
 	"context"
-	"github.com/c0llinn/ebook-store/internal/log"
+	"fmt"
+	"time"
+
 	"github.com/c0llinn/ebook-store/internal/shop"
 	"github.com/spf13/viper"
 	"github.com/stripe/stripe-go/v72"
 	"github.com/stripe/stripe-go/v72/paymentintent"
-	"time"
 )
 
 var statusMap = map[stripe.PaymentIntentStatus]shop.OrderStatus{
@@ -44,8 +45,7 @@ func (c *StripePaymentService) CreatePaymentIntentForOrder(ctx context.Context, 
 	params.AddMetadata("userID", order.UserID)
 	pi, err := paymentintent.New(params)
 	if err != nil {
-		log.FromContext(ctx).Errorf("stripe intent creation failed for order %s: %v", pi.ID, err)
-		return err
+		return fmt.Errorf("CreatePaymentIntentForOrder) failed creating pyment intent for order %s: %w", order.ID, err)
 	}
 
 	order.PaymentIntentID = &pi.ID

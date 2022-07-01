@@ -2,9 +2,11 @@ package server
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type Authenticator interface {
@@ -45,13 +47,13 @@ func (h *AuthenticationHandler) Routes() []Route {
 func (h *AuthenticationHandler) register(c *gin.Context) {
 	var request auth.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("register) failed binding request body: %w", err))
 		return
 	}
 
 	response, err := h.authenticator.Register(c, request)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("register) failed handling register request: %w ", err))
 		return
 	}
 
@@ -72,13 +74,13 @@ func (h *AuthenticationHandler) register(c *gin.Context) {
 func (h *AuthenticationHandler) login(c *gin.Context) {
 	var request auth.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("login) failed binding request body: %w", err))
 		return
 	}
 
 	response, err := h.authenticator.Login(c, request)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("login) failed handling login request: %w ", err))
 		return
 	}
 
@@ -98,12 +100,12 @@ func (h *AuthenticationHandler) login(c *gin.Context) {
 func (h *AuthenticationHandler) resetPassword(c *gin.Context) {
 	var request auth.PasswordResetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("resetPassword) failed binding request body: %w", err))
 		return
 	}
 
 	if err := h.authenticator.ResetPassword(c, request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("resetPassword) failed handling reset password request: %w ", err))
 		return
 	}
 

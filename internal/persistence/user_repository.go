@@ -3,10 +3,12 @@ package persistence
 import (
 	"context"
 	"errors"
+	"fmt"
+	"time"
+
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/lib/pq"
 	"gorm.io/gorm"
-	"time"
 )
 
 type UserRepository struct {
@@ -27,24 +29,27 @@ func (r *UserRepository) Save(ctx context.Context, user *auth.User) error {
 			return &ErrDuplicateKey{key: "email"}
 		}
 
-		return err
+		return fmt.Errorf("Save) failed running insert statement: %w", err)
 	}
 
 	return nil
 }
 
-func (r *UserRepository) FindByEmail(ctx context.Context, email string) (user auth.User, err error) {
+func (r *UserRepository) FindByEmail(ctx context.Context, email string) (auth.User, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
+	user := auth.User{}
 	result := r.db.WithContext(ctx).First(&user, "email = ?", email)
-	if err = result.Error; err != nil {
+	if err := result.Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			err = &ErrEntityNotFound{entity: "User"}
 		}
+
+		return auth.User{}, fmt.Errorf("FindByEmail) failed executing select query: %w", err)
 	}
 
-	return
+	return user, nil
 }
 
 func (r *UserRepository) Update(ctx context.Context, user *auth.User) error {
@@ -53,7 +58,7 @@ func (r *UserRepository) Update(ctx context.Context, user *auth.User) error {
 
 	result := r.db.WithContext(ctx).Save(user)
 	if err := result.Error; err != nil {
-		return err
+		return fmt.Errorf("Update) failed running update statement: %w", err)
 	}
 
 	return nil

@@ -46,6 +46,7 @@ A fully-featured REST API developed in Golang for an ebook store.
 * [Swagger](https://www.openapis.org/)
 * [Localstack](https://localstack.cloud/)
 * [Testify](https://github.com/stretchr/testify)
+* [golangci-lint](https://golangci-lint.run/)
 
 ## High-level Documentation
 This is a high-level technical documentation about how this application is structured. The diagrams follow the [C4 model](https://c4model.com/)

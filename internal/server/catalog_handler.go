@@ -2,9 +2,11 @@ package server
 
 import (
 	"context"
+	"fmt"
+	"net/http"
+
 	"github.com/c0llinn/ebook-store/internal/catalog"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 type Catalog interface {
@@ -46,13 +48,13 @@ func (h *CatalogHandler) Routes() []Route {
 func (h *CatalogHandler) getBooks(c *gin.Context) {
 	var request catalog.SearchBooks
 	if err := c.ShouldBindQuery(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(getBooks) failed binding query: %w", err))
 		return
 	}
 
 	response, err := h.catalog.FindBooks(c, request)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(getBooks) failed handling find request: %w ", err))
 		return
 	}
 
@@ -71,7 +73,7 @@ func (h *CatalogHandler) getBooks(c *gin.Context) {
 func (h *CatalogHandler) getBook(c *gin.Context) {
 	response, err := h.catalog.FindBookByID(c, c.Param("id"))
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(getBook) failed handling get request: %w ", err))
 		return
 	}
 
@@ -93,30 +95,30 @@ func (h *CatalogHandler) getBook(c *gin.Context) {
 func (h *CatalogHandler) createBook(c *gin.Context) {
 	var request catalog.CreateBook
 	if err := c.ShouldBind(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(createBook) failed binding request body: %w", err))
 		return
 	}
 
 	poster, err := c.FormFile("poster")
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(createBook) failed getting poster file: %w", err))
 		return
 	}
 
 	posterFile, err := poster.Open()
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(createBook) failed openning poster file: %w", err))
 		return
 	}
 
 	content, err := c.FormFile("content")
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(createBook) failed getting content file: %w", err))
 	}
 
 	contentFile, err := content.Open()
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(createBook) failed openning poster file: %w", err))
 		return
 	}
 
@@ -125,7 +127,7 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 
 	response, err := h.catalog.CreateBook(c, request)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(createBook) failed handling create request: %w ", err))
 		return
 	}
 
@@ -147,13 +149,13 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 func (h *CatalogHandler) updateBook(c *gin.Context) {
 	var request catalog.UpdateBook
 	if err := c.ShouldBindJSON(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(updateBook) failed binding request body: %w", err))
 		return
 	}
 
 	request.ID = c.Param("id")
 	if err := h.catalog.UpdateBook(c, request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(updateBook) failed handling update request: %w ", err))
 		return
 	}
 
@@ -171,7 +173,7 @@ func (h *CatalogHandler) updateBook(c *gin.Context) {
 // @Router /books/{id} [delete]
 func (h *CatalogHandler) deleteBook(c *gin.Context) {
 	if err := h.catalog.DeleteBook(c, c.Param("id")); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(deleteBook) failed handling delete request: %w ", err))
 		return
 	}
 

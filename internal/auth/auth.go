@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"fmt"
 )
 
 type Repository interface {
@@ -58,44 +59,54 @@ func New(c Config) *Authenticator {
 
 func (a *Authenticator) Register(ctx context.Context, request RegisterRequest) (CredentialsResponse, error) {
 	if err := a.Validator.Validate(request); err != nil {
-		return CredentialsResponse{}, err
+		return CredentialsResponse{}, fmt.Errorf("(Register) failed validating request: %w", err)
 	}
 
 	user := request.User(a.IDGenerator.NewID())
 	hashedPassword, err := a.Hasher.HashPassword(user.Password)
 	if err != nil {
-		return CredentialsResponse{}, err
+		return CredentialsResponse{}, fmt.Errorf("(Register) failed hashing password: %w", err)
 	}
 	user.Password = hashedPassword
 
 	if err = a.Repository.Save(ctx, &user); err != nil {
-		return CredentialsResponse{}, err
+		return CredentialsResponse{}, fmt.Errorf("(Register) failed saving user: %w", err)
 	}
 
-	return a.generateCredentialsForUser(user)
+	credentials, err := a.generateCredentialsForUser(user)
+	if err != nil {
+		return CredentialsResponse{}, fmt.Errorf("(Register) failed generating credentials: %w", err)
+	}
+
+	return credentials, err
 }
 
 func (a *Authenticator) Login(ctx context.Context, request LoginRequest) (CredentialsResponse, error) {
 	if err := a.Validator.Validate(request); err != nil {
-		return CredentialsResponse{}, err
+		return CredentialsResponse{}, fmt.Errorf("(Login) failed validating request: %w", err)
 	}
 
 	user, err := a.Repository.FindByEmail(ctx, request.Email)
 	if err != nil {
-		return CredentialsResponse{}, err
+		return CredentialsResponse{}, fmt.Errorf("(Login) failed finding user: %w", err)
 	}
 
 	if err = a.Hasher.CompareHashAndPassword(user.Password, request.Password); err != nil {
-		return CredentialsResponse{}, ErrWrongPassword
+		return CredentialsResponse{}, fmt.Errorf("(Login) failed comparing hash and password: %w", ErrWrongPassword)
 	}
 
-	return a.generateCredentialsForUser(user)
+	credentials, err := a.generateCredentialsForUser(user)
+	if err != nil {
+		return CredentialsResponse{}, fmt.Errorf("Login) failed generating credentials: %w", err)
+	}
+
+	return credentials, err
 }
 
 func (a *Authenticator) generateCredentialsForUser(user User) (CredentialsResponse, error) {
 	token, err := a.Tokener.GenerateTokenForUser(user)
 	if err != nil {
-		return CredentialsResponse{}, err
+		return CredentialsResponse{}, fmt.Errorf("(generateCredentialsForUser) failed generating token: %w", err)
 	}
 
 	return NewCredentialsResponse(Credentials{Token: token}), nil
@@ -103,24 +114,28 @@ func (a *Authenticator) generateCredentialsForUser(user User) (CredentialsRespon
 
 func (a *Authenticator) ResetPassword(ctx context.Context, request PasswordResetRequest) error {
 	if err := a.Validator.Validate(request); err != nil {
-		return err
+		return fmt.Errorf("(ResetPassword) failed validating request: %w", err)
 	}
 
 	user, err := a.Repository.FindByEmail(ctx, request.Email)
 	if err != nil {
-		return err
+		return fmt.Errorf("(ResetPassword) failed finding user: %w", err)
 	}
 
 	newPassword := a.PasswordGenerator.NewPassword()
 	hashedNewPassword, err := a.Hasher.HashPassword(newPassword)
 	if err != nil {
-		return err
+		return fmt.Errorf("(ResetPassword) failed hashing password: %w", err)
 	}
 
 	user.Password = hashedNewPassword
 	if err = a.Repository.Update(ctx, &user); err != nil {
-		return err
+		return fmt.Errorf("(ResetPassword) failed updating user: %w", err)
 	}
 
-	return a.EmailClient.SendPasswordResetEmail(ctx, user, newPassword)
+	if err = a.EmailClient.SendPasswordResetEmail(ctx, user, newPassword); err != nil {
+		return fmt.Errorf("(ResetPassword) failed sending email: %w", err)
+	}
+
+	return nil
 }

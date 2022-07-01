@@ -1,7 +1,11 @@
 package server
 
 import (
+	"errors"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/c0llinn/ebook-store/internal/auth"
 	"github.com/c0llinn/ebook-store/internal/catalog"
 	"github.com/c0llinn/ebook-store/internal/log"
@@ -9,7 +13,6 @@ import (
 	"github.com/c0llinn/ebook-store/internal/shop"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"net/http"
 )
 
 type ErrorMiddleware struct{}
@@ -33,37 +36,35 @@ func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
 		}
 		err := context.Errors.Last().Err
 
-		log.FromContext(context).Warnf("an error occurred when processing the request: %v", err)
+		log.FromContext(context).Warnf("error processing the request: %v", err)
 
-		var response *ErrorResponse
-		switch err {
-		case auth.ErrWrongPassword:
+		var (
+			response          *ErrorResponse
+			validationErr     validator.ValidationErrors
+			duplicateKeyErr   *persistence.ErrDuplicateKey
+			entityNotFoundErr *persistence.ErrEntityNotFound
+		)
+
+		switch {
+		case errors.Is(err, auth.ErrWrongPassword):
 			response = newErrorResponse(http.StatusUnauthorized, err.Error())
-		case catalog.ErrForbiddenCatalogAccess, shop.ErrForbiddenOrderAccess:
+		case errors.Is(err, catalog.ErrForbiddenCatalogAccess), errors.Is(err, shop.ErrForbiddenOrderAccess):
 			response = newErrorResponse(http.StatusForbidden, err.Error())
-		case fmt.Errorf("invalid request"):
+		case errors.Is(err, fmt.Errorf("invalid request")), errors.Is(err, fmt.Errorf("failed binding request body")):
 			response = newErrorResponse(http.StatusBadRequest, "invalid request body. check the documentation")
-		case shop.ErrOrderNotPaid:
+		case errors.Is(err, shop.ErrOrderNotPaid):
 			response = newErrorResponse(http.StatusPaymentRequired, err.Error())
-		}
-
-		if response != nil {
-			context.AbortWithStatusJSON(response.Code, response)
-			return
-		}
-
-		switch err := err.(type) {
-		case validator.ValidationErrors:
-			response = newValidationErrorResponse(err)
-		case *persistence.ErrDuplicateKey:
-			response = newErrorResponse(http.StatusConflict, err.Error())
-		case *persistence.ErrEntityNotFound:
-			response = newErrorResponse(http.StatusNotFound, err.Error())
+		case errors.As(err, &validationErr):
+			response = newValidationErrorResponse(validationErr)
+		case errors.As(err, &duplicateKeyErr):
+			response = newErrorResponse(http.StatusConflict, duplicateKeyErr.Error())
+		case errors.As(err, &entityNotFoundErr):
+			response = newErrorResponse(http.StatusNotFound, entityNotFoundErr.Error())
 		default:
 			response = newGenericErrorResponse(err)
 		}
 
-		context.AbortWithStatusJSON(response.Code, response)
+		context.JSON(response.Code, response)
 	}
 }
 
@@ -89,9 +90,14 @@ func newValidationErrorResponse(errors validator.ValidationErrors) *ErrorRespons
 }
 
 func newGenericErrorResponse(err error) *ErrorResponse {
+	details := strings.Split(err.Error(), ":")
+	for i := range details {
+		details[i] = strings.TrimSpace(details[i])
+	}
+
 	return &ErrorResponse{
 		Code:    http.StatusInternalServerError,
 		Message: "Some unexpected error happened",
-		Details: []string{err.Error()},
+		Details: details,
 	}
 }

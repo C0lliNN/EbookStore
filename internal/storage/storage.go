@@ -2,11 +2,12 @@ package storage
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/c0llinn/ebook-store/internal/log"
+	"fmt"
 	"io"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go/aws"
 )
 
 type Config struct {
@@ -35,8 +36,7 @@ func (c *Storage) GeneratePreSignedUrl(ctx context.Context, key string) (string,
 	})
 
 	if err != nil {
-		log.FromContext(ctx).Errorf("error generating get presignUrl for key %s: %v", key, err)
-		return "", err
+		return "", fmt.Errorf("GeneratePreSignedUrl) failed generating presignedUrl for key: %s: %w", key, err)
 	}
 
 	return presignResult.URL, nil
@@ -53,8 +53,7 @@ func (c *Storage) SaveFile(ctx context.Context, key string, contentType string, 
 		Body:        content,
 	})
 	if err != nil {
-		log.FromContext(ctx).Errorf("error saving file for key %s: %v", key, err)
-		return err
+		return fmt.Errorf("SaveFile) failed saving file for key %s: %w", key, err)
 	}
 
 	return nil
@@ -66,8 +65,7 @@ func (c *Storage) RetrieveFile(ctx context.Context, key string) (io.ReadCloser, 
 		Bucket: aws.String(string(c.Bucket)),
 	})
 	if err != nil {
-		log.FromContext(ctx).Errorf("error retriving file for key %s: %v", key, err)
-		return nil, err
+		return nil, fmt.Errorf("RetrieveFile) failed retrieving file for key %s: %w", key, err)
 	}
 
 	return output.Body, nil

@@ -28,15 +28,15 @@ func (m *Migrator) Sync() {
 	mi, err := migrate.New(string(m.Source), string(m.DatabaseURI))
 
 	if err != nil {
-		log.Default().Fatalf("An error happened when trying to sync migrations: %v", err)
+		log.Default().Fatalf("Sync) error happened when trying to sync migrations: %v", err)
 	}
 
 	if err = mi.Up(); err != nil {
 		if err == migrate.ErrNoChange {
-			log.Default().Debug("The current migrations are up to date")
+			log.Default().Debug("Sync] the current migrations are up to date")
 			return
 		}
 
-		log.Default().Fatalf("An error happened when trying to sync migrations: %v", err)
+		log.Default().Fatalf("Sync) an error happened when trying to sync migrations: %v", err)
 	}
 }
