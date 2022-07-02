@@ -38,7 +38,7 @@ func (e *Email) SendPasswordResetEmail(ctx context.Context, user auth.User, newP
 	sourceEmail := viper.GetString("AWS_SES_SOURCE_EMAIL")
 	messageBody, err := e.getMessageBody(user, newPassword)
 	if err != nil {
-		return fmt.Errorf("SendPasswordResetEmail) failed getting email message body: %w", err)
+		return fmt.Errorf("(SendPasswordResetEmail) failed getting email message body: %w", err)
 	}
 
 	input := &ses.SendEmailInput{
@@ -64,7 +64,7 @@ func (e *Email) SendPasswordResetEmail(ctx context.Context, user auth.User, newP
 	}
 
 	if _, err = e.Client.SendEmail(ctx, input); err != nil {
-		return fmt.Errorf("SendPasswordResetEmail) failed sending email")
+		return fmt.Errorf("(SendPasswordResetEmail) failed sending email")
 	}
 
 	return nil
@@ -83,7 +83,7 @@ func (e *Email) getMessageBody(user auth.User, newPassword string) (string, erro
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("getMessageBody) failed parsing template: %w", err)
+		return "", fmt.Errorf("(getMessageBody) failed parsing template: %w", err)
 	}
 
 	return messageBody.String(), nil

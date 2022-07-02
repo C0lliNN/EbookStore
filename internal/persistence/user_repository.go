@@ -29,7 +29,7 @@ func (r *UserRepository) Save(ctx context.Context, user *auth.User) error {
 			return &ErrDuplicateKey{key: "email"}
 		}
 
-		return fmt.Errorf("Save) failed running insert statement: %w", err)
+		return fmt.Errorf("(Save) failed running insert statement: %w", err)
 	}
 
 	return nil
@@ -46,7 +46,7 @@ func (r *UserRepository) FindByEmail(ctx context.Context, email string) (auth.Us
 			err = &ErrEntityNotFound{entity: "User"}
 		}
 
-		return auth.User{}, fmt.Errorf("FindByEmail) failed executing select query: %w", err)
+		return auth.User{}, fmt.Errorf("(FindByEmail) failed executing select query: %w", err)
 	}
 
 	return user, nil
@@ -58,7 +58,7 @@ func (r *UserRepository) Update(ctx context.Context, user *auth.User) error {
 
 	result := r.db.WithContext(ctx).Save(user)
 	if err := result.Error; err != nil {
-		return fmt.Errorf("Update) failed running update statement: %w", err)
+		return fmt.Errorf("(Update) failed running update statement: %w", err)
 	}
 
 	return nil

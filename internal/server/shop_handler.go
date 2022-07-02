@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"github.com/c0llinn/ebook-store/internal/shop"
 	"github.com/gin-gonic/gin"
 	"io"
@@ -48,13 +49,13 @@ func (h *ShopHandler) Routes() []Route {
 func (h *ShopHandler) getOrders(c *gin.Context) {
 	var request shop.SearchOrders
 	if err := c.ShouldBindQuery(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(&BindingErr{Err: fmt.Errorf("(getOrders) failed binding query: %w", err)})
 		return
 	}
 
 	response, err := h.shop.FindOrders(c, request)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(getOrders) failed handling find request: %w", err))
 		return
 	}
 
@@ -73,7 +74,7 @@ func (h *ShopHandler) getOrders(c *gin.Context) {
 func (h *ShopHandler) getOrder(c *gin.Context) {
 	response, err := h.shop.FindOrderByID(c, c.Param("id"))
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(getOrder) failed handling find request: %w", err))
 		return
 	}
 
@@ -93,13 +94,13 @@ func (h *ShopHandler) getOrder(c *gin.Context) {
 func (h *ShopHandler) createOrder(c *gin.Context) {
 	var request shop.CreateOrder
 	if err := c.ShouldBindJSON(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(&BindingErr{Err: fmt.Errorf("(createOrder) failed binding request: %w", err)})
 		return
 	}
 
 	response, err := h.shop.CreateOrder(c, request)
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(createOrder) failed handling create request: %w", err))
 		return
 	}
 
@@ -119,13 +120,13 @@ func (h *ShopHandler) createOrder(c *gin.Context) {
 func (h *ShopHandler) downloadOrder(c *gin.Context) {
 	content, err := h.shop.GetOrderDeliverableContent(c, c.Param("id"))
 	if err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(downloadOrder) failed handling get book content: %w", err))
 		return
 	}
 
 	buffer := new(bytes.Buffer)
 	if _, err = buffer.ReadFrom(content); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(fmt.Errorf("(downloadOrder) failed reading content: %w", err))
 		return
 	}
 
@@ -143,14 +144,14 @@ func (h *ShopHandler) downloadOrder(c *gin.Context) {
 func (h *ShopHandler) handleStripeWebhook(c *gin.Context) {
 	var request shop.HandleStripeWebhook
 	if err := c.ShouldBindJSON(&request); err != nil {
-		_ = c.Error(err)
+		_ = c.Error(&BindingErr{Err: fmt.Errorf("(handleStripeWebhook) failed binding request: %w", err)})
 		return
 	}
 
 	if request.Type == "payment_intent.succeeded" {
 		orderID := request.Data["object"].(map[string]interface{})["metadata"].(map[string]interface{})["orderID"].(string)
 		if err := h.shop.CompleteOrder(c, orderID); err != nil {
-			_ = c.Error(err)
+			_ = c.Error(fmt.Errorf("(handleStripeWebhook) failed handling complete order request: %w", err))
 			return
 		}
 	}

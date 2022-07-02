@@ -97,7 +97,7 @@ func (a *Authenticator) Login(ctx context.Context, request LoginRequest) (Creden
 
 	credentials, err := a.generateCredentialsForUser(user)
 	if err != nil {
-		return CredentialsResponse{}, fmt.Errorf("Login) failed generating credentials: %w", err)
+		return CredentialsResponse{}, fmt.Errorf("(Login) failed generating credentials: %w", err)
 	}
 
 	return credentials, err

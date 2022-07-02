@@ -57,7 +57,7 @@ func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedO
 
 	paginatedOrders, err := s.Repository.FindByQuery(ctx, query)
 	if err != nil {
-		return PaginatedOrdersResponse{}, fmt.Errorf("FindOrders) failed fetching orders: %w", err)
+		return PaginatedOrdersResponse{}, fmt.Errorf("(FindOrders) failed fetching orders: %w", err)
 	}
 
 	return NewPaginatedOrdersResponse(paginatedOrders), nil
@@ -66,11 +66,11 @@ func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedO
 func (s *Shop) FindOrderByID(ctx context.Context, id string) (OrderResponse, error) {
 	order, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
-		return OrderResponse{}, fmt.Errorf("FindOrderByID) failed fetching order: %w", err)
+		return OrderResponse{}, fmt.Errorf("(FindOrderByID) failed fetching order: %w", err)
 	}
 
 	if !s.isUserAllowedToReadOrder(ctx, order) {
-		return OrderResponse{}, fmt.Errorf("FindOrderByID) failed validating read conditions: %w", ErrForbiddenOrderAccess)
+		return OrderResponse{}, fmt.Errorf("(FindOrderByID) failed validating read conditions: %w", ErrForbiddenOrderAccess)
 	}
 
 	return NewOrderResponse(order), nil
@@ -78,22 +78,22 @@ func (s *Shop) FindOrderByID(ctx context.Context, id string) (OrderResponse, err
 
 func (s *Shop) CreateOrder(ctx context.Context, request CreateOrder) (OrderResponse, error) {
 	if err := s.Validator.Validate(request); err != nil {
-		return OrderResponse{}, fmt.Errorf("CreateOrder) failed validating request: %w", err)
+		return OrderResponse{}, fmt.Errorf("(CreateOrder) failed validating request: %w", err)
 	}
 
 	order := request.Order(s.IDGenerator.NewID(), userId(ctx))
 	book, err := s.CatalogService.FindBookByID(ctx, order.BookID)
 	if err != nil {
-		return OrderResponse{}, fmt.Errorf("CreateOrder) failed finding book by id %s: %w", order.BookID, err)
+		return OrderResponse{}, fmt.Errorf("(CreateOrder) failed finding book by id %s: %w", order.BookID, err)
 	}
 	order.Total = int64(book.Price)
 
 	if err = s.PaymentClient.CreatePaymentIntentForOrder(ctx, &order); err != nil {
-		return OrderResponse{}, fmt.Errorf("CreateOrder) failed creating payment intent: %w", err)
+		return OrderResponse{}, fmt.Errorf("(CreateOrder) failed creating payment intent: %w", err)
 	}
 
 	if err = s.Repository.Create(ctx, &order); err != nil {
-		return OrderResponse{}, fmt.Errorf("CreateOrder) failed creating order: %w", err)
+		return OrderResponse{}, fmt.Errorf("(CreateOrder) failed creating order: %w", err)
 	}
 
 	return NewOrderResponse(order), nil
@@ -102,12 +102,12 @@ func (s *Shop) CreateOrder(ctx context.Context, request CreateOrder) (OrderRespo
 func (s *Shop) CompleteOrder(ctx context.Context, orderID string) error {
 	order, err := s.Repository.FindByID(ctx, orderID)
 	if err != nil {
-		return fmt.Errorf("CompleteOrder) failed finding order by id %s: %w", orderID, err)
+		return fmt.Errorf("(CompleteOrder) failed finding order by id %s: %w", orderID, err)
 	}
 
 	order.Complete()
 	if err = s.Repository.Update(ctx, &order); err != nil {
-		return fmt.Errorf("CompleteOrder) failed updating order %s: %w", orderID, err)
+		return fmt.Errorf("(CompleteOrder) failed updating order %s: %w", orderID, err)
 	}
 
 	return nil
@@ -116,20 +116,20 @@ func (s *Shop) CompleteOrder(ctx context.Context, orderID string) error {
 func (s *Shop) GetOrderDeliverableContent(ctx context.Context, orderID string) (io.ReadCloser, error) {
 	order, err := s.Repository.FindByID(ctx, orderID)
 	if err != nil {
-		return nil, fmt.Errorf("GetOrderDeliverableContent) failed finding order by id %s: %w", orderID, err)
+		return nil, fmt.Errorf("(GetOrderDeliverableContent) failed finding order by id %s: %w", orderID, err)
 	}
 
 	if order.Status != Paid {
-		return nil, fmt.Errorf("GetOrderDeliverableContent) failed validating order conditions %s: %w", orderID, ErrOrderNotPaid)
+		return nil, fmt.Errorf("(GetOrderDeliverableContent) failed validating order conditions %s: %w", orderID, ErrOrderNotPaid)
 	}
 
 	if !s.isUserAllowedToReadOrder(ctx, order) {
-		return nil, fmt.Errorf("GetOrderDeliverableContent) failed validating user conditions: %w", ErrForbiddenOrderAccess)
+		return nil, fmt.Errorf("(GetOrderDeliverableContent) failed validating user conditions: %w", ErrForbiddenOrderAccess)
 	}
 
 	content, err := s.CatalogService.GetBookContent(ctx, order.BookID)
 	if err != nil {
-		return nil, fmt.Errorf("GetOrderDeliverableContent) failed getting book content: %w", err)
+		return nil, fmt.Errorf("(GetOrderDeliverableContent) failed getting book content: %w", err)
 	}
 
 	return content, nil

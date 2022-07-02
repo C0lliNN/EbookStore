@@ -28,7 +28,7 @@ func (w *JWTWrapper) GenerateTokenForUser(user auth.User) (string, error) {
 
 	signedString, err := token.SignedString([]byte(w.secret))
 	if err != nil {
-		return "", fmt.Errorf("GenerateTokenForUser) failed generating token for user: %w", err)
+		return "", fmt.Errorf("(GenerateTokenForUser) failed generating token for user: %w", err)
 	}
 
 	return signedString, nil
@@ -37,14 +37,14 @@ func (w *JWTWrapper) GenerateTokenForUser(user auth.User) (string, error) {
 func (w *JWTWrapper) ExtractUserFromToken(tokenString string) (auth.User, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("ExtractUserFromToken) unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("(ExtractUserFromToken) unexpected signing method: %v", token.Header["alg"])
 		}
 
 		return []byte(w.secret), nil
 	})
 
 	if err != nil {
-		return auth.User{}, fmt.Errorf("ExtractUserFromToken) failed parsing jwt token")
+		return auth.User{}, fmt.Errorf("(ExtractUserFromToken) failed parsing jwt token")
 	}
 
 	user := auth.User{}

@@ -53,7 +53,7 @@ func (c *Catalog) FindBooks(ctx context.Context, request SearchBooks) (Paginated
 
 	paginatedBooks, err := c.Repository.FindByQuery(ctx, query)
 	if err != nil {
-		return PaginatedBooksResponse{}, fmt.Errorf("FindBooks) failed finding books: %w", err)
+		return PaginatedBooksResponse{}, fmt.Errorf("(FindBooks) failed finding books: %w", err)
 	}
 
 	for i := range paginatedBooks.Books {
@@ -63,7 +63,7 @@ func (c *Catalog) FindBooks(ctx context.Context, request SearchBooks) (Paginated
 		url, err = c.StorageClient.GeneratePreSignedUrl(ctx, imageKey)
 		if err != nil {
 			bookId := paginatedBooks.Books[i].ID
-			return PaginatedBooksResponse{}, fmt.Errorf("FindBooks] failed generating url for book %s: %w", bookId, err)
+			return PaginatedBooksResponse{}, fmt.Errorf("(FindBooks) failed generating url for book %s: %w", bookId, err)
 		}
 
 		paginatedBooks.Books[i].SetPosterImageLink(url)
@@ -75,13 +75,13 @@ func (c *Catalog) FindBooks(ctx context.Context, request SearchBooks) (Paginated
 func (c *Catalog) FindBookByID(ctx context.Context, id string) (BookResponse, error) {
 	book, err := c.Repository.FindByID(ctx, id)
 	if err != nil {
-		return BookResponse{}, fmt.Errorf("FindBookByID) failed finding book %s: %w", id, err)
+		return BookResponse{}, fmt.Errorf("(FindBookByID) failed finding book %s: %w", id, err)
 	}
 
 	imageKey := book.PosterImageBucketKey
 	url, err := c.StorageClient.GeneratePreSignedUrl(ctx, imageKey)
 	if err != nil {
-		return BookResponse{}, fmt.Errorf("FindBookByID) failed generating presigned url: %w", err)
+		return BookResponse{}, fmt.Errorf("(FindBookByID) failed generating presigned url: %w", err)
 	}
 
 	book.SetPosterImageLink(url)
@@ -91,12 +91,12 @@ func (c *Catalog) FindBookByID(ctx context.Context, id string) (BookResponse, er
 func (c *Catalog) GetBookContent(ctx context.Context, id string) (io.ReadCloser, error) {
 	book, err := c.Repository.FindByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("GetBookContent) failed finding book %s: %w", id, err)
+		return nil, fmt.Errorf("(GetBookContent) failed finding book %s: %w", id, err)
 	}
 
 	content, err := c.StorageClient.RetrieveFile(ctx, book.ContentBucketKey)
 	if err != nil {
-		return nil, fmt.Errorf("GetBookContent) failed retrieving book content: %w", err)
+		return nil, fmt.Errorf("(GetBookContent) failed retrieving book content: %w", err)
 	}
 
 	return content, nil
@@ -104,11 +104,11 @@ func (c *Catalog) GetBookContent(ctx context.Context, id string) (io.ReadCloser,
 
 func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookResponse, error) {
 	if !isAdmin(ctx) {
-		return BookResponse{}, fmt.Errorf("CreateBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)
+		return BookResponse{}, fmt.Errorf("(CreateBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)
 	}
 
 	if err := c.Validator.Validate(request); err != nil {
-		return BookResponse{}, fmt.Errorf("CreateBook) failed validating request: %w", err)
+		return BookResponse{}, fmt.Errorf("(CreateBook) failed validating request: %w", err)
 	}
 
 	book := request.Book(c.IDGenerator.NewID())
@@ -116,11 +116,11 @@ func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookRespo
 	contentKey := c.FilenameGenerator.NewUniqueName("content_" + book.Title)
 
 	if err := c.StorageClient.SaveFile(ctx, posterImageKey, "image/jpeg", request.PosterImage); err != nil {
-		return BookResponse{}, fmt.Errorf("CreateBook) failed saving poster: %w", err)
+		return BookResponse{}, fmt.Errorf("(CreateBook) failed saving poster: %w", err)
 	}
 
 	if err := c.StorageClient.SaveFile(ctx, contentKey, "application/pdf", request.BookContent); err != nil {
-		return BookResponse{}, fmt.Errorf("CreateBook) failed saving content: %w", err)
+		return BookResponse{}, fmt.Errorf("(CreateBook) failed saving content: %w", err)
 	}
 
 	book.PosterImageBucketKey = posterImageKey
@@ -128,12 +128,12 @@ func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookRespo
 
 	url, err := c.StorageClient.GeneratePreSignedUrl(ctx, posterImageKey)
 	if err != nil {
-		return BookResponse{}, fmt.Errorf("CreateBook) failed generating url: %w", err)
+		return BookResponse{}, fmt.Errorf("(CreateBook) failed generating url: %w", err)
 	}
 	book.SetPosterImageLink(url)
 
 	if err = c.Repository.Create(ctx, &book); err != nil {
-		return BookResponse{}, fmt.Errorf("CreateBook) failed creating book: %w", err)
+		return BookResponse{}, fmt.Errorf("(CreateBook) failed creating book: %w", err)
 	}
 
 	return NewBookResponse(book), nil
@@ -141,32 +141,32 @@ func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookRespo
 
 func (c *Catalog) UpdateBook(ctx context.Context, request UpdateBook) error {
 	if !isAdmin(ctx) {
-		return fmt.Errorf("UpdateBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)
+		return fmt.Errorf("(UpdateBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)
 	}
 
 	if err := c.Validator.Validate(request); err != nil {
-		return fmt.Errorf("UpdateBook) failed validating request: %w", err)
+		return fmt.Errorf("(UpdateBook) failed validating request: %w", err)
 	}
 
 	existing, err := c.Repository.FindByID(ctx, request.ID)
 	if err != nil {
-		return fmt.Errorf("UpdateBook) failed finding book %s: %w", request.ID, err)
+		return fmt.Errorf("(UpdateBook) failed finding book %s: %w", request.ID, err)
 	}
 
 	updated := request.Update(existing)
 	if err = c.Repository.Update(ctx, &updated); err != nil {
-		return fmt.Errorf("UpdateBook) failed updating book %s: %w", request.ID, err)
+		return fmt.Errorf("(UpdateBook) failed updating book %s: %w", request.ID, err)
 	}
 	return nil
 }
 
 func (c *Catalog) DeleteBook(ctx context.Context, id string) error {
 	if !isAdmin(ctx) {
-		return fmt.Errorf("DeleteBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)
+		return fmt.Errorf("(DeleteBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)
 	}
 
 	if err := c.Repository.Delete(ctx, id); err != nil {
-		return fmt.Errorf("DeleteBook) failed deleting book: %w", err)
+		return fmt.Errorf("(DeleteBook) failed deleting book: %w", err)
 	}
 
 	return nil

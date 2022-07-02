@@ -40,26 +40,27 @@ func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
 
 		var (
 			response          *ErrorResponse
+			bindingErr        *BindingErr
 			validationErr     validator.ValidationErrors
 			duplicateKeyErr   *persistence.ErrDuplicateKey
 			entityNotFoundErr *persistence.ErrEntityNotFound
 		)
 
 		switch {
-		case errors.Is(err, auth.ErrWrongPassword):
-			response = newErrorResponse(http.StatusUnauthorized, err.Error())
-		case errors.Is(err, catalog.ErrForbiddenCatalogAccess), errors.Is(err, shop.ErrForbiddenOrderAccess):
-			response = newErrorResponse(http.StatusForbidden, err.Error())
-		case errors.Is(err, fmt.Errorf("invalid request")), errors.Is(err, fmt.Errorf("failed binding request body")):
-			response = newErrorResponse(http.StatusBadRequest, "invalid request body. check the documentation")
-		case errors.Is(err, shop.ErrOrderNotPaid):
-			response = newErrorResponse(http.StatusPaymentRequired, err.Error())
+		case errors.As(err, &bindingErr):
+			response = newBindingErrorResponse(bindingErr)
 		case errors.As(err, &validationErr):
 			response = newValidationErrorResponse(validationErr)
-		case errors.As(err, &duplicateKeyErr):
-			response = newErrorResponse(http.StatusConflict, duplicateKeyErr.Error())
 		case errors.As(err, &entityNotFoundErr):
-			response = newErrorResponse(http.StatusNotFound, entityNotFoundErr.Error())
+			response = newErrorResponse(http.StatusNotFound, entityNotFoundErr)
+		case errors.As(err, &duplicateKeyErr):
+			response = newErrorResponse(http.StatusConflict, duplicateKeyErr)
+		case errors.Is(err, auth.ErrWrongPassword):
+			response = newErrorResponse(http.StatusUnauthorized, err)
+		case errors.Is(err, catalog.ErrForbiddenCatalogAccess), errors.Is(err, shop.ErrForbiddenOrderAccess):
+			response = newErrorResponse(http.StatusForbidden, err)
+		case errors.Is(err, shop.ErrOrderNotPaid):
+			response = newErrorResponse(http.StatusPaymentRequired, err)
 		default:
 			response = newGenericErrorResponse(err)
 		}
@@ -68,10 +69,19 @@ func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
 	}
 }
 
-func newErrorResponse(code int, message string) *ErrorResponse {
+func newErrorResponse(code int, err error) *ErrorResponse {
 	return &ErrorResponse{
 		Code:    code,
-		Message: message,
+		Message: unwrappedError(err).Error(),
+		Details: errorStack(err),
+	}
+}
+
+func newBindingErrorResponse(err *BindingErr) *ErrorResponse {
+	return &ErrorResponse{
+		Code:    http.StatusBadRequest,
+		Message: "invalid request body. check the documentation",
+		Details: errorStack(err),
 	}
 }
 
@@ -90,14 +100,30 @@ func newValidationErrorResponse(errors validator.ValidationErrors) *ErrorRespons
 }
 
 func newGenericErrorResponse(err error) *ErrorResponse {
-	details := strings.Split(err.Error(), ":")
-	for i := range details {
-		details[i] = strings.TrimSpace(details[i])
-	}
-
 	return &ErrorResponse{
 		Code:    http.StatusInternalServerError,
 		Message: "Some unexpected error happened",
-		Details: details,
+		Details: errorStack(err),
 	}
+}
+
+func unwrappedError(err error) error {
+	if errors.Unwrap(err) == nil {
+		return err
+	}
+
+	return unwrappedError(errors.Unwrap(err))
+}
+
+func errorStack(err error) []string {
+	stack := strings.Split(err.Error(), ":")
+	for i := range stack {
+		stack[i] = strings.TrimSpace(stack[i])
+	}
+
+	for i, j := 0, len(stack)-1; i < j; i, j = i+1, j-1 {
+		stack[i], stack[j] = stack[j], stack[i]
+	}
+
+	return stack
 }

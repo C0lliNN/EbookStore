@@ -48,7 +48,7 @@ func (h *CatalogHandler) Routes() []Route {
 func (h *CatalogHandler) getBooks(c *gin.Context) {
 	var request catalog.SearchBooks
 	if err := c.ShouldBindQuery(&request); err != nil {
-		_ = c.Error(fmt.Errorf("(getBooks) failed binding query: %w", err))
+		_ = c.Error(&BindingErr{Err: fmt.Errorf("(getBooks) failed binding query: %w", err)})
 		return
 	}
 
@@ -95,7 +95,7 @@ func (h *CatalogHandler) getBook(c *gin.Context) {
 func (h *CatalogHandler) createBook(c *gin.Context) {
 	var request catalog.CreateBook
 	if err := c.ShouldBind(&request); err != nil {
-		_ = c.Error(fmt.Errorf("(createBook) failed binding request body: %w", err))
+		_ = c.Error(&BindingErr{Err: fmt.Errorf("(createBook) failed binding request body: %w", err)})
 		return
 	}
 
@@ -149,13 +149,13 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 func (h *CatalogHandler) updateBook(c *gin.Context) {
 	var request catalog.UpdateBook
 	if err := c.ShouldBindJSON(&request); err != nil {
-		_ = c.Error(fmt.Errorf("(updateBook) failed binding request body: %w", err))
+		_ = c.Error(&BindingErr{Err: fmt.Errorf("(updateBook) failed binding request body: %w", err)})
 		return
 	}
 
 	request.ID = c.Param("id")
 	if err := h.catalog.UpdateBook(c, request); err != nil {
-		_ = c.Error(fmt.Errorf("(updateBook) failed handling update request: %w ", err))
+		_ = c.Error(&BindingErr{Err: fmt.Errorf("(updateBook) failed handling update request: %w ", err)})
 		return
 	}
 

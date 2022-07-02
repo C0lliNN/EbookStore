@@ -30,12 +30,12 @@ func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuer
 	paginated := catalog.PaginatedBooks{}
 	result := db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Find(&paginated.Books)
 	if err := result.Error; err != nil {
-		return catalog.PaginatedBooks{}, fmt.Errorf("FindByQuery) failed running select query: %w", err)
+		return catalog.PaginatedBooks{}, fmt.Errorf("(FindByQuery) failed running select query: %w", err)
 	}
 
 	var count int64
 	if err := db.Model(&catalog.Book{}).Where(conditions).Count(&count).Error; err != nil {
-		return catalog.PaginatedBooks{}, fmt.Errorf("FindByQuery) failed running count query: %w", err)
+		return catalog.PaginatedBooks{}, fmt.Errorf("(FindByQuery) failed running count query: %w", err)
 	}
 
 	paginated.Limit = query.Limit
@@ -70,7 +70,7 @@ func (r *BookRepository) FindByID(ctx context.Context, id string) (catalog.Book,
 			err = &ErrEntityNotFound{entity: "book"}
 		}
 
-		return catalog.Book{}, fmt.Errorf("FindByID) failed running select query: %w", err)
+		return catalog.Book{}, fmt.Errorf("(FindByID) failed running select query: %w", err)
 	}
 
 	return book, nil
@@ -82,7 +82,7 @@ func (r *BookRepository) Create(ctx context.Context, book *catalog.Book) error {
 
 	result := r.db.WithContext(ctx).Create(book)
 	if err := result.Error; err != nil {
-		return fmt.Errorf("Create) failed running insert statement: %w", err)
+		return fmt.Errorf("(Create) failed running insert statement: %w", err)
 	}
 
 	return nil
@@ -94,7 +94,7 @@ func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
 
 	result := r.db.WithContext(ctx).Save(book)
 	if err := result.Error; err != nil {
-		return fmt.Errorf("Update) failed running update statement: %w", err)
+		return fmt.Errorf("(Update) failed running update statement: %w", err)
 	}
 
 	return nil
@@ -106,11 +106,11 @@ func (r *BookRepository) Delete(ctx context.Context, id string) error {
 
 	result := r.db.WithContext(ctx).Delete(&catalog.Book{}, "id = ?", id)
 	if err := result.Error; err != nil {
-		return fmt.Errorf("Delete) failed running delete statement: %w", err)
+		return fmt.Errorf("(Delete) failed running delete statement: %w", err)
 	}
 
 	if result.RowsAffected <= 0 {
-		return fmt.Errorf("Delete) no rows affected: %w", &ErrEntityNotFound{entity: "book"})
+		return fmt.Errorf("(Delete) no rows affected: %w", &ErrEntityNotFound{entity: "book"})
 	}
 
 	return nil

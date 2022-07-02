@@ -40,7 +40,7 @@
 * [x] Refactor makefile
 * [x] Update README.md
 * [x] Add golangci-lint
-* [ ] Add error wrapping
+* [x] Add error wrapping
 * [ ] Implement graceful shutdown
 * [ ] Change module path to just github.com/ebookstore
 * [ ] Rate Limiting
@@ -58,11 +58,6 @@
 * [ ] Define Custom Error Struct to be used in ShouldBind structures
 * [ ] Consider Creating Tech Features section in the README.md
 
-ADD wrapping in shop_handler
-adjust error_middleware
-add new error types for binding errors, and open files stuff
-NEXT Steps: FIX code in error_middleware. Run tests again
-
 # Nice to Haves
 * Handle Stripe Webhook in a good way
 * Handle file extensions in a more isolated way
@@ -76,3 +71,4 @@ NEXT Steps: FIX code in error_middleware. Run tests again
 * Use Specification in Query Commands
 * Improve mocks location
 * Create Auth, Catalog and Shop Diagrams
+* Improve Testing

@@ -45,7 +45,7 @@ func (c *StripePaymentService) CreatePaymentIntentForOrder(ctx context.Context, 
 	params.AddMetadata("userID", order.UserID)
 	pi, err := paymentintent.New(params)
 	if err != nil {
-		return fmt.Errorf("CreatePaymentIntentForOrder) failed creating pyment intent for order %s: %w", order.ID, err)
+		return fmt.Errorf("(CreatePaymentIntentForOrder) failed creating pyment intent for order %s: %w", order.ID, err)
 	}
 
 	order.PaymentIntentID = &pi.ID

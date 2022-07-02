@@ -36,7 +36,7 @@ func (c *Storage) GeneratePreSignedUrl(ctx context.Context, key string) (string,
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("GeneratePreSignedUrl) failed generating presignedUrl for key: %s: %w", key, err)
+		return "", fmt.Errorf("(GeneratePreSignedUrl) failed generating presignedUrl for key: %s: %w", key, err)
 	}
 
 	return presignResult.URL, nil
@@ -53,7 +53,7 @@ func (c *Storage) SaveFile(ctx context.Context, key string, contentType string, 
 		Body:        content,
 	})
 	if err != nil {
-		return fmt.Errorf("SaveFile) failed saving file for key %s: %w", key, err)
+		return fmt.Errorf("(SaveFile) failed saving file for key %s: %w", key, err)
 	}
 
 	return nil
@@ -65,7 +65,7 @@ func (c *Storage) RetrieveFile(ctx context.Context, key string) (io.ReadCloser, 
 		Bucket: aws.String(string(c.Bucket)),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("RetrieveFile) failed retrieving file for key %s: %w", key, err)
+		return nil, fmt.Errorf("(RetrieveFile) failed retrieving file for key %s: %w", key, err)
 	}
 
 	return output.Body, nil

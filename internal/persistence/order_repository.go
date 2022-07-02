@@ -29,12 +29,12 @@ func (r *OrderRepository) FindByQuery(ctx context.Context, query shop.OrderQuery
 	paginated := shop.PaginatedOrders{}
 	result := db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Order("created_at DESC").Find(&paginated.Orders)
 	if err := result.Error; err != nil {
-		return shop.PaginatedOrders{}, fmt.Errorf("FindByQuery) failed running select query: %w", err)
+		return shop.PaginatedOrders{}, fmt.Errorf("(FindByQuery) failed running select query: %w", err)
 	}
 
 	var count int64
 	if err := db.Model(&shop.Order{}).Where(conditions).Count(&count).Error; err != nil {
-		return shop.PaginatedOrders{}, fmt.Errorf("FindByQuery) failed running count query: %w", err)
+		return shop.PaginatedOrders{}, fmt.Errorf("(FindByQuery) failed running count query: %w", err)
 	}
 
 	paginated.Limit = query.Limit
@@ -71,7 +71,7 @@ func (r *OrderRepository) FindByID(ctx context.Context, id string) (shop.Order, 
 			err = &ErrEntityNotFound{entity: "order"}
 		}
 
-		return shop.Order{}, fmt.Errorf("FindByID) failed running select query: %w", err)
+		return shop.Order{}, fmt.Errorf("(FindByID) failed running select query: %w", err)
 	}
 
 	return order, nil
@@ -83,7 +83,7 @@ func (r *OrderRepository) Create(ctx context.Context, order *shop.Order) error {
 
 	result := r.db.WithContext(ctx).Create(order)
 	if err := result.Error; err != nil {
-		return fmt.Errorf("Create) failed running insert statement: %w", err)
+		return fmt.Errorf("(Create) failed running insert statement: %w", err)
 	}
 
 	return nil
@@ -95,7 +95,7 @@ func (r *OrderRepository) Update(ctx context.Context, order *shop.Order) error {
 
 	result := r.db.WithContext(ctx).Save(order).Where("id = ?", order.ID)
 	if err := result.Error; err != nil {
-		return fmt.Errorf("Update) failed running update statement: %w", err)
+		return fmt.Errorf("(Update) failed running update statement: %w", err)
 	}
 
 	return nil
