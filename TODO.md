@@ -43,32 +43,28 @@
 * [x] Add error wrapping
 * [x] Implement graceful shutdown
 * [x] Change module path to just github.com/ebookstore
-* [ ] Rate Limiting
-* [ ] Review Logging, Monitoring
-* [ ] Review CORS
-* [ ] Review SQL Injection Concerns
+* [ ] Add Rate Limiting Middleware
+* [ ] Add CORS Middleware
 * [ ] Validate Data Size in All Requests
+* [ ] Add Version API
+* [ ] Add INFO Logging in important places 
+* [ ] Protect code against SQL Injection
+* [ ] Improve test suite, especially creating e2e tests in the handlers
+* [ ] Close DB in Sever Shutdown
 * [ ] Create prod Dockerfile and deploy folder/script
-* [ ] Consider Moving DTO to the HTTP Handlers (Naming them Requests and Use Commands in the UseCase Layer)
-* [ ] Version API
-* [ ] Consider Using one file per usecase
-* [ ] Apply Unit of Work Pattern
-* [ ] Search About Hot reloading in Go
-* [ ] Try to implement Criteria in a good way
-* [ ] Define Custom Error Struct to be used in ShouldBind structures
-* [ ] Consider Creating Tech Features section in the README.md
+* [ ] Create Shopping Cart Functionality
+* [ ] Allow a single a book to have multiple images instead of only one
+* [ ] Use the S3 Presigning API to send book content to the user instead of downloading the file in the server
+* [ ] Add Github Actions capabilities
 
-# Nice to Haves
-* Handle Stripe Webhook in a good way
-* Handle file extensions in a more isolated way
-* Handle shop -> catalog connection isolating the BookResponse object
-* Handle more than one image per book (Use Presigning instead of receiving images in the request body)
-* Use Cart in Shop 
-* Add oauth server
-* Add more integration tests
-* Use Stripe-CLI to the local environment (including a how to update payment intent in the cli)
-* Make Stripe Webhook endpoint safe by querying Stripe API using the provided information instead of asserting it's true
-* Use Specification in Query Commands
-* Improve mocks location
-* Create Auth, Catalog and Shop Diagrams
-* Improve Testing
+## Possible Improvements
+* [ ] Try to implement Query Pattern to decouple domain from Database specific technologies
+* [ ] Try to implement Unit of Work Pattern for transactional use cases
+* [ ] Move Request/Response to server package and implement the CQRS Pattern
+* [ ] Consider using one use case per file approach
+* [ ] Try to implement Hot reloading to improve the dev experience
+* [ ] Consider using some oauth library instead of heaving a simple auth package
+* [ ] Use an anti-corruption layer to handle the Stripe Webhook in a better way
+* [ ] Improve mocks location. Maybe store the mocks in the same package of their interfaces
+* [ ] Use Stripe CLI in local environment (include instructions in the README.md)
+* [ ] Try to make the file extension transparent to the usecase

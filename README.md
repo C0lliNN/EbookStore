@@ -3,6 +3,8 @@
 
 A fully-featured REST API developed in Golang for an ebook store.
 
+**Check out the [TODO.md](TODO.md) if you want to have some fun 😇**
+
 ## Table of Contents
 * [Features](#features)
 * [Tech/Libraries](#techlibraries)
@@ -19,15 +21,15 @@ A fully-featured REST API developed in Golang for an ebook store.
   * [How to Regenerate REST API Documentation](#how-to-regenerate-rest-api-documentation)
   * [How to Regenerate Dependency Initialization](#how-to-regenerate-dependency-initialization)
 
-## Features
+## Product Features
 * Authentication (Sign up, Login and Reset Password)
 * Multiple Roles (Customer and Administrator)
 * Book Catalog Management
 * Order Management
 * Pagination
-* Create Orders
+* Order Creation
 * File Storage/Retrieval
-* Payment Management 
+* Payment Management
 
 ## Tech/Libraries
 
