@@ -1,13 +1,15 @@
 package server
 
 import (
+	"context"
+	"net/http"
+	"time"
+
 	_ "github.com/c0llinn/ebook-store/docs"
 	"github.com/c0llinn/ebook-store/internal/migrator"
 	"github.com/gin-gonic/gin"
-	"github.com/swaggo/files"
+	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"net/http"
-	"time"
 )
 
 // @title E-book Store
@@ -31,7 +33,7 @@ type Timeout time.Duration
 type Config struct {
 	Migrator                 *migrator.Migrator
 	Router                   *gin.Engine
-	CorrelationIDMiddleware *CorrelationIDMiddleware
+	CorrelationIDMiddleware  *CorrelationIDMiddleware
 	HealthcheckHandler       *HealthcheckHandler
 	LoggerMiddleware         *LoggerMiddleware
 	AuthenticationMiddleware *AuthenticationMiddleware
@@ -45,6 +47,7 @@ type Config struct {
 
 type Server struct {
 	Config
+	httpServer *http.Server
 }
 
 func New(c Config) *Server {
@@ -82,12 +85,16 @@ func (s *Server) Start() error {
 		}
 	}
 
-	httpServer := &http.Server{
+	s.httpServer = &http.Server{
 		Handler:      router,
 		Addr:         string(s.Addr),
 		WriteTimeout: time.Duration(s.Timeout),
 		ReadTimeout:  time.Duration(s.Timeout),
 	}
 
-	return httpServer.ListenAndServe()
+	return s.httpServer.ListenAndServe()
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.httpServer.Shutdown(ctx)
 }
