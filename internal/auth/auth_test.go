@@ -2,6 +2,7 @@ package auth_test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -75,7 +76,7 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenPasswordValidationFails() {
 
 	_, err := s.authenticator.Register(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
@@ -100,7 +101,7 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenPasswordHashingFails() {
 
 	_, err := s.authenticator.Register(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some-error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
@@ -129,7 +130,7 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenRepositoryFails() {
 
 	_, err := s.authenticator.Register(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
@@ -160,7 +161,7 @@ func (s *AuthenticatorTestSuite) TestRegister_WhenTokenGenerationFails() {
 
 	_, err := s.authenticator.Register(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
@@ -209,7 +210,7 @@ func (s *AuthenticatorTestSuite) TestLogin_WhenValidationFails() {
 
 	_, err := s.authenticator.Login(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 0)
@@ -227,7 +228,7 @@ func (s *AuthenticatorTestSuite) TestLogin_WhenUserWasNotFound() {
 
 	_, err := s.authenticator.Login(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
@@ -248,7 +249,7 @@ func (s *AuthenticatorTestSuite) TestLogin_WhenPasswordsDontMatch() {
 
 	_, err := s.authenticator.Login(context.TODO(), request)
 
-	assert.Equal(s.T(), auth.ErrWrongPassword, err)
+	assert.Equal(s.T(), auth.ErrWrongPassword, errors.Unwrap(err))
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
@@ -286,7 +287,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenValidationFails() {
 
 	err := s.authenticator.ResetPassword(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 0)
@@ -303,7 +304,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenUserWasNotFound() {
 
 	err := s.authenticator.ResetPassword(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
@@ -323,7 +324,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenPasswordHashingFails() {
 
 	err := s.authenticator.ResetPassword(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
@@ -348,7 +349,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenUpdateFails() {
 
 	err := s.authenticator.ResetPassword(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)
@@ -374,7 +375,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenEmailSendingFails() {
 
 	err := s.authenticator.ResetPassword(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByEmail, 1)

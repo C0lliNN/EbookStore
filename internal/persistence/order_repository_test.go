@@ -2,6 +2,7 @@ package persistence_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/ebookstore/internal/persistence"
@@ -324,7 +325,7 @@ func (s *OrderRepositoryTestSuite) TestFindByID_WithError() {
 	ctx := context.TODO()
 
 	_, err := s.repo.FindByID(ctx, uuid.NewString())
-	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, err)
+	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, errors.Unwrap(err))
 }
 
 func (s *OrderRepositoryTestSuite) TestCreate_Successfully() {

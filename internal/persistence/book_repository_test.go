@@ -2,6 +2,7 @@ package persistence_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -288,7 +289,7 @@ func (s *BookRepositoryTestSuite) TestFindByID_WithInvalidID() {
 
 	_, err := s.repo.FindByID(ctx, id)
 
-	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, err)
+	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, errors.Unwrap(err))
 }
 
 func (s *BookRepositoryTestSuite) TestFindByID_WithValidID() {
@@ -365,7 +366,7 @@ func (s *BookRepositoryTestSuite) TestDelete_WithInvalidID() {
 
 	err := s.repo.Delete(ctx, id)
 
-	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, err)
+	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, errors.Unwrap(err))
 }
 
 func (s *BookRepositoryTestSuite) TestDelete_WithValidID() {

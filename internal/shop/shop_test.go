@@ -106,7 +106,7 @@ func (s *ShopTestSuite) TestFindOrders_WithError() {
 
 	_, err := s.shop.FindOrders(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, context.TODO(), query)
 }
 
@@ -154,7 +154,7 @@ func (s *ShopTestSuite) TestFindOrderByID_NonAdmin_Unauthorized() {
 
 	_, err := s.shop.FindOrderByID(ctx, order.ID)
 
-	assert.Equal(s.T(), shop.ErrForbiddenOrderAccess, err)
+	assert.ErrorIs(s.T(), err, shop.ErrForbiddenOrderAccess)
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, ctx, order.ID)
 }
 
@@ -164,7 +164,7 @@ func (s *ShopTestSuite) TestFindOrderByID_WithError() {
 
 	_, err := s.shop.FindOrderByID(context.TODO(), id)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), id)
 }
 
@@ -180,7 +180,7 @@ func (s *ShopTestSuite) TestCreateOrder_ValidationFails() {
 
 	_, err := s.shop.CreateOrder(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertNotCalled(s.T(), newIdMethod)
@@ -205,7 +205,7 @@ func (s *ShopTestSuite) TestCreateOrder_WhenCatalogServiceFails() {
 
 	_, err := s.shop.CreateOrder(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
@@ -235,7 +235,7 @@ func (s *ShopTestSuite) TestCreateOrder_WhenPaymentClientFails() {
 
 	_, err := s.shop.CreateOrder(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
@@ -266,7 +266,7 @@ func (s *ShopTestSuite) TestCreateOrder_WhenRepositoryFails() {
 
 	_, err := s.shop.CreateOrder(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertCalled(s.T(), validateMethod, request)
 	s.idGenerator.AssertCalled(s.T(), newIdMethod)
@@ -314,7 +314,7 @@ func (s *ShopTestSuite) TestCompleteOrder_WhenOrderCouldNotBeFound() {
 
 	err := s.shop.CompleteOrder(context.TODO(), id)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), id)
 	s.repo.AssertNumberOfCalls(s.T(), updateOrderMethod, 0)
 }
@@ -330,7 +330,7 @@ func (s *ShopTestSuite) TestCompleteOrder_WhenUpdateFails() {
 
 	err := s.shop.CompleteOrder(context.TODO(), order.ID)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), order.ID)
 	s.repo.AssertCalled(s.T(), updateOrderMethod, context.TODO(), &order)
 }
@@ -360,7 +360,7 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_WhenOrderCouldNotBeFound(
 
 	_, err := s.shop.GetOrderDeliverableContent(context.TODO(), order.ID)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), order.ID)
 	s.catalogService.AssertNotCalled(s.T(), getBookContent, context.TODO(), order.BookID)
@@ -376,7 +376,7 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_WhenOrderIsNotPaid() {
 
 	_, err := s.shop.GetOrderDeliverableContent(context.TODO(), order.ID)
 
-	assert.Equal(s.T(), shop.ErrOrderNotPaid, err)
+	assert.ErrorIs(s.T(), err, shop.ErrOrderNotPaid)
 
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), order.ID)
 	s.catalogService.AssertNotCalled(s.T(), getBookContent, context.TODO(), order.BookID)
@@ -393,7 +393,7 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_WithError() {
 
 	_, err := s.shop.GetOrderDeliverableContent(context.TODO(), order.ID)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, context.TODO(), order.ID)
 	s.catalogService.AssertCalled(s.T(), getBookContent, context.TODO(), order.BookID)
@@ -415,7 +415,7 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_NonAdmin_Forbidden() {
 
 	_, err := s.shop.GetOrderDeliverableContent(ctx, order.ID)
 
-	assert.Equal(s.T(), shop.ErrForbiddenOrderAccess, err)
+	assert.ErrorIs(s.T(), err, shop.ErrForbiddenOrderAccess)
 
 	s.repo.AssertCalled(s.T(), findOrderByIDMethod, ctx, order.ID)
 	s.catalogService.AssertNotCalled(s.T(), getBookContent, ctx, order.BookID)

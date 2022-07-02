@@ -105,7 +105,7 @@ func (h *AuthenticationHandler) resetPassword(c *gin.Context) {
 	}
 
 	if err := h.authenticator.ResetPassword(c, request); err != nil {
-		_ = c.Error(&BindingErr{Err: fmt.Errorf("(resetPassword) failed handling reset password request: %w ", err)})
+		_ = c.Error(fmt.Errorf("(resetPassword) failed handling reset password request: %w ", err))
 		return
 	}
 

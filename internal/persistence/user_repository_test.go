@@ -2,6 +2,7 @@ package persistence_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
@@ -100,7 +101,7 @@ func (s *UserRepositoryTestSuite) TestUserRepository_FindByEmailNotFound() {
 
 	_, err := s.repo.FindByEmail(ctx, "test@test.com")
 
-	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, err)
+	assert.IsType(s.T(), &persistence.ErrEntityNotFound{}, errors.Unwrap(err))
 }
 
 func (s *UserRepositoryTestSuite) TestUserRepository_UpdateSuccessfully() {

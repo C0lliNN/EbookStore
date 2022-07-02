@@ -4,6 +4,7 @@ package catalog_test
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -70,7 +71,7 @@ func (s *CatalogTestSuite) TestFindByQuery_WhenRepositoryFails() {
 
 	_, err := s.catalog.FindBooks(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
 	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod)
@@ -91,7 +92,7 @@ func (s *CatalogTestSuite) TestFindByQuery_WhenStorageClientFails() {
 
 	_, err := s.catalog.FindBooks(context.TODO(), request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
 	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 1)
@@ -131,7 +132,7 @@ func (s *CatalogTestSuite) TestFindBookByID_WhenRepositoryFails() {
 
 	_, err := s.catalog.FindBookByID(context.TODO(), "some-id")
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), "some-id")
 	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 0)
@@ -148,7 +149,7 @@ func (s *CatalogTestSuite) TestFindBookByID_WhenStorageClientFails() {
 
 	_, err := s.catalog.FindBookByID(context.TODO(), book.ID)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), book.ID)
 	s.storageClient.AssertCalled(s.T(), generatePreSignedUrlMethod, context.TODO(), book.PosterImageBucketKey)
@@ -180,7 +181,7 @@ func (s *CatalogTestSuite) TestGetBookContent_WhenBookCouldNotBeFound() {
 
 	_, err := s.catalog.GetBookContent(context.TODO(), id)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), id)
 	s.storageClient.AssertNumberOfCalls(s.T(), retrieveFileMethod, 0)
@@ -196,7 +197,7 @@ func (s *CatalogTestSuite) TestGetBookContent_WithError() {
 
 	_, err := s.catalog.GetBookContent(context.TODO(), book.ID)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), book.ID)
 	s.storageClient.AssertCalled(s.T(), retrieveFileMethod, context.TODO(), book.ContentBucketKey)
@@ -233,7 +234,7 @@ func (s *CatalogTestSuite) TestCreateBook_WithNonAdminUser() {
 	ctx := context.WithValue(context.Background(), "admin", false)
 	_, err := s.catalog.CreateBook(ctx, request)
 
-	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, err)
+	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, errors.Unwrap(err))
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 0)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
@@ -258,7 +259,7 @@ func (s *CatalogTestSuite) TestCreateBook_ValidationFails() {
 	ctx := context.WithValue(context.Background(), "admin", true)
 	_, err := s.catalog.CreateBook(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
@@ -291,7 +292,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPosterStorageFails() {
 
 	_, err := s.catalog.CreateBook(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
@@ -325,7 +326,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenContentStorageFails() {
 
 	_, err := s.catalog.CreateBook(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
@@ -359,7 +360,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPreSigningFails() {
 
 	_, err := s.catalog.CreateBook(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
@@ -400,7 +401,7 @@ func (s *CatalogTestSuite) TestCreateBook_WhenRepositoryFails() {
 
 	_, err := s.catalog.CreateBook(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
@@ -463,7 +464,7 @@ func (s *CatalogTestSuite) TestUpdateBook_WithNonAdminUser() {
 	ctx := context.Background()
 	err := s.catalog.UpdateBook(ctx, request)
 
-	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, err)
+	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, errors.Unwrap(err))
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 0)
 	s.repo.AssertNotCalled(s.T(), findByIdMethod, ctx, request.ID)
@@ -480,7 +481,7 @@ func (s *CatalogTestSuite) TestUpdateBook_ValidationFails() {
 	ctx := context.WithValue(context.Background(), "admin", true)
 	err := s.catalog.UpdateBook(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertNotCalled(s.T(), findByIdMethod, ctx, request.ID)
@@ -500,7 +501,7 @@ func (s *CatalogTestSuite) TestUpdateBook_WhenBookIsNotFound() {
 
 	err := s.catalog.UpdateBook(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertCalled(s.T(), findByIdMethod, ctx, request.ID)
@@ -527,7 +528,7 @@ func (s *CatalogTestSuite) TestUpdateBook_WhenUpdateFails() {
 
 	err := s.catalog.UpdateBook(ctx, request)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.repo.AssertCalled(s.T(), findByIdMethod, ctx, request.ID)
@@ -568,7 +569,7 @@ func (s *CatalogTestSuite) TestDeleteBook_WithNonAdminUser() {
 	ctx := context.Background()
 	err := s.catalog.DeleteBook(ctx, id)
 
-	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, err)
+	assert.Equal(s.T(), catalog.ErrForbiddenCatalogAccess, errors.Unwrap(err))
 
 	s.repo.AssertNotCalled(s.T(), deleteBookMethod, ctx, id)
 }
@@ -580,7 +581,7 @@ func (s *CatalogTestSuite) TestDeleteBook_WhenRepositoryFails() {
 
 	err := s.catalog.DeleteBook(ctx, id)
 
-	assert.Equal(s.T(), fmt.Errorf("some error"), err)
+	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), deleteBookMethod, ctx, id)
 }
