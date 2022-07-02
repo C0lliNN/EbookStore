@@ -2,18 +2,19 @@ package persistence_test
 
 import (
 	"context"
-	"github.com/c0llinn/ebook-store/internal/persistence"
-	"github.com/c0llinn/ebook-store/internal/shop"
+	"testing"
+
+	"github.com/ebookstore/internal/persistence"
+	"github.com/ebookstore/internal/shop"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type OrderRepositoryTestSuite struct {
 	RepositoryTestSuite
-	repo      *persistence.OrderRepository
+	repo *persistence.OrderRepository
 }
 
 func (s *OrderRepositoryTestSuite) SetupSuite() {

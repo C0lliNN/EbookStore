@@ -2,9 +2,10 @@ package config
 
 import (
 	"context"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/c0llinn/ebook-store/internal/log"
+	"github.com/ebookstore/internal/log"
 	"github.com/spf13/viper"
 )
 

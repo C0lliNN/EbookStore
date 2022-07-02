@@ -3,12 +3,13 @@ package server_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/server"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	"net/http"
 	"testing"
+
+	"github.com/ebookstore/internal/auth"
+	"github.com/ebookstore/internal/server"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type AuthenticatorHandlerTestSuite struct {
@@ -133,7 +134,7 @@ func (s *AuthenticatorHandlerTestSuite) TestLogin_Success() {
 
 func (s *AuthenticatorHandlerTestSuite) TestResetPassword_Failure() {
 	payload := auth.PasswordResetRequest{
-		Email:    "raphael@test.com",
+		Email: "raphael@test.com",
 	}
 
 	data, err := json.Marshal(payload)
@@ -153,7 +154,7 @@ func (s *AuthenticatorHandlerTestSuite) TestResetPassword_Failure() {
 func (s *AuthenticatorHandlerTestSuite) TestResetPassword_Success() {
 	s.createUser()
 	payload := auth.PasswordResetRequest{
-		Email:    "raphael@test.com",
+		Email: "raphael@test.com",
 	}
 
 	data, err := json.Marshal(payload)

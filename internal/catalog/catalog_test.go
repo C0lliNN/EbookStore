@@ -5,14 +5,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/catalog"
-	mocks2 "github.com/c0llinn/ebook-store/internal/mocks/catalog"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"io"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/ebookstore/internal/catalog"
+	mocks2 "github.com/ebookstore/internal/mocks/catalog"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 const (

@@ -3,7 +3,7 @@
 package mocks
 
 import (
-	auth "github.com/c0llinn/ebook-store/internal/auth"
+	auth "github.com/ebookstore/internal/auth"
 	mock "github.com/stretchr/testify/mock"
 
 	testing "testing"

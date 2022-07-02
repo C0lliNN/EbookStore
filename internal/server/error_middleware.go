@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/catalog"
-	"github.com/c0llinn/ebook-store/internal/log"
-	"github.com/c0llinn/ebook-store/internal/persistence"
-	"github.com/c0llinn/ebook-store/internal/shop"
+	"github.com/ebookstore/internal/auth"
+	"github.com/ebookstore/internal/catalog"
+	"github.com/ebookstore/internal/log"
+	"github.com/ebookstore/internal/persistence"
+	"github.com/ebookstore/internal/shop"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )

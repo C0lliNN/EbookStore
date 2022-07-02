@@ -4,14 +4,15 @@ package shop_test
 import (
 	"context"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/catalog"
-	mocks2 "github.com/c0llinn/ebook-store/internal/mocks/shop"
-	"github.com/c0llinn/ebook-store/internal/shop"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"io"
 	"strings"
 	"testing"
+
+	"github.com/ebookstore/internal/catalog"
+	mocks2 "github.com/ebookstore/internal/mocks/shop"
+	"github.com/ebookstore/internal/shop"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 const (

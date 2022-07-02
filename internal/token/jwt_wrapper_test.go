@@ -1,10 +1,11 @@
 package token
 
 import (
-	"github.com/c0llinn/ebook-store/internal/auth"
+	"testing"
+
+	"github.com/ebookstore/internal/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type JWTWrapperTestSuite struct {

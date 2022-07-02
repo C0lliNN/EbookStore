@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/c0llinn/ebook-store/internal/shop"
+	"github.com/ebookstore/internal/shop"
 	"github.com/spf13/viper"
 	"github.com/stripe/stripe-go/v72"
 	"github.com/stripe/stripe-go/v72/paymentintent"

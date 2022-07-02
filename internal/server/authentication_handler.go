@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/c0llinn/ebook-store/internal/auth"
+	"github.com/ebookstore/internal/auth"
 	"github.com/gin-gonic/gin"
 )
 

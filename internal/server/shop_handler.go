@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/shop"
-	"github.com/gin-gonic/gin"
 	"io"
 	"net/http"
+
+	"github.com/ebookstore/internal/shop"
+	"github.com/gin-gonic/gin"
 )
 
 type Shop interface {

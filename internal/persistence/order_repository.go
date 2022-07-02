@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/c0llinn/ebook-store/internal/shop"
+	"github.com/ebookstore/internal/shop"
 	"gorm.io/gorm"
 )
 

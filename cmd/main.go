@@ -8,8 +8,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/c0llinn/ebook-store/internal/config"
-	"github.com/c0llinn/ebook-store/internal/log"
+	"github.com/ebookstore/internal/config"
+	"github.com/ebookstore/internal/log"
 )
 
 // Start HTTP Server and handle graceful shutdown

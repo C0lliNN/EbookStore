@@ -1,10 +1,11 @@
 package server
 
 import (
-	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"regexp"
+
+	"github.com/ebookstore/internal/auth"
+	"github.com/gin-gonic/gin"
 )
 
 type TokenHandler interface {

@@ -2,16 +2,17 @@ package server_test
 
 import (
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/mocks/server"
-	"github.com/c0llinn/ebook-store/internal/server"
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/ebookstore/internal/auth"
+	mocks "github.com/ebookstore/internal/mocks/server"
+	"github.com/ebookstore/internal/server"
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 const extractUserFromTokenMethod = "ExtractUserFromToken"

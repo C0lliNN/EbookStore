@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/config"
-	"github.com/c0llinn/ebook-store/internal/storage"
-	"github.com/c0llinn/ebook-store/test"
+	"io/ioutil"
+	"testing"
+
+	"github.com/ebookstore/internal/config"
+	"github.com/ebookstore/internal/storage"
+	"github.com/ebookstore/test"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"io/ioutil"
-	"testing"
 )
 
 type StorageClientTestSuite struct {

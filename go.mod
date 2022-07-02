@@ -1,4 +1,4 @@
-module github.com/c0llinn/ebook-store
+module github.com/ebookstore
 
 go 1.16
 

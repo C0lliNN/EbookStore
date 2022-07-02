@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/c0llinn/ebook-store/internal/catalog"
+	"github.com/ebookstore/internal/catalog"
 )
 
 type Repository interface {

@@ -1,10 +1,11 @@
 package config
 
 import (
-	"github.com/c0llinn/ebook-store/internal/server"
+	"time"
+
+	"github.com/ebookstore/internal/server"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
-	"time"
 )
 
 func NewServerEngine() *gin.Engine {

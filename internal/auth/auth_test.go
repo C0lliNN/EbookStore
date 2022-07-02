@@ -3,11 +3,12 @@ package auth_test
 import (
 	"context"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/auth"
-	mocks2 "github.com/c0llinn/ebook-store/internal/mocks/auth"
+	"testing"
+
+	"github.com/ebookstore/internal/auth"
+	mocks2 "github.com/ebookstore/internal/mocks/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 const (

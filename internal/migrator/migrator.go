@@ -1,7 +1,7 @@
 package migrator
 
 import (
-	"github.com/c0llinn/ebook-store/internal/log"
+	"github.com/ebookstore/internal/log"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

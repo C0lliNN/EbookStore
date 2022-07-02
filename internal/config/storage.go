@@ -3,7 +3,7 @@ package config
 import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
-	"github.com/c0llinn/ebook-store/internal/storage"
+	"github.com/ebookstore/internal/storage"
 	"github.com/spf13/viper"
 )
 

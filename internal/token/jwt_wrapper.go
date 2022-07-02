@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/c0llinn/ebook-store/internal/auth"
+	"github.com/ebookstore/internal/auth"
 	"github.com/golang-jwt/jwt"
 )
 

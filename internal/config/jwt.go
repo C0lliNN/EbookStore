@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/c0llinn/ebook-store/internal/token"
+	"github.com/ebookstore/internal/token"
 	"github.com/spf13/viper"
 )
 

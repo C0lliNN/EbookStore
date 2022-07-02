@@ -41,8 +41,8 @@
 * [x] Update README.md
 * [x] Add golangci-lint
 * [x] Add error wrapping
-* [ ] Implement graceful shutdown
-* [ ] Change module path to just github.com/ebookstore
+* [x] Implement graceful shutdown
+* [x] Change module path to just github.com/ebookstore
 * [ ] Rate Limiting
 * [ ] Review Logging, Monitoring
 * [ ] Review CORS

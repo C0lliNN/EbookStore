@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"time"
 
-	_ "github.com/c0llinn/ebook-store/docs"
-	"github.com/c0llinn/ebook-store/internal/migrator"
+	_ "github.com/ebookstore/docs"
+	"github.com/ebookstore/internal/migrator"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

@@ -3,7 +3,7 @@ package server
 import (
 	"time"
 
-	"github.com/c0llinn/ebook-store/internal/log"
+	"github.com/ebookstore/internal/log"
 	"github.com/gin-gonic/gin"
 )
 

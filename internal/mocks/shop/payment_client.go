@@ -5,7 +5,7 @@ package mocks
 import (
 	context "context"
 
-	shop "github.com/c0llinn/ebook-store/internal/shop"
+	shop "github.com/ebookstore/internal/shop"
 	mock "github.com/stretchr/testify/mock"
 
 	testing "testing"

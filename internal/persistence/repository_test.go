@@ -2,14 +2,15 @@ package persistence_test
 
 import (
 	"context"
-	"github.com/c0llinn/ebook-store/internal/config"
-	"github.com/c0llinn/ebook-store/internal/migrator"
-	"github.com/c0llinn/ebook-store/test"
+	"time"
+
+	"github.com/ebookstore/internal/config"
+	"github.com/ebookstore/internal/migrator"
+	"github.com/ebookstore/test"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
-	"time"
 )
 
 type RepositoryTestSuite struct {

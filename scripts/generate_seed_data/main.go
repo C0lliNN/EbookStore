@@ -2,19 +2,20 @@ package main
 
 import (
 	"context"
-	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/catalog"
-	"github.com/c0llinn/ebook-store/internal/config"
-	"github.com/c0llinn/ebook-store/internal/hash"
-	"github.com/c0llinn/ebook-store/internal/migrator"
-	"github.com/c0llinn/ebook-store/internal/payment"
-	"github.com/c0llinn/ebook-store/internal/shop"
-	"github.com/c0llinn/ebook-store/internal/storage"
-	"github.com/spf13/viper"
-	"gorm.io/gorm"
 	"log"
 	"os"
 	"time"
+
+	"github.com/ebookstore/internal/auth"
+	"github.com/ebookstore/internal/catalog"
+	"github.com/ebookstore/internal/config"
+	"github.com/ebookstore/internal/hash"
+	"github.com/ebookstore/internal/migrator"
+	"github.com/ebookstore/internal/payment"
+	"github.com/ebookstore/internal/shop"
+	"github.com/ebookstore/internal/storage"
+	"github.com/spf13/viper"
+	"gorm.io/gorm"
 )
 
 var (

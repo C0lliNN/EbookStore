@@ -2,7 +2,8 @@ package config
 
 import (
 	"database/sql"
-	"github.com/c0llinn/ebook-store/internal/log"
+
+	"github.com/ebookstore/internal/log"
 	"github.com/spf13/viper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

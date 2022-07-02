@@ -5,14 +5,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/c0llinn/ebook-store/internal/auth"
-	"github.com/c0llinn/ebook-store/internal/catalog"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 	"mime/multipart"
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/ebookstore/internal/auth"
+	"github.com/ebookstore/internal/catalog"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type CatalogHandlerTestSuite struct {

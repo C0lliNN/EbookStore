@@ -2,13 +2,14 @@ package persistence_test
 
 import (
 	"context"
-	"github.com/c0llinn/ebook-store/internal/catalog"
-	"github.com/c0llinn/ebook-store/internal/persistence"
+	"testing"
+	"time"
+
+	"github.com/ebookstore/internal/catalog"
+	"github.com/ebookstore/internal/persistence"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type BookRepositoryTestSuite struct {
