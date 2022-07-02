@@ -53,7 +53,7 @@ func (h *AuthenticationHandler) register(c *gin.Context) {
 
 	response, err := h.authenticator.Register(c, request)
 	if err != nil {
-		_ = c.Error(&BindingErr{Err: fmt.Errorf("(register) failed handling register request: %w ", err)})
+		_ = c.Error(fmt.Errorf("(register) failed handling register request: %w ", err))
 		return
 	}
 
@@ -80,7 +80,7 @@ func (h *AuthenticationHandler) login(c *gin.Context) {
 
 	response, err := h.authenticator.Login(c, request)
 	if err != nil {
-		_ = c.Error(&BindingErr{Err: fmt.Errorf("(login) failed handling login request: %w ", err)})
+		_ = c.Error(fmt.Errorf("(login) failed handling login request: %w ", err))
 		return
 	}
 

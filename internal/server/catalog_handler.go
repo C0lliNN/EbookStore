@@ -155,7 +155,7 @@ func (h *CatalogHandler) updateBook(c *gin.Context) {
 
 	request.ID = c.Param("id")
 	if err := h.catalog.UpdateBook(c, request); err != nil {
-		_ = c.Error(&BindingErr{Err: fmt.Errorf("(updateBook) failed handling update request: %w ", err)})
+		_ = c.Error(fmt.Errorf("(updateBook) failed handling update request: %w ", err))
 		return
 	}
 

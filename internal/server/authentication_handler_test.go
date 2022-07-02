@@ -72,7 +72,7 @@ func (s *AuthenticatorHandlerTestSuite) TestRegister_WithInvalidData() {
 	err = json.NewDecoder(response.Body).Decode(errorResponse)
 
 	require.Nil(s.T(), err)
-	require.Equal(s.T(), "invalid request body. check the documentation", errorResponse.Message)
+	require.Equal(s.T(), "the payload is not valid", errorResponse.Message)
 }
 
 func (s *AuthenticatorHandlerTestSuite) TestLogin_Failure() {
