@@ -49,7 +49,7 @@
 * [ ] Add Version API
 * [ ] Add INFO Logging in important places 
 * [ ] Protect code against SQL Injection
-* [ ] Improve test suite, especially creating e2e tests in the handlers
+* [ ] Improve test suite, use apitest for the HTTP handlers
 * [ ] Close DB in Sever Shutdown
 * [ ] Create prod Dockerfile and deploy folder/script
 * [ ] Create Shopping Cart Functionality
