@@ -80,6 +80,7 @@ var Set = wire.NewSet(
 	server.NewCorrelationIDMiddleware,
 	server.NewErrorMiddleware,
 	server.NewHeathcheckHandler,
+	server.NewRateLimitMiddleware,
 	server.NewLoggerMiddleware,
 	server.NewAuthenticationMiddleware,
 	server.NewAuthenticatorHandler,

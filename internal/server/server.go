@@ -35,6 +35,7 @@ type Config struct {
 	Router                   *gin.Engine
 	CorrelationIDMiddleware  *CorrelationIDMiddleware
 	HealthcheckHandler       *HealthcheckHandler
+	RateLimitMiddleware      *RateLimitMiddleware
 	LoggerMiddleware         *LoggerMiddleware
 	AuthenticationMiddleware *AuthenticationMiddleware
 	ErrorMiddleware          *ErrorMiddleware
@@ -61,6 +62,7 @@ func (s *Server) Start() error {
 
 	router.Use(s.CorrelationIDMiddleware.Handler())
 	router.Use(gin.Recovery())
+	router.Use(s.RateLimitMiddleware.Handler())
 	router.Use(s.LoggerMiddleware.Handler())
 	router.Use(s.ErrorMiddleware.Handler())
 

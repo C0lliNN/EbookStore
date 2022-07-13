@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.10
 	github.com/aws/aws-sdk-go-v2/service/ses v1.14.5
 	github.com/bxcodec/faker/v3 v3.6.0
-	github.com/gin-gonic/gin v1.7.4
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-migrate/migrate/v4 v4.14.1
@@ -27,8 +27,9 @@ require (
 	github.com/swaggo/swag v1.7.1
 	github.com/testcontainers/testcontainers-go v0.13.0
 	github.com/ugorji/go v1.2.6 // indirect
+	github.com/ulule/limiter/v3 v3.10.0
 	go.uber.org/zap v1.17.0
-	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	gorm.io/driver/postgres v1.1.0
 	gorm.io/gorm v1.21.14
 )

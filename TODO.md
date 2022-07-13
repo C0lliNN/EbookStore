@@ -43,7 +43,7 @@
 * [x] Add error wrapping
 * [x] Implement graceful shutdown
 * [x] Change module path to just github.com/ebookstore
-* [ ] Add Rate Limiting Middleware
+* [x] Add Rate Limiting Middleware
 * [ ] Add CORS Middleware
 * [ ] Validate Data Size in All Requests
 * [ ] Add Version API

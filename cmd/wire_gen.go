@@ -38,6 +38,7 @@ func NewServer() *server.Server {
 	correlationIDMiddleware := server.NewCorrelationIDMiddleware()
 	db := config.NewConnection()
 	healthcheckHandler := server.NewHeathcheckHandler(db)
+	rateLimitMiddleware := server.NewRateLimitMiddleware()
 	loggerMiddleware := server.NewLoggerMiddleware()
 	hmacSecret := config.NewHMACSecret()
 	jwtWrapper := token.NewJWTWrapper(hmacSecret)
@@ -83,10 +84,10 @@ func NewServer() *server.Server {
 	catalogCatalog := catalog.New(catalogConfig)
 	catalogHandler := server.NewCatalogHandler(catalogCatalog)
 	orderRepository := persistence.NewOrderRepository(db)
-	stripeClient := payment.NewStripePaymentService()
+	stripePaymentService := payment.NewStripePaymentService()
 	shopConfig := shop.Config{
 		Repository:     orderRepository,
-		PaymentClient:  stripeClient,
+		PaymentClient:  stripePaymentService,
 		CatalogService: catalogCatalog,
 		IDGenerator:    uuidGenerator,
 		Validator:      validatorValidator,
@@ -100,6 +101,7 @@ func NewServer() *server.Server {
 		Router:                   engine,
 		CorrelationIDMiddleware:  correlationIDMiddleware,
 		HealthcheckHandler:       healthcheckHandler,
+		RateLimitMiddleware:      rateLimitMiddleware,
 		LoggerMiddleware:         loggerMiddleware,
 		AuthenticationMiddleware: authenticationMiddleware,
 		ErrorMiddleware:          errorMiddleware,
@@ -115,4 +117,4 @@ func NewServer() *server.Server {
 
 // wire.go:
 
-var Set = wire.NewSet(config.NewConnection, generator.NewUUIDGenerator, config.NewSESClient, generator.NewPasswordGenerator, config.NewHMACSecret, persistence.NewUserRepository, email.NewSESEmailClient, token.NewJWTWrapper, hash.NewBcryptWrapper, validator.New, wire.Bind(new(auth.Repository), new(*persistence.UserRepository)), wire.Bind(new(auth.Validator), new(*validator.Validator)), wire.Bind(new(auth.TokenHandler), new(*token.JWTWrapper)), wire.Bind(new(auth.HashHandler), new(*hash.BcryptWrapper)), wire.Bind(new(auth.EmailClient), new(*email.Email)), wire.Bind(new(auth.IDGenerator), new(*generator.UUIDGenerator)), wire.Bind(new(auth.PasswordGenerator), new(*generator.PasswordGenerator)), wire.NewSet(wire.Struct(new(auth.Config), "*")), auth.New, config.NewAWSConfig, config.NewBucket, config.NewS3Client, config.NewPresignClient, wire.NewSet(wire.Struct(new(storage.Config), "*")), storage.NewStorage, generator.NewFilenameGenerator, persistence.NewBookRepository, wire.Bind(new(catalog.Repository), new(*persistence.BookRepository)), wire.Bind(new(catalog.Validator), new(*validator.Validator)), wire.Bind(new(catalog.FilenameGenerator), new(*generator.FilenameGenerator)), wire.Bind(new(catalog.IDGenerator), new(*generator.UUIDGenerator)), wire.Bind(new(catalog.StorageClient), new(*storage.Storage)), wire.NewSet(wire.Struct(new(catalog.Config), "*")), catalog.New, persistence.NewOrderRepository, payment.NewStripePaymentService, wire.Bind(new(shop.Repository), new(*persistence.OrderRepository)), wire.Bind(new(shop.Validator), new(*validator.Validator)), wire.Bind(new(shop.PaymentClient), new(*payment.StripePaymentService)), wire.Bind(new(shop.CatalogService), new(*catalog.Catalog)), wire.Bind(new(shop.IDGenerator), new(*generator.UUIDGenerator)), wire.NewSet(wire.Struct(new(shop.Config), "*")), shop.New, config.NewMigrationDatabaseURI, config.NewMigrationSource, wire.NewSet(wire.Struct(new(migrator.Config), "*")), migrator.New, config.NewServerEngine, config.NewServerAddr, config.NewServerTimeout, server.NewCorrelationIDMiddleware, server.NewErrorMiddleware, server.NewHeathcheckHandler, server.NewLoggerMiddleware, server.NewAuthenticationMiddleware, server.NewAuthenticatorHandler, server.NewCatalogHandler, server.NewShopHandler, wire.Bind(new(server.Authenticator), new(*auth.Authenticator)), wire.Bind(new(server.Catalog), new(*catalog.Catalog)), wire.Bind(new(server.Shop), new(*shop.Shop)), wire.Bind(new(server.TokenHandler), new(*token.JWTWrapper)), wire.NewSet(wire.Struct(new(server.Config), "*")), server.New)
+var Set = wire.NewSet(config.NewConnection, generator.NewUUIDGenerator, config.NewSESClient, generator.NewPasswordGenerator, config.NewHMACSecret, persistence.NewUserRepository, email.NewSESEmailClient, token.NewJWTWrapper, hash.NewBcryptWrapper, validator.New, wire.Bind(new(auth.Repository), new(*persistence.UserRepository)), wire.Bind(new(auth.Validator), new(*validator.Validator)), wire.Bind(new(auth.TokenHandler), new(*token.JWTWrapper)), wire.Bind(new(auth.HashHandler), new(*hash.BcryptWrapper)), wire.Bind(new(auth.EmailClient), new(*email.Email)), wire.Bind(new(auth.IDGenerator), new(*generator.UUIDGenerator)), wire.Bind(new(auth.PasswordGenerator), new(*generator.PasswordGenerator)), wire.NewSet(wire.Struct(new(auth.Config), "*")), auth.New, config.NewAWSConfig, config.NewBucket, config.NewS3Client, config.NewPresignClient, wire.NewSet(wire.Struct(new(storage.Config), "*")), storage.NewStorage, generator.NewFilenameGenerator, persistence.NewBookRepository, wire.Bind(new(catalog.Repository), new(*persistence.BookRepository)), wire.Bind(new(catalog.Validator), new(*validator.Validator)), wire.Bind(new(catalog.FilenameGenerator), new(*generator.FilenameGenerator)), wire.Bind(new(catalog.IDGenerator), new(*generator.UUIDGenerator)), wire.Bind(new(catalog.StorageClient), new(*storage.Storage)), wire.NewSet(wire.Struct(new(catalog.Config), "*")), catalog.New, persistence.NewOrderRepository, payment.NewStripePaymentService, wire.Bind(new(shop.Repository), new(*persistence.OrderRepository)), wire.Bind(new(shop.Validator), new(*validator.Validator)), wire.Bind(new(shop.PaymentClient), new(*payment.StripePaymentService)), wire.Bind(new(shop.CatalogService), new(*catalog.Catalog)), wire.Bind(new(shop.IDGenerator), new(*generator.UUIDGenerator)), wire.NewSet(wire.Struct(new(shop.Config), "*")), shop.New, config.NewMigrationDatabaseURI, config.NewMigrationSource, wire.NewSet(wire.Struct(new(migrator.Config), "*")), migrator.New, config.NewServerEngine, config.NewServerAddr, config.NewServerTimeout, server.NewCorrelationIDMiddleware, server.NewErrorMiddleware, server.NewHeathcheckHandler, server.NewRateLimitMiddleware, server.NewLoggerMiddleware, server.NewAuthenticationMiddleware, server.NewAuthenticatorHandler, server.NewCatalogHandler, server.NewShopHandler, wire.Bind(new(server.Authenticator), new(*auth.Authenticator)), wire.Bind(new(server.Catalog), new(*catalog.Catalog)), wire.Bind(new(server.Shop), new(*shop.Shop)), wire.Bind(new(server.TokenHandler), new(*token.JWTWrapper)), wire.NewSet(wire.Struct(new(server.Config), "*")), server.New)
