@@ -44,18 +44,19 @@
 * [x] Implement graceful shutdown
 * [x] Change module path to just github.com/ebookstore
 * [x] Add Rate Limiting Middleware
-* [ ] Add CORS Middleware
-* [ ] Validate Data Size in All Requests
+* [ ] Add Core and Platform folders
 * [ ] Add Version API
+* [ ] Add CORS Middleware
+* [ ] Allow a single a book to have multiple images instead of only one
+* [ ] Use the S3 Presigning API to send book content to the user instead of downloading the file in the server
+* [ ] Validate Data Size in All Requests
 * [ ] Add INFO Logging in important places 
 * [ ] Protect code against SQL Injection
 * [ ] Improve test suite, use apitest for the HTTP handlers
 * [ ] Close DB in Sever Shutdown
-* [ ] Create prod Dockerfile and deploy folder/script
 * [ ] Create Shopping Cart Functionality
-* [ ] Allow a single a book to have multiple images instead of only one
-* [ ] Use the S3 Presigning API to send book content to the user instead of downloading the file in the server
 * [ ] Add Github Actions capabilities
+* [ ] Create prod Dockerfile and deploy folder/script
 
 ## Possible Improvements
 * [ ] Try to implement Query Pattern to decouple domain from Database specific technologies
