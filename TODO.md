@@ -46,7 +46,7 @@
 * [x] Add Rate Limiting Middleware
 * [x] Add Core and Platform folders
 * [x] Add Version API
-* [ ] Add CORS Middleware
+* [x] Add CORS Middleware
 * [ ] Allow a single a book to have multiple images instead of only one
 * [ ] Use the S3 Presigning API to send book content to the user instead of downloading the file in the server
 * [ ] Validate Data Size in All Requests
