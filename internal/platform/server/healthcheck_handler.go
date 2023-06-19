@@ -27,7 +27,7 @@ func (h *HealthcheckHandler) Routes() []Route {
 // @Produce  json
 // @Success 200 "OK"
 // @Failure 500 {object} ErrorResponse
-// @Router /healthcheck [get]
+// @Router /api/v1/healthcheck [get]
 func (h *HealthcheckHandler) healthcheck(c *gin.Context) {
 	db, err := h.db.DB()
 	if err != nil {

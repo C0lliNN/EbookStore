@@ -47,7 +47,7 @@ generate-mocks:
 	@mockery --all --output=./mocks --dir=internal --case=underscore --keeptree
 
 api-docs:
-	@swag init -g internal/server/server.go --parseInternal  --generatedTime
+	@swag init -g internal/platform/server/server.go --parseInternal  --generatedTime
 
 generate_seed_data: export ENV=local
 generate_seed_data: export AWS_ACCESS_KEY_ID=test

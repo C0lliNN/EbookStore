@@ -77,11 +77,12 @@ func (s *Server) Start() error {
 	routes = append(routes, s.CatalogHandler.Routes()...)
 	routes = append(routes, s.ShopHandler.Routes()...)
 
-	authorizedRouter := router.Group("/", s.AuthenticationMiddleware.Handler())
+	versionedRouter := router.Group("/api/v1")
+	authorizedRouter := versionedRouter.Group("/", s.AuthenticationMiddleware.Handler())
 
 	for _, r := range routes {
 		if r.IsPublic() {
-			router.Handle(r.Method, r.Path, r.Handler)
+			versionedRouter.Handle(r.Method, r.Path, r.Handler)
 		} else {
 			authorizedRouter.Handle(r.Method, r.Path, r.Handler)
 		}

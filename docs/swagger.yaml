@@ -162,7 +162,7 @@ info:
   title: E-book Store
   version: "1.0"
 paths:
-  /books:
+  /api/v1/books:
     get:
       parameters:
       - in: query
@@ -248,7 +248,7 @@ paths:
       summary: Create a new Book
       tags:
       - Catalog
-  /books/{id}:
+  /api/v1/books/{id}:
     delete:
       parameters:
       - description: Book ID
@@ -332,7 +332,7 @@ paths:
       summary: Update the provided Book
       tags:
       - Catalog
-  /healthcheck:
+  /api/v1/healthcheck:
     get:
       produces:
       - application/json
@@ -344,7 +344,7 @@ paths:
           schema:
             $ref: '#/definitions/server.ErrorResponse'
       summary: REST API Healtcheck
-  /login:
+  /api/v1/login:
     post:
       consumes:
       - application/json
@@ -377,7 +377,7 @@ paths:
       summary: Login using email and password
       tags:
       - Auth
-  /orders:
+  /api/v1/orders:
     get:
       parameters:
       - in: query
@@ -431,7 +431,7 @@ paths:
       summary: Create a new Order
       tags:
       - Shop
-  /orders/{id}:
+  /api/v1/orders/{id}:
     get:
       parameters:
       - description: orderId ID
@@ -457,7 +457,7 @@ paths:
       summary: Fetch Order by ID
       tags:
       - Shop
-  /orders/{id}/download:
+  /api/v1/orders/{id}/download:
     get:
       parameters:
       - description: Order Payload
@@ -486,7 +486,7 @@ paths:
       summary: Download the book for the given Order
       tags:
       - Shop
-  /password-reset:
+  /api/v1/password-reset:
     post:
       consumes:
       - application/json
@@ -513,7 +513,7 @@ paths:
       summary: Reset the password for the given email
       tags:
       - Auth
-  /register:
+  /api/v1/register:
     post:
       consumes:
       - application/json
@@ -546,7 +546,7 @@ paths:
       summary: Register a new user
       tags:
       - Auth
-  /stripe/webhook:
+  /api/v1/stripe/webhook:
     post:
       consumes:
       - application/json

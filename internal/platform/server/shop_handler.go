@@ -46,7 +46,7 @@ func (h *ShopHandler) Routes() []Route {
 // @Param params query shop.SearchOrders true "Filters"
 // @Success 200 {object} shop.PaginatedOrdersResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /orders [get]
+// @Router /api/v1/orders [get]
 func (h *ShopHandler) getOrders(c *gin.Context) {
 	var request shop.SearchOrders
 	if err := c.ShouldBindQuery(&request); err != nil {
@@ -71,7 +71,7 @@ func (h *ShopHandler) getOrders(c *gin.Context) {
 // @Success 200 {object} shop.OrderResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /orders/{id} [get]
+// @Router /api/v1/orders/{id} [get]
 func (h *ShopHandler) getOrder(c *gin.Context) {
 	response, err := h.shop.FindOrderByID(c, c.Param("id"))
 	if err != nil {
@@ -91,7 +91,7 @@ func (h *ShopHandler) getOrder(c *gin.Context) {
 // @Success 201 {object} shop.OrderResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /orders [post]
+// @Router /api/v1/orders [post]
 func (h *ShopHandler) createOrder(c *gin.Context) {
 	var request shop.CreateOrder
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -117,7 +117,7 @@ func (h *ShopHandler) createOrder(c *gin.Context) {
 // @Failure 402 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /orders/{id}/download [get]
+// @Router /api/v1/orders/{id}/download [get]
 func (h *ShopHandler) downloadOrder(c *gin.Context) {
 	content, err := h.shop.GetOrderDeliverableContent(c, c.Param("id"))
 	if err != nil {
@@ -141,7 +141,7 @@ func (h *ShopHandler) downloadOrder(c *gin.Context) {
 // @Produce  json
 // @Success 200 "Success"
 // @Success 500 {object} ErrorResponse
-// @Router /stripe/webhook [post]
+// @Router /api/v1/stripe/webhook [post]
 func (h *ShopHandler) handleStripeWebhook(c *gin.Context) {
 	var request shop.HandleStripeWebhook
 	if err := c.ShouldBindJSON(&request); err != nil {

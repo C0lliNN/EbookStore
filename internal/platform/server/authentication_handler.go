@@ -43,7 +43,7 @@ func (h *AuthenticationHandler) Routes() []Route {
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /register [post]
+// @Router /api/v1/register [post]
 func (h *AuthenticationHandler) register(c *gin.Context) {
 	var request auth.RegisterRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -70,7 +70,7 @@ func (h *AuthenticationHandler) register(c *gin.Context) {
 // @Failure 400 {object} ErrorResponse
 // @Failure 401 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /login [post]
+// @Router /api/v1/login [post]
 func (h *AuthenticationHandler) login(c *gin.Context) {
 	var request auth.LoginRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -96,7 +96,7 @@ func (h *AuthenticationHandler) login(c *gin.Context) {
 // @Success 204 "success"
 // @Failure 400 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /password-reset [post]
+// @Router /api/v1/password-reset [post]
 func (h *AuthenticationHandler) resetPassword(c *gin.Context) {
 	var request auth.PasswordResetRequest
 	if err := c.ShouldBindJSON(&request); err != nil {

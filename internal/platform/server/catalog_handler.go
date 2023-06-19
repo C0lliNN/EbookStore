@@ -44,7 +44,7 @@ func (h *CatalogHandler) Routes() []Route {
 // @Param params query catalog.SearchBooks true "Filters"
 // @Success 200 {object} catalog.PaginatedBooksResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /books [get]
+// @Router /api/v1/books [get]
 func (h *CatalogHandler) getBooks(c *gin.Context) {
 	var request catalog.SearchBooks
 	if err := c.ShouldBindQuery(&request); err != nil {
@@ -69,7 +69,7 @@ func (h *CatalogHandler) getBooks(c *gin.Context) {
 // @Success 200 {object} catalog.BookResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /books/{id} [get]
+// @Router /api/v1/books/{id} [get]
 func (h *CatalogHandler) getBook(c *gin.Context) {
 	response, err := h.catalog.FindBookByID(c, c.Param("id"))
 	if err != nil {
@@ -91,7 +91,7 @@ func (h *CatalogHandler) getBook(c *gin.Context) {
 // @Success 201 {object} catalog.BookResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /books [post]
+// @Router /api/v1/books [post]
 func (h *CatalogHandler) createBook(c *gin.Context) {
 	var request catalog.CreateBook
 	if err := c.ShouldBind(&request); err != nil {
@@ -145,7 +145,7 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 // @Failure 400 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /books/{id} [patch]
+// @Router /api/v1/books/{id} [patch]
 func (h *CatalogHandler) updateBook(c *gin.Context) {
 	var request catalog.UpdateBook
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -170,7 +170,7 @@ func (h *CatalogHandler) updateBook(c *gin.Context) {
 // @Success 204 "Success"
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
-// @Router /books/{id} [delete]
+// @Router /api/v1/books/{id} [delete]
 func (h *CatalogHandler) deleteBook(c *gin.Context) {
 	if err := h.catalog.DeleteBook(c, c.Param("id")); err != nil {
 		_ = c.Error(fmt.Errorf("(deleteBook) failed handling delete request: %w ", err))

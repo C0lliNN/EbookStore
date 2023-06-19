@@ -17,7 +17,7 @@
     "host": "http://localhost:8080",
     "basePath": "/",
     "paths": {
-        "/books": {
+        "/api/v1/books": {
             "get": {
                 "produces": [
                     "application/json"
@@ -149,7 +149,7 @@
                 }
             }
         },
-        "/books/{id}": {
+        "/api/v1/books/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -277,7 +277,7 @@
                 }
             }
         },
-        "/healthcheck": {
+        "/api/v1/healthcheck": {
             "get": {
                 "produces": [
                     "application/json"
@@ -296,7 +296,7 @@
                 }
             }
         },
-        "/login": {
+        "/api/v1/login": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -347,7 +347,7 @@
                 }
             }
         },
-        "/orders": {
+        "/api/v1/orders": {
             "get": {
                 "produces": [
                     "application/json"
@@ -432,7 +432,7 @@
                 }
             }
         },
-        "/orders/{id}": {
+        "/api/v1/orders/{id}": {
             "get": {
                 "produces": [
                     "application/json"
@@ -472,7 +472,7 @@
                 }
             }
         },
-        "/orders/{id}/download": {
+        "/api/v1/orders/{id}/download": {
             "get": {
                 "produces": [
                     "application/pdf"
@@ -517,7 +517,7 @@
                 }
             }
         },
-        "/password-reset": {
+        "/api/v1/password-reset": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -559,7 +559,7 @@
                 }
             }
         },
-        "/register": {
+        "/api/v1/register": {
             "post": {
                 "consumes": [
                     "application/json"
@@ -610,7 +610,7 @@
                 }
             }
         },
-        "/stripe/webhook": {
+        "/api/v1/stripe/webhook": {
             "post": {
                 "consumes": [
                     "application/json"
