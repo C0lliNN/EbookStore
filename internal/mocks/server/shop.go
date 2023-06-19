@@ -8,7 +8,7 @@ import (
 
 	mock "github.com/stretchr/testify/mock"
 
-	shop "github.com/ebookstore/internal/shop"
+	shop "github.com/ebookstore/internal/core/shop"
 
 	testing "testing"
 )

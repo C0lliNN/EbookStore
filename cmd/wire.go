@@ -4,20 +4,20 @@
 package main
 
 import (
-	"github.com/ebookstore/internal/auth"
-	"github.com/ebookstore/internal/catalog"
-	"github.com/ebookstore/internal/config"
-	"github.com/ebookstore/internal/email"
-	"github.com/ebookstore/internal/generator"
-	"github.com/ebookstore/internal/hash"
+	"github.com/ebookstore/internal/core/auth"
+	"github.com/ebookstore/internal/core/catalog"
+	"github.com/ebookstore/internal/core/shop"
 	"github.com/ebookstore/internal/migrator"
-	"github.com/ebookstore/internal/payment"
-	"github.com/ebookstore/internal/persistence"
-	"github.com/ebookstore/internal/server"
-	"github.com/ebookstore/internal/shop"
-	"github.com/ebookstore/internal/storage"
-	"github.com/ebookstore/internal/token"
-	"github.com/ebookstore/internal/validator"
+	"github.com/ebookstore/internal/platform/config"
+	"github.com/ebookstore/internal/platform/email"
+	"github.com/ebookstore/internal/platform/generator"
+	"github.com/ebookstore/internal/platform/hash"
+	"github.com/ebookstore/internal/platform/payment"
+	"github.com/ebookstore/internal/platform/persistence"
+	"github.com/ebookstore/internal/platform/server"
+	"github.com/ebookstore/internal/platform/storage"
+	"github.com/ebookstore/internal/platform/token"
+	"github.com/ebookstore/internal/platform/validator"
 	"github.com/google/wire"
 )
 

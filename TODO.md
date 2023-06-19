@@ -44,7 +44,7 @@
 * [x] Implement graceful shutdown
 * [x] Change module path to just github.com/ebookstore
 * [x] Add Rate Limiting Middleware
-* [ ] Add Core and Platform folders
+* [x] Add Core and Platform folders
 * [ ] Add Version API
 * [ ] Add CORS Middleware
 * [ ] Allow a single a book to have multiple images instead of only one
@@ -69,3 +69,5 @@
 * [ ] Improve mocks location. Maybe store the mocks in the same package of their interfaces
 * [ ] Use Stripe CLI in local environment (include instructions in the README.md)
 * [ ] Try to make the file extension transparent to the usecase
+* [ ] Use mocks in the same package
+
