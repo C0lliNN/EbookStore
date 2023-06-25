@@ -15,13 +15,10 @@ type Repository interface {
 }
 
 type StorageClient interface {
-	GeneratePreSignedUrl(ctx context.Context, key string) (string, error)
+	GenerateGetPreSignedUrl(ctx context.Context, key string) (string, error)
+	GeneratePutPreSignedUrl(ctx context.Context, key string) (string, error)
 	SaveFile(ctx context.Context, key string, contentType string, content io.ReadSeeker) error
 	RetrieveFile(ctx context.Context, key string) (io.ReadCloser, error)
-}
-
-type FilenameGenerator interface {
-	NewUniqueName(filename string) string
 }
 
 type IDGenerator interface {
@@ -33,11 +30,10 @@ type Validator interface {
 }
 
 type Config struct {
-	Repository        Repository
-	StorageClient     StorageClient
-	FilenameGenerator FilenameGenerator
-	IDGenerator       IDGenerator
-	Validator         Validator
+	Repository    Repository
+	StorageClient StorageClient
+	IDGenerator   IDGenerator
+	Validator     Validator
 }
 
 type Catalog struct {
@@ -56,20 +52,17 @@ func (c *Catalog) FindBooks(ctx context.Context, request SearchBooks) (Paginated
 		return PaginatedBooksResponse{}, fmt.Errorf("(FindBooks) failed finding books: %w", err)
 	}
 
-	for i := range paginatedBooks.Books {
-		imageKey := paginatedBooks.Books[i].PosterImageBucketKey
+	imageLinksByBookId := make(map[string][]string)
 
-		var url string
-		url, err = c.StorageClient.GeneratePreSignedUrl(ctx, imageKey)
+	for _, book := range paginatedBooks.Books {
+		imageLinks, err := c.getPresignedUrlsForBook(ctx, book)
 		if err != nil {
-			bookId := paginatedBooks.Books[i].ID
-			return PaginatedBooksResponse{}, fmt.Errorf("(FindBooks) failed generating url for book %s: %w", bookId, err)
+			return PaginatedBooksResponse{}, fmt.Errorf("(FindBooks) failed getting urls: %w", err)
 		}
-
-		paginatedBooks.Books[i].SetPosterImageLink(url)
+		imageLinksByBookId[book.ID] = imageLinks
 	}
 
-	return NewPaginatedBooksResponse(paginatedBooks), nil
+	return NewPaginatedBooksResponse(paginatedBooks, imageLinksByBookId), nil
 }
 
 func (c *Catalog) FindBookByID(ctx context.Context, id string) (BookResponse, error) {
@@ -78,14 +71,25 @@ func (c *Catalog) FindBookByID(ctx context.Context, id string) (BookResponse, er
 		return BookResponse{}, fmt.Errorf("(FindBookByID) failed finding book %s: %w", id, err)
 	}
 
-	imageKey := book.PosterImageBucketKey
-	url, err := c.StorageClient.GeneratePreSignedUrl(ctx, imageKey)
+	imageLinks, err := c.getPresignedUrlsForBook(ctx, book)
 	if err != nil {
-		return BookResponse{}, fmt.Errorf("(FindBookByID) failed generating presigned url: %w", err)
+		return BookResponse{}, fmt.Errorf("(FindBookByID) failed getting urls: %w", err)
 	}
 
-	book.SetPosterImageLink(url)
-	return NewBookResponse(book), nil
+	return NewBookResponse(book, imageLinks), nil
+}
+
+func (c *Catalog) getPresignedUrlsForBook(ctx context.Context, book Book) ([]string, error) {
+	imageLinks := make([]string, 0, len(book.Images))
+	for _, img := range book.Images {
+		url, err := c.StorageClient.GenerateGetPreSignedUrl(ctx, img.ID)
+		if err != nil {
+			return nil, fmt.Errorf("(getPresignedUrlsForBook) failed generating presigned url: %w", err)
+		}
+		imageLinks = append(imageLinks, url)
+	}
+
+	return imageLinks, nil
 }
 
 func (c *Catalog) GetBookContent(ctx context.Context, id string) (io.ReadCloser, error) {
@@ -112,31 +116,11 @@ func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookRespo
 	}
 
 	book := request.Book(c.IDGenerator.NewID())
-	posterImageKey := c.FilenameGenerator.NewUniqueName("poster_" + book.Title)
-	contentKey := c.FilenameGenerator.NewUniqueName("content_" + book.Title)
-
-	if err := c.StorageClient.SaveFile(ctx, posterImageKey, "image/jpeg", request.PosterImage); err != nil {
-		return BookResponse{}, fmt.Errorf("(CreateBook) failed saving poster: %w", err)
-	}
-
-	if err := c.StorageClient.SaveFile(ctx, contentKey, "application/pdf", request.BookContent); err != nil {
-		return BookResponse{}, fmt.Errorf("(CreateBook) failed saving content: %w", err)
-	}
-
-	book.PosterImageBucketKey = posterImageKey
-	book.ContentBucketKey = contentKey
-
-	url, err := c.StorageClient.GeneratePreSignedUrl(ctx, posterImageKey)
-	if err != nil {
-		return BookResponse{}, fmt.Errorf("(CreateBook) failed generating url: %w", err)
-	}
-	book.SetPosterImageLink(url)
-
-	if err = c.Repository.Create(ctx, &book); err != nil {
+	if err := c.Repository.Create(ctx, &book); err != nil {
 		return BookResponse{}, fmt.Errorf("(CreateBook) failed creating book: %w", err)
 	}
 
-	return NewBookResponse(book), nil
+	return c.FindBookByID(ctx, book.ID)
 }
 
 func (c *Catalog) UpdateBook(ctx context.Context, request UpdateBook) error {
@@ -170,6 +154,16 @@ func (c *Catalog) DeleteBook(ctx context.Context, id string) error {
 	}
 
 	return nil
+}
+
+func (c *Catalog) GeneratePutPreSignedUrl(ctx context.Context) (PresignURLResponse, error) {
+	idGenerator := c.IDGenerator.NewID()
+	url, err := c.StorageClient.GeneratePutPreSignedUrl(ctx, idGenerator)
+	if err != nil {
+		return PresignURLResponse{}, fmt.Errorf("(GeneratePutPreSignedUrl) failed generating presigned url: %w", err)
+	}
+
+	return PresignURLResponse{URL: url}, nil
 }
 
 func isAdmin(ctx context.Context) bool {

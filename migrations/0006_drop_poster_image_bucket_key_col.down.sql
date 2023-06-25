@@ -1,0 +1,1 @@
+ALTER TABLE books ADD COLUMN poster_image_bucket_key VARCHAR(50);

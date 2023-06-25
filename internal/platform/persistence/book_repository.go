@@ -34,7 +34,7 @@ func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuer
 	}
 
 	var count int64
-	if err := db.Model(&catalog.Book{}).Where(conditions).Count(&count).Error; err != nil {
+	if err := db.Preload("Images").Model(&catalog.Book{}).Where(conditions).Count(&count).Error; err != nil {
 		return catalog.PaginatedBooks{}, fmt.Errorf("(FindByQuery) failed running count query: %w", err)
 	}
 
@@ -64,7 +64,7 @@ func (r *BookRepository) FindByID(ctx context.Context, id string) (catalog.Book,
 	defer cancel()
 
 	book := catalog.Book{}
-	result := r.db.WithContext(ctx).First(&book, "id = ?", id)
+	result := r.db.WithContext(ctx).Preload("Images").First(&book, "id = ?", id)
 	if err := result.Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			err = &ErrEntityNotFound{entity: "book"}
@@ -91,6 +91,10 @@ func (r *BookRepository) Create(ctx context.Context, book *catalog.Book) error {
 func (r *BookRepository) Update(ctx context.Context, book *catalog.Book) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
+
+	if err := r.db.Model(&book).Association("Images").Replace(book.Images); err != nil {
+		return fmt.Errorf("(Update) failed running update statement: %w", err)
+	}
 
 	result := r.db.WithContext(ctx).Save(book)
 	if err := result.Error; err != nil {

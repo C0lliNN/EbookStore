@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type CorrelationIDMiddleware struct {}
+type CorrelationIDMiddleware struct{}
 
 func NewCorrelationIDMiddleware() *CorrelationIDMiddleware {
 	return &CorrelationIDMiddleware{}

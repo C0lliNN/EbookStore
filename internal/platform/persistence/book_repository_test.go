@@ -46,9 +46,16 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
 		ReleaseDate: time.Date(2017, time.January, 20, 0, 0, 0, 0, time.UTC),
 	}
 	book2 := catalog.Book{
-		ID:          "some-id2",
-		Title:       "Clean Coder",
-		AuthorName:  "Robert c. Martin",
+		ID:         "some-id2",
+		Title:      "Clean Coder",
+		AuthorName: "Robert c. Martin",
+		Images: []catalog.Image{
+			{
+				ID:          "some-id2",
+				Description: "poster",
+				BookID:      "some-id1",
+			},
+		},
 		Price:       7000,
 		ReleaseDate: time.Date(2017, time.February, 12, 0, 0, 0, 0, time.UTC),
 	}
@@ -92,8 +99,15 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithTitle() {
 		ReleaseDate: time.Date(2017, time.February, 12, 0, 0, 0, 0, time.UTC),
 	}
 	book3 := catalog.Book{
-		ID:          "some-id3",
-		Title:       "Domain Driver Design",
+		ID:    "some-id3",
+		Title: "Domain Driver Design",
+		Images: []catalog.Image{
+			{
+				ID:          "some-id2",
+				Description: "poster",
+				BookID:      "some-id3",
+			},
+		},
 		AuthorName:  "Eric Evans",
 		Price:       8000,
 		ReleaseDate: time.Date(2008, time.December, 12, 0, 0, 0, 0, time.UTC),
@@ -121,6 +135,13 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithDescription() {
 		ID:          "some-id1",
 		Title:       "Clean Code",
 		Description: "Craftsman",
+		Images: []catalog.Image{
+			{
+				ID:          "some-id2",
+				Description: "poster",
+				BookID:      "some-id1",
+			},
+		},
 		AuthorName:  "Robert c. Martin",
 		Price:       5500,
 		ReleaseDate: time.Date(2017, time.January, 20, 0, 0, 0, 0, time.UTC),
@@ -159,8 +180,15 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithAuthorName() {
 	ctx := context.TODO()
 
 	book1 := catalog.Book{
-		ID:          "some-id1",
-		Title:       "Clean Code",
+		ID:    "some-id1",
+		Title: "Clean Code",
+		Images: []catalog.Image{
+			{
+				ID:          "some-id2",
+				Description: "poster",
+				BookID:      "some-id1",
+			},
+		},
 		Description: "Craftsman",
 		AuthorName:  "Robert c. Martin",
 		Price:       5500,
@@ -296,8 +324,15 @@ func (s *BookRepositoryTestSuite) TestFindByID_WithValidID() {
 	ctx := context.TODO()
 
 	expected := catalog.Book{
-		ID:          "some-id",
-		Title:       "Domain Driver Design",
+		ID:    "some-id",
+		Title: "Domain Driver Design",
+		Images: []catalog.Image{
+			{
+				ID:          "some-id2",
+				Description: "poster",
+				BookID:      "some-id",
+			},
+		},
 		AuthorName:  "Eric Evans",
 		Price:       8000,
 		ReleaseDate: time.Date(2008, time.December, 12, 0, 0, 0, 0, time.Local),
@@ -318,8 +353,15 @@ func (s *BookRepositoryTestSuite) TestCreate_Successfully() {
 	ctx := context.TODO()
 
 	book := catalog.Book{
-		ID:          "some-id",
-		Title:       "Domain Driver Design",
+		ID:    "some-id",
+		Title: "Domain Driver Design",
+		Images: []catalog.Image{
+			{
+				ID:          "some-id2",
+				Description: "poster",
+				BookID:      "some-id",
+			},
+		},
 		AuthorName:  "Eric Evans",
 		Price:       8000,
 		ReleaseDate: time.Date(2008, time.December, 12, 0, 0, 0, 0, time.Local),
@@ -338,9 +380,16 @@ func (s *BookRepositoryTestSuite) TestUpdate_Successfully() {
 	ctx := context.TODO()
 
 	book := catalog.Book{
-		ID:          "some-id",
-		Title:       "Domain Driver Design",
-		AuthorName:  "Eric Evans",
+		ID:         "some-id",
+		Title:      "Domain Driver Design",
+		AuthorName: "Eric Evans",
+		Images: []catalog.Image{
+			{
+				ID:          "some-id2",
+				Description: "poster",
+				BookID:      "some-id",
+			},
+		},
 		Price:       8000,
 		ReleaseDate: time.Date(2008, time.December, 12, 0, 0, 0, 0, time.Local),
 	}
@@ -349,6 +398,7 @@ func (s *BookRepositoryTestSuite) TestUpdate_Successfully() {
 	require.Nil(s.T(), err)
 
 	book.Title = "new title"
+	book.Images = []catalog.Image{}
 	err = s.repo.Update(ctx, &book)
 	require.Nil(s.T(), err)
 
@@ -357,6 +407,7 @@ func (s *BookRepositoryTestSuite) TestUpdate_Successfully() {
 
 	assert.Equal(s.T(), book.ID, persisted.ID)
 	assert.Equal(s.T(), book.Title, persisted.Title)
+	assert.Empty(s.T(), book.Images)
 }
 
 func (s *BookRepositoryTestSuite) TestDelete_WithInvalidID() {

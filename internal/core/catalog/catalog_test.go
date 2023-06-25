@@ -2,7 +2,6 @@
 package catalog_test
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -12,7 +11,7 @@ import (
 	"time"
 
 	"github.com/ebookstore/internal/core/catalog"
-	mocks2 "github.com/ebookstore/internal/mocks/catalog"
+	mocks2 "github.com/ebookstore/internal/mocks/core/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -20,7 +19,7 @@ import (
 const (
 	findByQueryMethod          = "FindByQuery"
 	findByIdMethod             = "FindByID"
-	generatePreSignedUrlMethod = "GeneratePreSignedUrl"
+	generatePreSignedUrlMethod = "GenerateGetPreSignedUrl"
 	newUniqueNameMethod        = "NewUniqueName"
 	newIdMethod                = "NewID"
 	saveFileMethod             = "SaveFile"
@@ -33,27 +32,24 @@ const (
 
 type CatalogTestSuite struct {
 	suite.Suite
-	repo              *mocks2.Repository
-	storageClient     *mocks2.StorageClient
-	filenameGenerator *mocks2.FilenameGenerator
-	idGenerator       *mocks2.IDGenerator
-	validator         *mocks2.Validator
-	catalog           *catalog.Catalog
+	repo          *mocks2.Repository
+	storageClient *mocks2.StorageClient
+	idGenerator   *mocks2.IDGenerator
+	validator     *mocks2.Validator
+	catalog       *catalog.Catalog
 }
 
 func (s *CatalogTestSuite) SetupTest() {
 	s.repo = new(mocks2.Repository)
 	s.storageClient = new(mocks2.StorageClient)
-	s.filenameGenerator = new(mocks2.FilenameGenerator)
 	s.idGenerator = new(mocks2.IDGenerator)
 	s.validator = new(mocks2.Validator)
 
 	config := catalog.Config{
-		Repository:        s.repo,
-		StorageClient:     s.storageClient,
-		FilenameGenerator: s.filenameGenerator,
-		IDGenerator:       s.idGenerator,
-		Validator:         s.validator,
+		Repository:    s.repo,
+		StorageClient: s.storageClient,
+		IDGenerator:   s.idGenerator,
+		Validator:     s.validator,
 	}
 
 	s.catalog = catalog.New(config)
@@ -83,12 +79,12 @@ func (s *CatalogTestSuite) TestFindByQuery_WhenStorageClientFails() {
 
 	paginatedBooks := catalog.PaginatedBooks{
 		Books: []catalog.Book{
-			{PosterImageBucketKey: "some-key"},
+			{Images: []catalog.Image{{ID: "some-key"}}},
 		},
 	}
 
 	s.repo.On(findByQueryMethod, context.TODO(), query).Return(paginatedBooks, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), paginatedBooks.Books[0].PosterImageBucketKey).Return("", fmt.Errorf("some error"))
+	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key").Return("", fmt.Errorf("some error"))
 
 	_, err := s.catalog.FindBooks(context.TODO(), request)
 
@@ -104,19 +100,21 @@ func (s *CatalogTestSuite) TestFindByQuery_Successfully() {
 
 	paginatedBooks := catalog.PaginatedBooks{
 		Books: []catalog.Book{
-			{PosterImageBucketKey: "some-key"},
-			{PosterImageBucketKey: "some-key2"},
+			{ID: "book-id-1", Images: []catalog.Image{{ID: "some-key"}, {ID: "some-key2"}}},
+			{ID: "book-id-2", Images: []catalog.Image{{ID: "some-key3"}}},
 		},
 		Limit: 10,
 	}
 
 	s.repo.On(findByQueryMethod, context.TODO(), query).Return(paginatedBooks, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), paginatedBooks.Books[0].PosterImageBucketKey).Return("some-link-1", nil).Once()
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), paginatedBooks.Books[1].PosterImageBucketKey).Return("some-link-2", nil).Once()
+	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key").Return("some-link-1", nil).Once()
+	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key2").Return("some-link-2", nil).Once()
+	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key3").Return("some-link-3", nil).Once()
 
-	expected := catalog.NewPaginatedBooksResponse(paginatedBooks)
-	expected.Results[0].PosterImageLink = "some-link-1"
-	expected.Results[1].PosterImageLink = "some-link-2"
+	expected := catalog.NewPaginatedBooksResponse(
+		paginatedBooks,
+		map[string][]string{"book-id-1": {"some-link-1", "some-link-2"}, "book-id-2": {"some-link-3"}},
+	)
 
 	actual, err := s.catalog.FindBooks(context.TODO(), request)
 
@@ -124,7 +122,7 @@ func (s *CatalogTestSuite) TestFindByQuery_Successfully() {
 	assert.Nil(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
-	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 2)
+	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 3)
 }
 
 func (s *CatalogTestSuite) TestFindBookByID_WhenRepositoryFails() {
@@ -140,39 +138,37 @@ func (s *CatalogTestSuite) TestFindBookByID_WhenRepositoryFails() {
 
 func (s *CatalogTestSuite) TestFindBookByID_WhenStorageClientFails() {
 	book := catalog.Book{
-		ID:                   "some-id",
-		PosterImageBucketKey: "some-key",
+		ID:     "some-id",
+		Images: []catalog.Image{{ID: "some-key"}},
 	}
 
 	s.repo.On(findByIdMethod, context.TODO(), book.ID).Return(book, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), book.PosterImageBucketKey).Return("", fmt.Errorf("some error"))
+	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key").Return("", fmt.Errorf("some error"))
 
 	_, err := s.catalog.FindBookByID(context.TODO(), book.ID)
 
 	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), book.ID)
-	s.storageClient.AssertCalled(s.T(), generatePreSignedUrlMethod, context.TODO(), book.PosterImageBucketKey)
+	s.storageClient.AssertCalled(s.T(), generatePreSignedUrlMethod, context.TODO(), "some-key")
 }
 
 func (s *CatalogTestSuite) TestFindBookByID_Successfully() {
 	book := catalog.Book{
-		ID:                   "some-id",
-		PosterImageBucketKey: "some-key",
+		ID:     "some-id",
+		Images: []catalog.Image{{ID: "some-key"}},
 	}
 
 	s.repo.On(findByIdMethod, context.TODO(), book.ID).Return(book, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), book.PosterImageBucketKey).Return("some-link", nil)
+	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key").Return("some-link", nil)
 
-	expected := book
-	expected.PosterImageLink = "some-link"
 	actual, err := s.catalog.FindBookByID(context.TODO(), book.ID)
 
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), catalog.NewBookResponse(expected), actual)
+	assert.Equal(s.T(), catalog.NewBookResponse(book, []string{"some-link"}), actual)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), book.ID)
-	s.storageClient.AssertCalled(s.T(), generatePreSignedUrlMethod, context.TODO(), book.PosterImageBucketKey)
+	s.storageClient.AssertCalled(s.T(), generatePreSignedUrlMethod, context.TODO(), "some-key")
 }
 
 func (s *CatalogTestSuite) TestGetBookContent_WhenBookCouldNotBeFound() {
@@ -227,8 +223,6 @@ func (s *CatalogTestSuite) TestCreateBook_WithNonAdminUser() {
 		AuthorName:  "Robert C. Martin",
 		Price:       4000,
 		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
-		PosterImage: bytes.NewReader([]byte("some poster image")),
-		BookContent: bytes.NewReader([]byte("some book content content")),
 	}
 
 	ctx := context.WithValue(context.Background(), "admin", false)
@@ -238,7 +232,6 @@ func (s *CatalogTestSuite) TestCreateBook_WithNonAdminUser() {
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 0)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
-	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 0)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 0)
 	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod, "poster_name")
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 0)
@@ -251,8 +244,6 @@ func (s *CatalogTestSuite) TestCreateBook_ValidationFails() {
 		AuthorName:  "Robert C. Martin",
 		Price:       4000,
 		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
-		PosterImage: bytes.NewReader([]byte("some poster image")),
-		BookContent: bytes.NewReader([]byte("some book content content")),
 	}
 	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
 
@@ -263,110 +254,8 @@ func (s *CatalogTestSuite) TestCreateBook_ValidationFails() {
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
-	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 0)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 0)
 	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod, "poster_name")
-	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 0)
-}
-
-func (s *CatalogTestSuite) TestCreateBook_WhenPosterStorageFails() {
-	request := catalog.CreateBook{
-		Title:       "Clean Code",
-		Description: "A Craftsman Guide",
-		AuthorName:  "Robert C. Martin",
-		Price:       4000,
-		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
-		PosterImage: bytes.NewReader([]byte("some poster image")),
-		BookContent: bytes.NewReader([]byte("some book content content")),
-	}
-
-	ctx := context.WithValue(context.Background(), "admin", true)
-
-	s.validator.On(validateMethod, request).Return(nil)
-	s.idGenerator.On(newIdMethod).Return("some-id")
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+request.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_"+request.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(fmt.Errorf("some error"))
-
-	book := request.Book("some-id")
-
-	_, err := s.catalog.CreateBook(ctx, request)
-
-	assert.Error(s.T(), err)
-
-	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
-	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
-	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 1)
-	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod, "poster_name")
-	s.repo.AssertNotCalled(s.T(), createBookMethod, &book)
-}
-
-func (s *CatalogTestSuite) TestCreateBook_WhenContentStorageFails() {
-	request := catalog.CreateBook{
-		Title:       "Clean Code",
-		Description: "A Craftsman Guide",
-		AuthorName:  "Robert C. Martin",
-		Price:       4000,
-		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
-		PosterImage: bytes.NewReader([]byte("some poster image")),
-		BookContent: bytes.NewReader([]byte("some book content content")),
-	}
-
-	book := request.Book("some-id")
-
-	ctx := context.WithValue(context.Background(), "admin", true)
-
-	s.validator.On(validateMethod, request).Return(nil)
-	s.idGenerator.On(newIdMethod).Return("some-id")
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+request.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_"+request.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, ctx, "content_name", "application/pdf", request.BookContent).Return(fmt.Errorf("some error"))
-
-	_, err := s.catalog.CreateBook(ctx, request)
-
-	assert.Error(s.T(), err)
-
-	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
-	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
-	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 2)
-	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod, "poster_name")
-	s.repo.AssertNotCalled(s.T(), createBookMethod, &book)
-}
-
-func (s *CatalogTestSuite) TestCreateBook_WhenPreSigningFails() {
-	request := catalog.CreateBook{
-		Title:       "Clean Code",
-		Description: "A Craftsman Guide",
-		AuthorName:  "Robert C. Martin",
-		Price:       4000,
-		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
-		PosterImage: bytes.NewReader([]byte("some poster image")),
-		BookContent: bytes.NewReader([]byte("some book content content")),
-	}
-
-	book := request.Book("some-id")
-	ctx := context.WithValue(context.Background(), "admin", true)
-
-	s.validator.On(validateMethod, request).Return(nil)
-	s.idGenerator.On(newIdMethod).Return("some-id")
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, ctx, "content_name", "application/pdf", request.BookContent).Return(nil)
-	s.storageClient.On(generatePreSignedUrlMethod, ctx, "poster_name").Return("", fmt.Errorf("some error"))
-
-	_, err := s.catalog.CreateBook(ctx, request)
-
-	assert.Error(s.T(), err)
-
-	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
-	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
-	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 2)
-	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 0)
 }
 
@@ -377,8 +266,6 @@ func (s *CatalogTestSuite) TestCreateBook_WhenRepositoryFails() {
 		AuthorName:  "Robert C. Martin",
 		Price:       4000,
 		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
-		PosterImage: bytes.NewReader([]byte("some poster image")),
-		BookContent: bytes.NewReader([]byte("some book content content")),
 	}
 
 	book := request.Book("some-id")
@@ -386,28 +273,47 @@ func (s *CatalogTestSuite) TestCreateBook_WhenRepositoryFails() {
 
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, ctx, "content_name", "application/pdf", request.BookContent).Return(nil)
-	s.storageClient.On(generatePreSignedUrlMethod, ctx, "poster_name").Return("some-link", nil)
 
-	newBook := book
-	newBook.PosterImageBucketKey = "poster_name"
-	newBook.ContentBucketKey = "content_name"
-	newBook.PosterImageLink = "some-link"
-
-	s.repo.On(createBookMethod, ctx, &newBook).Return(fmt.Errorf("some error"))
+	s.repo.On(createBookMethod, ctx, &book).Return(fmt.Errorf("some error"))
 
 	_, err := s.catalog.CreateBook(ctx, request)
 
 	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
-	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
-	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 2)
+	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 1)
+}
+
+func (s *CatalogTestSuite) TestCreateBook_WhenPreSigningFails() {
+	request := catalog.CreateBook{
+		Title:       "Clean Code",
+		Description: "A Craftsman Guide",
+		AuthorName:  "Robert C. Martin",
+		Price:       4000,
+		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
+		Images: []catalog.ImageRequest{
+			{
+				ID: "some-key",
+			},
+		},
+	}
+
+	book := request.Book("some-id")
+	ctx := context.WithValue(context.Background(), "admin", true)
+
+	s.validator.On(validateMethod, request).Return(nil)
+	s.idGenerator.On(newIdMethod).Return("some-id")
+	s.repo.On(createBookMethod, ctx, &book).Return(nil)
+	s.repo.On(findByIdMethod, ctx, book.ID).Return(book, nil)
+	s.storageClient.On(generatePreSignedUrlMethod, ctx, "some-key").Return("", fmt.Errorf("some error"))
+
+	_, err := s.catalog.CreateBook(ctx, request)
+
+	assert.Error(s.T(), err)
+
+	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 1)
+	s.repo.AssertNumberOfCalls(s.T(), findByIdMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 1)
 }
 
@@ -418,8 +324,11 @@ func (s *CatalogTestSuite) TestCreateBook_Successfully() {
 		AuthorName:  "Robert C. Martin",
 		Price:       4000,
 		ReleaseDate: time.Date(2020, time.September, 28, 0, 0, 0, 0, time.UTC),
-		PosterImage: bytes.NewReader([]byte("some poster image")),
-		BookContent: bytes.NewReader([]byte("some book content content")),
+		Images: []catalog.ImageRequest{
+			{
+				ID: "some-key",
+			},
+		},
 	}
 
 	book := request.Book("some-id")
@@ -427,30 +336,17 @@ func (s *CatalogTestSuite) TestCreateBook_Successfully() {
 
 	s.validator.On(validateMethod, request).Return(nil)
 	s.idGenerator.On(newIdMethod).Return("some-id")
-	s.filenameGenerator.On(newUniqueNameMethod, "poster_"+book.Title).Return("poster_name").Once()
-	s.filenameGenerator.On(newUniqueNameMethod, "content_"+book.Title).Return("content_name").Once()
-	s.storageClient.On(saveFileMethod, ctx, "poster_name", "image/jpeg", request.PosterImage).Return(nil)
-	s.storageClient.On(saveFileMethod, ctx, "content_name", "application/pdf", request.BookContent).Return(nil)
-	s.storageClient.On(generatePreSignedUrlMethod, ctx, "poster_name").Return("some-link", nil)
+	s.repo.On(findByIdMethod, ctx, book.ID).Return(book, nil)
+	s.repo.On(createBookMethod, ctx, &book).Return(nil)
+	s.storageClient.On(generatePreSignedUrlMethod, ctx, "some-key").Return("link", nil)
 
-	newBook := book
-	newBook.PosterImageBucketKey = "poster_name"
-	newBook.ContentBucketKey = "content_name"
-	newBook.PosterImageLink = "some-link"
+	_, err := s.catalog.CreateBook(ctx, request)
 
-	s.repo.On(createBookMethod, ctx, &newBook).Return(nil)
-
-	expected := catalog.NewBookResponse(newBook)
-	actual, err := s.catalog.CreateBook(ctx, request)
-
-	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), expected, actual)
+	assert.NoError(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 1)
-	s.filenameGenerator.AssertNumberOfCalls(s.T(), newUniqueNameMethod, 2)
-	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 2)
 	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 1)
+	s.repo.AssertNumberOfCalls(s.T(), findByIdMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 1)
 }
 

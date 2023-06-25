@@ -15,6 +15,7 @@ type Catalog interface {
 	CreateBook(context.Context, catalog.CreateBook) (catalog.BookResponse, error)
 	UpdateBook(context.Context, catalog.UpdateBook) error
 	DeleteBook(context.Context, string) error
+	GeneratePutPreSignedUrl(context.Context) (catalog.PresignURLResponse, error)
 }
 
 type CatalogHandler struct {
@@ -34,6 +35,7 @@ func (h *CatalogHandler) Routes() []Route {
 		{Method: http.MethodPost, Path: "/books", Handler: h.createBook, Public: false},
 		{Method: http.MethodPatch, Path: "/books/:id", Handler: h.updateBook, Public: false},
 		{Method: http.MethodDelete, Path: "/books/:id", Handler: h.deleteBook, Public: false},
+		{Method: http.MethodPost, Path: "/presign-url", Handler: h.generatePutPreSignedUrl, Public: false},
 	}
 }
 
@@ -99,32 +101,6 @@ func (h *CatalogHandler) createBook(c *gin.Context) {
 		return
 	}
 
-	poster, err := c.FormFile("poster")
-	if err != nil {
-		_ = c.Error(fmt.Errorf("(createBook) failed getting poster file: %w", err))
-		return
-	}
-
-	posterFile, err := poster.Open()
-	if err != nil {
-		_ = c.Error(fmt.Errorf("(createBook) failed openning poster file: %w", err))
-		return
-	}
-
-	content, err := c.FormFile("content")
-	if err != nil {
-		_ = c.Error(fmt.Errorf("(createBook) failed getting content file: %w", err))
-	}
-
-	contentFile, err := content.Open()
-	if err != nil {
-		_ = c.Error(fmt.Errorf("(createBook) failed openning poster file: %w", err))
-		return
-	}
-
-	request.PosterImage = posterFile
-	request.BookContent = contentFile
-
 	response, err := h.catalog.CreateBook(c, request)
 	if err != nil {
 		_ = c.Error(fmt.Errorf("(createBook) failed handling create request: %w ", err))
@@ -178,4 +154,21 @@ func (h *CatalogHandler) deleteBook(c *gin.Context) {
 	}
 
 	c.Status(http.StatusNoContent)
+}
+
+// generatePutPreSignedUrl godoc
+// @Summary Generate a Presigned URL for saving an image poster to S3
+// @Tags Catalog
+// @Produce  json
+// @Success 200 {object} catalog.PresignURLResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/presign-url [post]
+func (h *CatalogHandler) generatePutPreSignedUrl(c *gin.Context) {
+	response, err := h.catalog.GeneratePutPreSignedUrl(c)
+	if err != nil {
+		_ = c.Error(fmt.Errorf("(generatePutPreSignedUrl) failed handling generate request: %w ", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }

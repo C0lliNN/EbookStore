@@ -1,11 +1,12 @@
 package catalog
 
 import (
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type SearchBooksTestSuite struct {
@@ -114,6 +115,12 @@ func (s *CreateBookTestSuite) TestBook() {
 		Description: "description",
 		AuthorName:  "fake name",
 		Price:       10000,
+		Images: []ImageRequest{
+			{
+				ID:          "some-id",
+				Description: "some description",
+			},
+		},
 		ReleaseDate: time.Date(2021, time.September, 29, 17, 28, 0, 0, time.UTC),
 	}
 
@@ -122,6 +129,13 @@ func (s *CreateBookTestSuite) TestBook() {
 		Title:       "some-title",
 		Description: "description",
 		AuthorName:  "fake name",
+		Images: []Image{
+			{
+				ID:          "some-id",
+				Description: "some description",
+				BookID:      id,
+			},
+		},
 		Price:       10000,
 		ReleaseDate: time.Date(2021, time.September, 29, 17, 28, 0, 0, time.UTC),
 	}
@@ -140,7 +154,7 @@ func TestUpdateBookRun(t *testing.T) {
 }
 
 func (s *UpdateBookTestSuite) TestUpdate_WithNoFields() {
-	book := Book{ID: "some-id"}
+	book := Book{ID: "some-id", Images: []Image{}}
 	dto := UpdateBook{}
 
 	expected := book
@@ -151,8 +165,9 @@ func (s *UpdateBookTestSuite) TestUpdate_WithNoFields() {
 
 func (s *UpdateBookTestSuite) TestUpdate_WithTitle() {
 	book := Book{
-		ID: "some-id",
-		Title: "other-title",
+		ID:     "some-id",
+		Title:  "other-title",
+		Images: []Image{},
 	}
 
 	title := "some-title"
@@ -167,8 +182,9 @@ func (s *UpdateBookTestSuite) TestUpdate_WithTitle() {
 
 func (s *UpdateBookTestSuite) TestUpdate_WithDescription() {
 	book := Book{
-		ID: "some-id",
+		ID:          "some-id",
 		Description: "other-description",
+		Images:      []Image{},
 	}
 
 	description := "some-description"
@@ -183,8 +199,9 @@ func (s *UpdateBookTestSuite) TestUpdate_WithDescription() {
 
 func (s *UpdateBookTestSuite) TestUpdate_WithAuthorName() {
 	book := Book{
-		ID: "some-id",
+		ID:         "some-id",
 		AuthorName: "other-name",
+		Images:     []Image{},
 	}
 
 	authorName := "new name"
@@ -199,9 +216,10 @@ func (s *UpdateBookTestSuite) TestUpdate_WithAuthorName() {
 
 func (s *UpdateBookTestSuite) TestUpdate_WithMultipleFields() {
 	book := Book{
-		ID: "some-id",
-		Title: "other-title",
+		ID:         "some-id",
+		Title:      "other-title",
 		AuthorName: "other-name",
+		Images:     []Image{},
 	}
 
 	title := "title"
@@ -214,4 +232,52 @@ func (s *UpdateBookTestSuite) TestUpdate_WithMultipleFields() {
 	actual := dto.Update(book)
 
 	assert.Equal(s.T(), expected, actual)
+}
+
+func (s *UpdateBookTestSuite) TestUpdate_WithImages() {
+	book := Book{
+		ID:         "some-id",
+		Title:      "other-title",
+		AuthorName: "other-name",
+		Images: []Image{
+			{
+				ID:          "some-id",
+				Description: "some-description",
+				BookID:      "some-id",
+			},
+		},
+	}
+
+	title := "title"
+	authorName := "new name"
+	dto := UpdateBook{Title: &title, AuthorName: &authorName}
+
+	expected := book
+	expected.Title = title
+	expected.AuthorName = authorName
+	expected.Images = []Image{}
+	actual := dto.Update(book)
+
+	assert.Equal(s.T(), expected, actual)
+}
+
+func TestImageRequest_Image(t *testing.T) {
+	id := "id"
+	description := "some description"
+	bookId := "book-id"
+
+	imageRequest := ImageRequest{
+		ID:          id,
+		Description: description,
+	}
+
+	expected := Image{
+		ID:          id,
+		Description: description,
+		BookID:      bookId,
+	}
+
+	actual := imageRequest.Image(bookId)
+
+	assert.Equal(t, expected, actual)
 }

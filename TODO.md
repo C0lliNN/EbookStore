@@ -47,7 +47,7 @@
 * [x] Add Core and Platform folders
 * [x] Add Version API
 * [x] Add CORS Middleware
-* [ ] Allow a single a book to have multiple images instead of only one
+* [x] Allow a single a book to have multiple images instead of only one
 * [ ] Use the S3 Presigning API to send book content to the user instead of downloading the file in the server
 * [ ] Validate Data Size in All Requests
 * [ ] Add INFO Logging in important places 
@@ -57,6 +57,9 @@
 * [ ] Create Shopping Cart Functionality
 * [ ] Add Github Actions capabilities
 * [ ] Create prod Dockerfile and deploy folder/script
+
+* [ ] Add order to the images
+* [ ] Add ability to specify mime type in the request for creating a presigned url
 
 ## Possible Improvements
 * [ ] Try to implement Query Pattern to decouple domain from Database specific technologies

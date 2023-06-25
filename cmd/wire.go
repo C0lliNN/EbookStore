@@ -49,11 +49,9 @@ var Set = wire.NewSet(
 	wire.NewSet(wire.Struct(new(storage.Config), "*")),
 	storage.NewStorage,
 
-	generator.NewFilenameGenerator,
 	persistence.NewBookRepository,
 	wire.Bind(new(catalog.Repository), new(*persistence.BookRepository)),
 	wire.Bind(new(catalog.Validator), new(*validator.Validator)),
-	wire.Bind(new(catalog.FilenameGenerator), new(*generator.FilenameGenerator)),
 	wire.Bind(new(catalog.IDGenerator), new(*generator.UUIDGenerator)),
 	wire.Bind(new(catalog.StorageClient), new(*storage.Storage)),
 	wire.NewSet(wire.Struct(new(catalog.Config), "*")),

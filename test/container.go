@@ -54,7 +54,7 @@ type LocalstackContainer struct {
 }
 
 func NewLocalstackContainer(ctx context.Context) (*LocalstackContainer, error) {
-	setupPath, err := filepath.Abs("../../scripts/setup_localstack.sh")
+	setupPath, err := filepath.Abs("../../../scripts/setup_localstack.sh")
 	if err != nil {
 		return nil, err
 	}

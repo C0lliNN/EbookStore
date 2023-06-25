@@ -10,7 +10,7 @@ import (
 
 	"github.com/ebookstore/internal/core/catalog"
 	"github.com/ebookstore/internal/core/shop"
-	mocks2 "github.com/ebookstore/internal/mocks/shop"
+	mocks2 "github.com/ebookstore/internal/mocks/core/shop"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )

@@ -1,7 +1,6 @@
 package catalog
 
 import (
-	"io"
 	"time"
 )
 
@@ -32,17 +31,34 @@ func (s *SearchBooks) BookQuery() BookQuery {
 }
 
 type CreateBook struct {
-	Title       string    `form:"title" validate:"required,max=100"`
-	Description string    `form:"description" validate:"required"`
-	AuthorName  string    `form:"authorName" validate:"required,max=100"`
-	Price       int       `form:"price" validate:"required,gt=0"`
-	ReleaseDate time.Time `form:"releaseDate" validate:"required"`
+	Title       string    `json:"title" validate:"required,max=100"`
+	Description string    `json:"description" validate:"required"`
+	AuthorName  string    `json:"authorName" validate:"required,max=100"`
+	Price       int       `json:"price" validate:"required,gt=0"`
+	ReleaseDate time.Time `json:"releaseDate" validate:"required"`
 
-	PosterImage io.ReadSeeker `form:"-" swaggerignore:"true"`
-	BookContent io.ReadSeeker `form:"-" swaggerignore:"true"`
+	Images []ImageRequest `json:"images"`
+}
+
+type ImageRequest struct {
+	ID          string `json:"id"`
+	Description string `json:"description"`
+}
+
+func (r ImageRequest) Image(bookId string) Image {
+	return Image{
+		ID:          r.ID,
+		Description: r.Description,
+		BookID:      bookId,
+	}
 }
 
 func (c CreateBook) Book(id string) Book {
+	images := make([]Image, 0, len(c.Images))
+	for _, img := range c.Images {
+		images = append(images, img.Image(id))
+	}
+
 	return Book{
 		ID:          id,
 		Title:       c.Title,
@@ -50,14 +66,16 @@ func (c CreateBook) Book(id string) Book {
 		AuthorName:  c.AuthorName,
 		Price:       c.Price,
 		ReleaseDate: c.ReleaseDate,
+		Images:      images,
 	}
 }
 
 type UpdateBook struct {
 	ID          string
-	Title       *string `form:"title" validate:"omitempty,max=100"`
-	Description *string `form:"description" validate:"omitempty"`
-	AuthorName  *string `form:"authorName" validate:"omitempty,max=100"`
+	Title       *string `validate:"omitempty,max=100"`
+	Description *string `validate:"omitempty"`
+	AuthorName  *string `validate:"omitempty,max=100"`
+	Images      []ImageRequest
 }
 
 func (u UpdateBook) Update(existing Book) Book {
@@ -74,6 +92,13 @@ func (u UpdateBook) Update(existing Book) Book {
 	if u.AuthorName != nil && *u.AuthorName != "" {
 		updated.AuthorName = *u.AuthorName
 	}
+
+	images := make([]Image, 0, len(u.Images))
+	for _, img := range u.Images {
+		images = append(images, img.Image(existing.ID))
+	}
+
+	updated.Images = images
 
 	return updated
 }

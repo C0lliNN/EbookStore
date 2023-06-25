@@ -40,7 +40,7 @@ func (s *AuthenticatorHandlerTestSuite) TestRegister_Successfully() {
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
 
-	response, err := http.Post(s.baseURL+"/register", "application/json", bytes.NewReader(data))
+	response, err := http.Post(s.baseURL+"/api/v1/register", "application/json", bytes.NewReader(data))
 	require.Nil(s.T(), err)
 	require.Equal(s.T(), http.StatusCreated, response.StatusCode)
 
@@ -64,7 +64,7 @@ func (s *AuthenticatorHandlerTestSuite) TestRegister_WithInvalidData() {
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
 
-	response, err := http.Post(s.baseURL+"/register", "application/json", bytes.NewReader(data))
+	response, err := http.Post(s.baseURL+"/api/v1/register", "application/json", bytes.NewReader(data))
 	require.Nil(s.T(), err)
 	require.Equal(s.T(), http.StatusBadRequest, response.StatusCode)
 
@@ -88,7 +88,7 @@ func (s *AuthenticatorHandlerTestSuite) TestLogin_Failure() {
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
 
-	response, err := http.Post(s.baseURL+"/register", "application/json", bytes.NewReader(data))
+	response, err := http.Post(s.baseURL+"/api/v1/register", "application/json", bytes.NewReader(data))
 	require.Nil(s.T(), err)
 	require.Equal(s.T(), http.StatusCreated, response.StatusCode)
 
@@ -100,7 +100,7 @@ func (s *AuthenticatorHandlerTestSuite) TestLogin_Failure() {
 	data, err = json.Marshal(payload2)
 	require.Nil(s.T(), err)
 
-	response, err = http.Post(s.baseURL+"/login", "application/json", bytes.NewReader(data))
+	response, err = http.Post(s.baseURL+"/api/v1/login", "application/json", bytes.NewReader(data))
 	require.Nil(s.T(), err)
 
 	credentials := &auth.CredentialsResponse{}
@@ -121,7 +121,7 @@ func (s *AuthenticatorHandlerTestSuite) TestLogin_Success() {
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
 
-	response, err := http.Post(s.baseURL+"/login", "application/json", bytes.NewReader(data))
+	response, err := http.Post(s.baseURL+"/api/v1/login", "application/json", bytes.NewReader(data))
 	require.Nil(s.T(), err)
 
 	credentials := &auth.CredentialsResponse{}
@@ -140,7 +140,7 @@ func (s *AuthenticatorHandlerTestSuite) TestResetPassword_Failure() {
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
 
-	response, err := http.Post(s.baseURL+"/password-reset", "application/json", bytes.NewReader(data))
+	response, err := http.Post(s.baseURL+"/api/v1/password-reset", "application/json", bytes.NewReader(data))
 	require.Nil(s.T(), err)
 
 	errorResponse := &server.ErrorResponse{}
@@ -160,7 +160,7 @@ func (s *AuthenticatorHandlerTestSuite) TestResetPassword_Success() {
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
 
-	response, err := http.Post(s.baseURL+"/password-reset", "application/json", bytes.NewReader(data))
+	response, err := http.Post(s.baseURL+"/api/v1/password-reset", "application/json", bytes.NewReader(data))
 	require.Nil(s.T(), err)
 	require.Equal(s.T(), http.StatusNoContent, response.StatusCode)
 }
@@ -178,7 +178,7 @@ func (s *AuthenticatorHandlerTestSuite) createUser() {
 	data, err := json.Marshal(payload)
 	require.Nil(s.T(), err)
 
-	response, err := http.Post(s.baseURL+"/register", "application/json", bytes.NewReader(data))
+	response, err := http.Post(s.baseURL+"/api/v1/register", "application/json", bytes.NewReader(data))
 	require.Nil(s.T(), err)
 	require.Equal(s.T(), http.StatusCreated, response.StatusCode)
 }

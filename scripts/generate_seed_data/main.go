@@ -140,14 +140,19 @@ func createBooks() []catalog.Book {
 	}
 
 	book1 := catalog.Book{
-		ID:                   "book-id1",
-		Title:                "Clean Code",
-		Description:          "Craftsman Guide",
-		AuthorName:           "Robert c. Martin",
-		PosterImageBucketKey: "book1-poster",
-		ContentBucketKey:     "book1-content",
-		Price:                0,
-		ReleaseDate:          time.Time{},
+		ID:               "book-id1",
+		Title:            "Clean Code",
+		Description:      "Craftsman Guide",
+		AuthorName:       "Robert c. Martin",
+		ContentBucketKey: "book1-content",
+		Images: []catalog.Image{
+			{
+				ID:          "book1-poster",
+				Description: "poster",
+			},
+		},
+		Price:       0,
+		ReleaseDate: time.Time{},
 	}
 	if err = db.Create(&book1).Error; err != nil {
 		log.Fatal(err)
@@ -170,14 +175,19 @@ func createBooks() []catalog.Book {
 	}
 
 	book2 := catalog.Book{
-		ID:                   "book-id2",
-		Title:                "Domain Driver Design",
-		Description:          "Tackling Complexity",
-		AuthorName:           "Eric Evans",
-		PosterImageBucketKey: "book2-poster",
-		ContentBucketKey:     "book2-content",
-		Price:                0,
-		ReleaseDate:          time.Time{},
+		ID:               "book-id2",
+		Title:            "Domain Driver Design",
+		Description:      "Tackling Complexity",
+		AuthorName:       "Eric Evans",
+		ContentBucketKey: "book2-content",
+		Images: []catalog.Image{
+			{
+				ID:          "book2-poster",
+				Description: "poster",
+			},
+		},
+		Price:       0,
+		ReleaseDate: time.Time{},
 	}
 	if err = db.Create(&book2).Error; err != nil {
 		log.Fatal(err)

@@ -26,7 +26,7 @@ func NewStorage(c Config) *Storage {
 	return &Storage{Config: c}
 }
 
-func (c *Storage) GeneratePreSignedUrl(ctx context.Context, key string) (string, error) {
+func (c *Storage) GenerateGetPreSignedUrl(ctx context.Context, key string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
@@ -36,7 +36,23 @@ func (c *Storage) GeneratePreSignedUrl(ctx context.Context, key string) (string,
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("(GeneratePreSignedUrl) failed generating presignedUrl for key: %s: %w", key, err)
+		return "", fmt.Errorf("(GenerateGetPreSignedUrl) failed generating presignedUrl for key: %s: %w", key, err)
+	}
+
+	return presignResult.URL, nil
+}
+
+func (c *Storage) GeneratePutPreSignedUrl(ctx context.Context, key string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
+	presignResult, err := c.PresignClient.PresignPutObject(ctx, &s3.PutObjectInput{
+		Bucket: aws.String(string(c.Bucket)),
+		Key:    aws.String(key),
+	})
+
+	if err != nil {
+		return "", fmt.Errorf("(GeneratePutPreSignedUrl) failed generating presignedUrl for key: %s: %w", key, err)
 	}
 
 	return presignResult.URL, nil

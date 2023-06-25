@@ -42,7 +42,7 @@ func (s *RepositoryTestSuite) SetupSuite() {
 
 	m := migrator.New(migrator.Config{
 		DatabaseURI: migrator.DatabaseURI(s.container.URI),
-		Source:      "file:../../migrations",
+		Source:      "file:../../../migrations",
 	})
 
 	m.Sync()

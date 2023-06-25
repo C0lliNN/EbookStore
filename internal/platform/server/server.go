@@ -7,8 +7,8 @@ import (
 
 	_ "github.com/ebookstore/docs"
 	"github.com/ebookstore/internal/migrator"
-	"github.com/gin-gonic/gin"
 	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -63,7 +63,7 @@ func (s *Server) Start() error {
 
 	router.Use(s.CorrelationIDMiddleware.Handler())
 	router.Use(gin.Recovery())
-	
+
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
 

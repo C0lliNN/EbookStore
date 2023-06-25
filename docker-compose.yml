@@ -10,14 +10,15 @@ services:
     ports:
       - "5432:5432"
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:1.4.0
     ports:
       - "4566-4599:4566-4599"
     environment:
       - DEFAULT_REGION=us-east-2
       - SERVICES=ses,s3
+      - LEGACY_INIT_DIR=1
       - DATA_DIR=/tmp/localstack/data
       - START_WEB=0
     volumes:
-      - ./.tmp/localstack:/tmp/localstack
+      - ./.tmp/localstack:/var/lib/localstack
       - ./scripts/setup_localstack.sh:/docker-entrypoint-initaws.d/init.sh

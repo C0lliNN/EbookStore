@@ -17,7 +17,7 @@ func LoadConfiguration() {
 		}
 	case "test":
 		{
-			viper.AddConfigPath("../..")
+			viper.AddConfigPath("../../..")
 			viper.SetConfigName("env-test")
 		}
 	default: // local is the default

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/ebookstore/internal/core/auth"
-	mocks "github.com/ebookstore/internal/mocks/server"
+	mocks "github.com/ebookstore/internal/mocks/platform/server"
 	"github.com/ebookstore/internal/platform/server"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"

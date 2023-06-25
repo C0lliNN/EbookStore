@@ -64,7 +64,7 @@ func (s *ServerSuiteTest) SetupSuite() {
 	}()
 
 	require.Eventually(s.T(), func() bool {
-		response, err := http.Get(s.baseURL + "/healthcheck")
+		response, err := http.Get(s.baseURL + "/api/v1/healthcheck")
 		if err != nil {
 			return false
 		}
@@ -126,13 +126,11 @@ func (s *ServerSuiteTest) createServer() {
 		Bucket:        bucket,
 	}
 	storageStorage := storage.NewStorage(storageConfig)
-	filenameGenerator := generator.NewFilenameGenerator()
 	catalogConfig := catalog.Config{
-		Repository:        bookRepository,
-		StorageClient:     storageStorage,
-		FilenameGenerator: filenameGenerator,
-		IDGenerator:       uuidGenerator,
-		Validator:         validatorValidator,
+		Repository:    bookRepository,
+		StorageClient: storageStorage,
+		IDGenerator:   uuidGenerator,
+		Validator:     validatorValidator,
 	}
 	catalogCatalog := catalog.New(catalogConfig)
 	catalogHandler := server.NewCatalogHandler(catalogCatalog)
@@ -154,6 +152,7 @@ func (s *ServerSuiteTest) createServer() {
 		Router:                   engine,
 		CorrelationIDMiddleware:  correlationIDMiddleware,
 		HealthcheckHandler:       healthcheckHandler,
+		RateLimitMiddleware:      server.NewRateLimitMiddleware(),
 		LoggerMiddleware:         loggerMiddleware,
 		AuthenticationMiddleware: authenticationMiddleware,
 		ErrorMiddleware:          errorMiddleware,

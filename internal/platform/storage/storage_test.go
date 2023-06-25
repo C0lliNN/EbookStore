@@ -54,10 +54,19 @@ func TestStorageClientTestSuiteRun(t *testing.T) {
 	suite.Run(t, new(StorageClientTestSuite))
 }
 
-func (s *StorageClientTestSuite) TestGeneratePreSignedUrl() {
+func (s *StorageClientTestSuite) TestGenerateGetPreSignedUrl() {
 	key := "some-key"
 
-	url, err := s.storage.GeneratePreSignedUrl(context.TODO(), key)
+	url, err := s.storage.GenerateGetPreSignedUrl(context.TODO(), key)
+
+	assert.Nil(s.T(), err)
+	assert.NotEmpty(s.T(), url)
+}
+
+func (s *StorageClientTestSuite) TestGeneratePutPreSignedUrl() {
+	key := "some-key"
+
+	url, err := s.storage.GeneratePutPreSignedUrl(context.TODO(), key)
 
 	assert.Nil(s.T(), err)
 	assert.NotEmpty(s.T(), url)

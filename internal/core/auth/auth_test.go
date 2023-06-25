@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/ebookstore/internal/core/auth"
-	mocks2 "github.com/ebookstore/internal/mocks/auth"
+	mocks2 "github.com/ebookstore/internal/mocks/core/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
