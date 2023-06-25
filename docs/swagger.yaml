@@ -57,8 +57,10 @@ definitions:
         type: string
       id:
         type: string
-      posterImageLink:
-        type: string
+      images:
+        items:
+          $ref: '#/definitions/catalog.ImageResponse'
+        type: array
       price:
         type: integer
       releaseDate:
@@ -66,6 +68,22 @@ definitions:
       title:
         type: string
       updatedAt:
+        type: string
+    type: object
+  catalog.ImageRequest:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+    type: object
+  catalog.ImageResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      link:
         type: string
     type: object
   catalog.PaginatedBooksResponse:
@@ -83,6 +101,11 @@ definitions:
       totalPages:
         type: integer
     type: object
+  catalog.PresignURLResponse:
+    properties:
+      url:
+        type: string
+    type: object
   catalog.UpdateBook:
     properties:
       authorName:
@@ -92,6 +115,10 @@ definitions:
         type: string
       id:
         type: string
+      images:
+        items:
+          $ref: '#/definitions/catalog.ImageRequest'
+        type: array
       title:
         maxLength: 100
         type: string
@@ -149,6 +176,11 @@ definitions:
       totalPages:
         type: integer
     type: object
+  shop.ShopBookResponse:
+    properties:
+      url:
+        type: string
+    type: object
 host: http://localhost:8080
 info:
   contact:
@@ -201,6 +233,11 @@ paths:
       - in: formData
         maxLength: 100
         name: authorName
+        required: true
+        type: string
+      - in: formData
+        maxLength: 100
+        name: contentId
         required: true
         type: string
       - in: formData
@@ -460,17 +497,18 @@ paths:
   /api/v1/orders/{id}/download:
     get:
       parameters:
-      - description: Order Payload
-        in: body
-        name: payload
+      - description: orderId ID
+        in: path
+        name: id
         required: true
-        schema:
-          $ref: '#/definitions/shop.CreateOrder'
+        type: string
       produces:
-      - application/pdf
+      - application/json
       responses:
         "200":
-          description: Success
+          description: OK
+          schema:
+            $ref: '#/definitions/shop.ShopBookResponse'
         "402":
           description: Payment Required
           schema:
@@ -513,6 +551,22 @@ paths:
       summary: Reset the password for the given email
       tags:
       - Auth
+  /api/v1/presign-url:
+    post:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/catalog.PresignURLResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Generate a Presigned URL for saving an image poster to S3
+      tags:
+      - Catalog
   /api/v1/register:
     post:
       consumes:

@@ -111,7 +111,7 @@ func (h *ShopHandler) createOrder(c *gin.Context) {
 // @Tags Shop
 // @Produce  json
 // @Param id path string true "orderId ID"
-// @Success 200 {object} shop.BookOrderResponse
+// @Success 200 {object} shop.ShopBookResponse
 // @Failure 402 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse

@@ -88,6 +88,13 @@
                         "required": true
                     },
                     {
+                        "maxLength": 100,
+                        "type": "string",
+                        "name": "contentId",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
                         "type": "string",
                         "name": "description",
                         "in": "formData",
@@ -475,7 +482,7 @@
         "/api/v1/orders/{id}/download": {
             "get": {
                 "produces": [
-                    "application/pdf"
+                    "application/json"
                 ],
                 "tags": [
                     "Shop"
@@ -483,18 +490,19 @@
                 "summary": "Download the book for the given Order",
                 "parameters": [
                     {
-                        "description": "Order Payload",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/shop.CreateOrder"
-                        }
+                        "type": "string",
+                        "description": "orderId ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success"
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/shop.ShopBookResponse"
+                        }
                     },
                     "402": {
                         "description": "Payment Required",
@@ -548,6 +556,31 @@
                         "description": "Bad Request",
                         "schema": {
                             "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/presign-url": {
+            "post": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Catalog"
+                ],
+                "summary": "Generate a Presigned URL for saving an image poster to S3",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/catalog.PresignURLResponse"
                         }
                     },
                     "500": {
@@ -719,8 +752,11 @@
                 "id": {
                     "type": "string"
                 },
-                "posterImageLink": {
-                    "type": "string"
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/catalog.ImageResponse"
+                    }
                 },
                 "price": {
                     "type": "integer"
@@ -732,6 +768,31 @@
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "catalog.ImageRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "catalog.ImageResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "link": {
                     "type": "string"
                 }
             }
@@ -759,6 +820,14 @@
                 }
             }
         },
+        "catalog.PresignURLResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
         "catalog.UpdateBook": {
             "type": "object",
             "properties": {
@@ -771,6 +840,12 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "images": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/catalog.ImageRequest"
+                    }
                 },
                 "title": {
                     "type": "string",
@@ -856,6 +931,14 @@
                 },
                 "totalPages": {
                     "type": "integer"
+                }
+            }
+        },
+        "shop.ShopBookResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
                 }
             }
         }
