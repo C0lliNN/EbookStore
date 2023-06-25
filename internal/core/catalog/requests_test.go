@@ -115,6 +115,7 @@ func (s *CreateBookTestSuite) TestBook() {
 		Description: "description",
 		AuthorName:  "fake name",
 		Price:       10000,
+		ContentID:   "some-content-id",
 		Images: []ImageRequest{
 			{
 				ID:          "some-id",
@@ -129,6 +130,7 @@ func (s *CreateBookTestSuite) TestBook() {
 		Title:       "some-title",
 		Description: "description",
 		AuthorName:  "fake name",
+		ContentID:   "some-content-id",
 		Images: []Image{
 			{
 				ID:          "some-id",

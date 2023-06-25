@@ -140,11 +140,11 @@ func createBooks() []catalog.Book {
 	}
 
 	book1 := catalog.Book{
-		ID:               "book-id1",
-		Title:            "Clean Code",
-		Description:      "Craftsman Guide",
-		AuthorName:       "Robert c. Martin",
-		ContentBucketKey: "book1-content",
+		ID:          "book-id1",
+		Title:       "Clean Code",
+		Description: "Craftsman Guide",
+		AuthorName:  "Robert c. Martin",
+		ContentID:   "book1-content",
 		Images: []catalog.Image{
 			{
 				ID:          "book1-poster",
@@ -175,11 +175,11 @@ func createBooks() []catalog.Book {
 	}
 
 	book2 := catalog.Book{
-		ID:               "book-id2",
-		Title:            "Domain Driver Design",
-		Description:      "Tackling Complexity",
-		AuthorName:       "Eric Evans",
-		ContentBucketKey: "book2-content",
+		ID:          "book-id2",
+		Title:       "Domain Driver Design",
+		Description: "Tackling Complexity",
+		AuthorName:  "Eric Evans",
+		ContentID:   "book2-content",
 		Images: []catalog.Image{
 			{
 				ID:          "book2-poster",

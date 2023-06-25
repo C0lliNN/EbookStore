@@ -7,8 +7,6 @@ import (
 
 	catalog "github.com/ebookstore/internal/core/catalog"
 
-	io "io"
-
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -41,21 +39,19 @@ func (_m *CatalogService) FindBookByID(ctx context.Context, bookId string) (cata
 	return r0, r1
 }
 
-// GetBookContent provides a mock function with given fields: ctx, bookId
-func (_m *CatalogService) GetBookContent(ctx context.Context, bookId string) (io.ReadCloser, error) {
+// GetBookContentURL provides a mock function with given fields: ctx, bookId
+func (_m *CatalogService) GetBookContentURL(ctx context.Context, bookId string) (string, error) {
 	ret := _m.Called(ctx, bookId)
 
-	var r0 io.ReadCloser
+	var r0 string
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (io.ReadCloser, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (string, error)); ok {
 		return rf(ctx, bookId)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) io.ReadCloser); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) string); ok {
 		r0 = rf(ctx, bookId)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(io.ReadCloser)
-		}
+		r0 = ret.Get(0).(string)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {

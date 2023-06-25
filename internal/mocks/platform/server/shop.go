@@ -4,7 +4,6 @@ package mocks
 
 import (
 	context "context"
-	io "io"
 
 	mock "github.com/stretchr/testify/mock"
 
@@ -103,20 +102,18 @@ func (_m *Shop) FindOrders(_a0 context.Context, _a1 shop.SearchOrders) (shop.Pag
 }
 
 // GetOrderDeliverableContent provides a mock function with given fields: _a0, _a1
-func (_m *Shop) GetOrderDeliverableContent(_a0 context.Context, _a1 string) (io.ReadCloser, error) {
+func (_m *Shop) GetOrderDeliverableContent(_a0 context.Context, _a1 string) (shop.ShopBookResponse, error) {
 	ret := _m.Called(_a0, _a1)
 
-	var r0 io.ReadCloser
+	var r0 shop.ShopBookResponse
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (io.ReadCloser, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) (shop.ShopBookResponse, error)); ok {
 		return rf(_a0, _a1)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) io.ReadCloser); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, string) shop.ShopBookResponse); ok {
 		r0 = rf(_a0, _a1)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(io.ReadCloser)
-		}
+		r0 = ret.Get(0).(shop.ShopBookResponse)
 	}
 
 	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {

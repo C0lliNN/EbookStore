@@ -44,7 +44,7 @@ wire:
 	@cd cmd && wire .
 
 generate-mocks:
-	@mockery --all --output=./mocks --dir=internal --case=underscore --keeptree
+	@mockery --all --output=./internal/mocks --dir=internal --case=underscore --keeptree
 
 api-docs:
 	@swag init -g internal/platform/server/server.go --parseInternal  --generatedTime

@@ -3,7 +3,6 @@ package shop
 import (
 	"context"
 	"fmt"
-	"io"
 
 	"github.com/ebookstore/internal/core/catalog"
 )
@@ -21,7 +20,7 @@ type PaymentClient interface {
 
 type CatalogService interface {
 	FindBookByID(ctx context.Context, bookId string) (catalog.BookResponse, error)
-	GetBookContent(ctx context.Context, bookId string) (io.ReadCloser, error)
+	GetBookContentURL(ctx context.Context, bookId string) (string, error)
 }
 
 type IDGenerator interface {
@@ -113,26 +112,26 @@ func (s *Shop) CompleteOrder(ctx context.Context, orderID string) error {
 	return nil
 }
 
-func (s *Shop) GetOrderDeliverableContent(ctx context.Context, orderID string) (io.ReadCloser, error) {
+func (s *Shop) GetOrderDeliverableContent(ctx context.Context, orderID string) (ShopBookResponse, error) {
 	order, err := s.Repository.FindByID(ctx, orderID)
 	if err != nil {
-		return nil, fmt.Errorf("(GetOrderDeliverableContent) failed finding order by id %s: %w", orderID, err)
+		return ShopBookResponse{}, fmt.Errorf("(GetOrderDeliverableContent) failed finding order by id %s: %w", orderID, err)
 	}
 
 	if order.Status != Paid {
-		return nil, fmt.Errorf("(GetOrderDeliverableContent) failed validating order conditions %s: %w", orderID, ErrOrderNotPaid)
+		return ShopBookResponse{}, fmt.Errorf("(GetOrderDeliverableContent) failed validating order conditions %s: %w", orderID, ErrOrderNotPaid)
 	}
 
 	if !s.isUserAllowedToReadOrder(ctx, order) {
-		return nil, fmt.Errorf("(GetOrderDeliverableContent) failed validating user conditions: %w", ErrForbiddenOrderAccess)
+		return ShopBookResponse{}, fmt.Errorf("(GetOrderDeliverableContent) failed validating user conditions: %w", ErrForbiddenOrderAccess)
 	}
 
-	content, err := s.CatalogService.GetBookContent(ctx, order.BookID)
+	url, err := s.CatalogService.GetBookContentURL(ctx, order.BookID)
 	if err != nil {
-		return nil, fmt.Errorf("(GetOrderDeliverableContent) failed getting book content: %w", err)
+		return ShopBookResponse{}, fmt.Errorf("(GetOrderDeliverableContent) failed getting book content: %w", err)
 	}
 
-	return content, nil
+	return ShopBookResponse{URL: url}, nil
 }
 
 func (s *Shop) isUserAllowedToReadOrder(ctx context.Context, order Order) bool {

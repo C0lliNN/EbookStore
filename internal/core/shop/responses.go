@@ -53,3 +53,7 @@ func NewPaginatedOrdersResponse(paginatedOrders PaginatedOrders) PaginatedOrders
 		TotalItems:  paginatedOrders.TotalOrders,
 	}
 }
+
+type ShopBookResponse struct {
+	URL string `json:"url"`
+}

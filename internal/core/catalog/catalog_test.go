@@ -5,8 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
-	"strings"
 	"testing"
 	"time"
 
@@ -17,17 +15,17 @@ import (
 )
 
 const (
-	findByQueryMethod          = "FindByQuery"
-	findByIdMethod             = "FindByID"
-	generatePreSignedUrlMethod = "GenerateGetPreSignedUrl"
-	newUniqueNameMethod        = "NewUniqueName"
-	newIdMethod                = "NewID"
-	saveFileMethod             = "SaveFile"
-	retrieveFileMethod         = "RetrieveFile"
-	createBookMethod           = "Create"
-	updateBookMethod           = "Update"
-	deleteBookMethod           = "Delete"
-	validateMethod             = "Validate"
+	findByQueryMethod             = "FindByQuery"
+	findByIdMethod                = "FindByID"
+	generateGetPreSignedUrlMethod = "GenerateGetPreSignedUrl"
+	newUniqueNameMethod           = "NewUniqueName"
+	newIdMethod                   = "NewID"
+	saveFileMethod                = "SaveFile"
+	retrieveFileMethod            = "RetrieveFile"
+	createBookMethod              = "Create"
+	updateBookMethod              = "Update"
+	deleteBookMethod              = "Delete"
+	validateMethod                = "Validate"
 )
 
 type CatalogTestSuite struct {
@@ -70,7 +68,7 @@ func (s *CatalogTestSuite) TestFindByQuery_WhenRepositoryFails() {
 	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
-	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod)
+	s.storageClient.AssertNotCalled(s.T(), generateGetPreSignedUrlMethod)
 }
 
 func (s *CatalogTestSuite) TestFindByQuery_WhenStorageClientFails() {
@@ -84,14 +82,14 @@ func (s *CatalogTestSuite) TestFindByQuery_WhenStorageClientFails() {
 	}
 
 	s.repo.On(findByQueryMethod, context.TODO(), query).Return(paginatedBooks, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key").Return("", fmt.Errorf("some error"))
+	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key").Return("", fmt.Errorf("some error"))
 
 	_, err := s.catalog.FindBooks(context.TODO(), request)
 
 	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
-	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 1)
+	s.storageClient.AssertNumberOfCalls(s.T(), generateGetPreSignedUrlMethod, 1)
 }
 
 func (s *CatalogTestSuite) TestFindByQuery_Successfully() {
@@ -107,9 +105,9 @@ func (s *CatalogTestSuite) TestFindByQuery_Successfully() {
 	}
 
 	s.repo.On(findByQueryMethod, context.TODO(), query).Return(paginatedBooks, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key").Return("some-link-1", nil).Once()
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key2").Return("some-link-2", nil).Once()
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key3").Return("some-link-3", nil).Once()
+	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key").Return("some-link-1", nil).Once()
+	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key2").Return("some-link-2", nil).Once()
+	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key3").Return("some-link-3", nil).Once()
 
 	expected := catalog.NewPaginatedBooksResponse(
 		paginatedBooks,
@@ -122,7 +120,7 @@ func (s *CatalogTestSuite) TestFindByQuery_Successfully() {
 	assert.Nil(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
-	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 3)
+	s.storageClient.AssertNumberOfCalls(s.T(), generateGetPreSignedUrlMethod, 3)
 }
 
 func (s *CatalogTestSuite) TestFindBookByID_WhenRepositoryFails() {
@@ -133,7 +131,7 @@ func (s *CatalogTestSuite) TestFindBookByID_WhenRepositoryFails() {
 	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), "some-id")
-	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 0)
+	s.storageClient.AssertNumberOfCalls(s.T(), generateGetPreSignedUrlMethod, 0)
 }
 
 func (s *CatalogTestSuite) TestFindBookByID_WhenStorageClientFails() {
@@ -143,14 +141,14 @@ func (s *CatalogTestSuite) TestFindBookByID_WhenStorageClientFails() {
 	}
 
 	s.repo.On(findByIdMethod, context.TODO(), book.ID).Return(book, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key").Return("", fmt.Errorf("some error"))
+	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key").Return("", fmt.Errorf("some error"))
 
 	_, err := s.catalog.FindBookByID(context.TODO(), book.ID)
 
 	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), book.ID)
-	s.storageClient.AssertCalled(s.T(), generatePreSignedUrlMethod, context.TODO(), "some-key")
+	s.storageClient.AssertCalled(s.T(), generateGetPreSignedUrlMethod, context.TODO(), "some-key")
 }
 
 func (s *CatalogTestSuite) TestFindBookByID_Successfully() {
@@ -160,7 +158,7 @@ func (s *CatalogTestSuite) TestFindBookByID_Successfully() {
 	}
 
 	s.repo.On(findByIdMethod, context.TODO(), book.ID).Return(book, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, context.TODO(), "some-key").Return("some-link", nil)
+	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key").Return("some-link", nil)
 
 	actual, err := s.catalog.FindBookByID(context.TODO(), book.ID)
 
@@ -168,14 +166,14 @@ func (s *CatalogTestSuite) TestFindBookByID_Successfully() {
 	assert.Equal(s.T(), catalog.NewBookResponse(book, []string{"some-link"}), actual)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), book.ID)
-	s.storageClient.AssertCalled(s.T(), generatePreSignedUrlMethod, context.TODO(), "some-key")
+	s.storageClient.AssertCalled(s.T(), generateGetPreSignedUrlMethod, context.TODO(), "some-key")
 }
 
-func (s *CatalogTestSuite) TestGetBookContent_WhenBookCouldNotBeFound() {
+func (s *CatalogTestSuite) TestGetBookContentURL_WhenBookCouldNotBeFound() {
 	id := "some-id"
 	s.repo.On(findByIdMethod, context.TODO(), id).Return(catalog.Book{}, fmt.Errorf("some error"))
 
-	_, err := s.catalog.GetBookContent(context.TODO(), id)
+	_, err := s.catalog.GetBookContentURL(context.TODO(), id)
 
 	assert.Error(s.T(), err)
 
@@ -183,37 +181,37 @@ func (s *CatalogTestSuite) TestGetBookContent_WhenBookCouldNotBeFound() {
 	s.storageClient.AssertNumberOfCalls(s.T(), retrieveFileMethod, 0)
 }
 
-func (s *CatalogTestSuite) TestGetBookContent_WithError() {
+func (s *CatalogTestSuite) TestGetBookContentURL_WithError() {
 	book := catalog.Book{
-		ID:               "some-id",
-		ContentBucketKey: "some-key",
+		ID:        "some-id",
+		ContentID: "some-key",
 	}
 	s.repo.On(findByIdMethod, context.TODO(), book.ID).Return(book, nil)
-	s.storageClient.On(retrieveFileMethod, context.TODO(), book.ContentBucketKey).Return(nil, fmt.Errorf("some error"))
+	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), book.ContentID).Return("", fmt.Errorf("some error"))
 
-	_, err := s.catalog.GetBookContent(context.TODO(), book.ID)
+	_, err := s.catalog.GetBookContentURL(context.TODO(), book.ID)
 
 	assert.Error(s.T(), err)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), book.ID)
-	s.storageClient.AssertCalled(s.T(), retrieveFileMethod, context.TODO(), book.ContentBucketKey)
+	s.storageClient.AssertCalled(s.T(), generateGetPreSignedUrlMethod, context.TODO(), book.ContentID)
 }
 
-func (s *CatalogTestSuite) TestGetBookContent_Successfully() {
+func (s *CatalogTestSuite) TestGetBookContentURL_Successfully() {
 	book := catalog.Book{
-		ID:               "some-id",
-		ContentBucketKey: "some-key",
+		ID:        "some-id",
+		ContentID: "some-key",
 	}
 	s.repo.On(findByIdMethod, context.TODO(), book.ID).Return(book, nil)
-	s.storageClient.On(retrieveFileMethod, context.TODO(), book.ContentBucketKey).Return(io.NopCloser(strings.NewReader("test")), nil)
+	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), book.ContentID).Return("url", nil)
 
-	reader, err := s.catalog.GetBookContent(context.TODO(), book.ID)
+	url, err := s.catalog.GetBookContentURL(context.TODO(), book.ID)
 
 	assert.Nil(s.T(), err)
-	assert.NotNil(s.T(), reader)
+	assert.Equal(s.T(), "url", url)
 
 	s.repo.AssertCalled(s.T(), findByIdMethod, context.TODO(), book.ID)
-	s.storageClient.AssertCalled(s.T(), retrieveFileMethod, context.TODO(), book.ContentBucketKey)
+	s.storageClient.AssertCalled(s.T(), generateGetPreSignedUrlMethod, context.TODO(), book.ContentID)
 }
 
 func (s *CatalogTestSuite) TestCreateBook_WithNonAdminUser() {
@@ -233,7 +231,7 @@ func (s *CatalogTestSuite) TestCreateBook_WithNonAdminUser() {
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 0)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 0)
-	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod, "poster_name")
+	s.storageClient.AssertNotCalled(s.T(), generateGetPreSignedUrlMethod, "poster_name")
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 0)
 }
 
@@ -255,7 +253,7 @@ func (s *CatalogTestSuite) TestCreateBook_ValidationFails() {
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
 	s.idGenerator.AssertNumberOfCalls(s.T(), newIdMethod, 0)
 	s.storageClient.AssertNumberOfCalls(s.T(), saveFileMethod, 0)
-	s.storageClient.AssertNotCalled(s.T(), generatePreSignedUrlMethod, "poster_name")
+	s.storageClient.AssertNotCalled(s.T(), generateGetPreSignedUrlMethod, "poster_name")
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 0)
 }
 
@@ -305,14 +303,14 @@ func (s *CatalogTestSuite) TestCreateBook_WhenPreSigningFails() {
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.repo.On(createBookMethod, ctx, &book).Return(nil)
 	s.repo.On(findByIdMethod, ctx, book.ID).Return(book, nil)
-	s.storageClient.On(generatePreSignedUrlMethod, ctx, "some-key").Return("", fmt.Errorf("some error"))
+	s.storageClient.On(generateGetPreSignedUrlMethod, ctx, "some-key").Return("", fmt.Errorf("some error"))
 
 	_, err := s.catalog.CreateBook(ctx, request)
 
 	assert.Error(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 1)
+	s.storageClient.AssertNumberOfCalls(s.T(), generateGetPreSignedUrlMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByIdMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 1)
 }
@@ -338,14 +336,14 @@ func (s *CatalogTestSuite) TestCreateBook_Successfully() {
 	s.idGenerator.On(newIdMethod).Return("some-id")
 	s.repo.On(findByIdMethod, ctx, book.ID).Return(book, nil)
 	s.repo.On(createBookMethod, ctx, &book).Return(nil)
-	s.storageClient.On(generatePreSignedUrlMethod, ctx, "some-key").Return("link", nil)
+	s.storageClient.On(generateGetPreSignedUrlMethod, ctx, "some-key").Return("link", nil)
 
 	_, err := s.catalog.CreateBook(ctx, request)
 
 	assert.NoError(s.T(), err)
 
 	s.validator.AssertNumberOfCalls(s.T(), validateMethod, 1)
-	s.storageClient.AssertNumberOfCalls(s.T(), generatePreSignedUrlMethod, 1)
+	s.storageClient.AssertNumberOfCalls(s.T(), generateGetPreSignedUrlMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), findByIdMethod, 1)
 	s.repo.AssertNumberOfCalls(s.T(), createBookMethod, 1)
 }

@@ -3,7 +3,6 @@ package catalog
 import (
 	"context"
 	"fmt"
-	"io"
 )
 
 type Repository interface {
@@ -17,8 +16,6 @@ type Repository interface {
 type StorageClient interface {
 	GenerateGetPreSignedUrl(ctx context.Context, key string) (string, error)
 	GeneratePutPreSignedUrl(ctx context.Context, key string) (string, error)
-	SaveFile(ctx context.Context, key string, contentType string, content io.ReadSeeker) error
-	RetrieveFile(ctx context.Context, key string) (io.ReadCloser, error)
 }
 
 type IDGenerator interface {
@@ -92,18 +89,18 @@ func (c *Catalog) getPresignedUrlsForBook(ctx context.Context, book Book) ([]str
 	return imageLinks, nil
 }
 
-func (c *Catalog) GetBookContent(ctx context.Context, id string) (io.ReadCloser, error) {
+func (c *Catalog) GetBookContentURL(ctx context.Context, id string) (string, error) {
 	book, err := c.Repository.FindByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("(GetBookContent) failed finding book %s: %w", id, err)
+		return "", fmt.Errorf("(GetBookContent) failed finding book %s: %w", id, err)
 	}
 
-	content, err := c.StorageClient.RetrieveFile(ctx, book.ContentBucketKey)
+	contentUrl, err := c.StorageClient.GenerateGetPreSignedUrl(ctx, book.ContentID)
 	if err != nil {
-		return nil, fmt.Errorf("(GetBookContent) failed retrieving book content: %w", err)
+		return "", fmt.Errorf("(GetBookContent) failed generating presigned url: %w", err)
 	}
 
-	return content, nil
+	return contentUrl, nil
 }
 
 func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookResponse, error) {

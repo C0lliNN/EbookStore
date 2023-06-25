@@ -4,8 +4,6 @@ package shop_test
 import (
 	"context"
 	"fmt"
-	"io"
-	"strings"
 	"testing"
 
 	"github.com/ebookstore/internal/core/catalog"
@@ -22,7 +20,7 @@ const (
 	updateOrderMethod         = "Update"
 	findBookByIDMethod        = "FindBookByID"
 	createPaymentIntentMethod = "CreatePaymentIntentForOrder"
-	getBookContent            = "GetBookContent"
+	getBookContent            = "GetBookContentURL"
 	newIdMethod               = "NewID"
 	validateMethod            = "Validate"
 )
@@ -389,7 +387,7 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_WithError() {
 		Status: shop.Paid,
 	}
 	s.repo.On(findOrderByIDMethod, context.TODO(), order.ID).Return(order, nil)
-	s.catalogService.On(getBookContent, context.TODO(), order.BookID).Return(nil, fmt.Errorf("some error"))
+	s.catalogService.On(getBookContent, context.TODO(), order.BookID).Return("", fmt.Errorf("some error"))
 
 	_, err := s.shop.GetOrderDeliverableContent(context.TODO(), order.ID)
 
@@ -411,7 +409,7 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_NonAdmin_Forbidden() {
 	ctx = context.WithValue(ctx, "userId", "some-user-id2")
 
 	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
-	s.catalogService.On(getBookContent, ctx, order.BookID).Return(io.NopCloser(strings.NewReader("test")), nil)
+	s.catalogService.On(getBookContent, ctx, order.BookID).Return("test", nil)
 
 	_, err := s.shop.GetOrderDeliverableContent(ctx, order.ID)
 
@@ -433,7 +431,7 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_NonAdmin_Successfully() {
 	ctx = context.WithValue(ctx, "userId", "some-user-id")
 
 	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
-	s.catalogService.On(getBookContent, ctx, order.BookID).Return(io.NopCloser(strings.NewReader("test")), nil)
+	s.catalogService.On(getBookContent, ctx, order.BookID).Return("test", nil)
 
 	actual, err := s.shop.GetOrderDeliverableContent(ctx, order.ID)
 
@@ -455,7 +453,7 @@ func (s *ShopTestSuite) TestGetOrderDeliverableContent_Admin_Successfully() {
 	ctx := context.WithValue(context.Background(), "admin", true)
 
 	s.repo.On(findOrderByIDMethod, ctx, order.ID).Return(order, nil)
-	s.catalogService.On(getBookContent, ctx, order.BookID).Return(io.NopCloser(strings.NewReader("test")), nil)
+	s.catalogService.On(getBookContent, ctx, order.BookID).Return("test", nil)
 
 	actual, err := s.shop.GetOrderDeliverableContent(ctx, order.ID)
 

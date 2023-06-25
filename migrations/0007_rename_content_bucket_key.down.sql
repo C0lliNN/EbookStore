@@ -1,0 +1,1 @@
+ALTER TABLE books RENAME COLUMN content_id TO content_bucket_key;

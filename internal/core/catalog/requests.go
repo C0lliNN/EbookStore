@@ -34,6 +34,7 @@ type CreateBook struct {
 	Title       string    `json:"title" validate:"required,max=100"`
 	Description string    `json:"description" validate:"required"`
 	AuthorName  string    `json:"authorName" validate:"required,max=100"`
+	ContentID   string    `json:"contentId" validate:"required,max=100"`
 	Price       int       `json:"price" validate:"required,gt=0"`
 	ReleaseDate time.Time `json:"releaseDate" validate:"required"`
 
@@ -64,6 +65,7 @@ func (c CreateBook) Book(id string) Book {
 		Title:       c.Title,
 		Description: c.Description,
 		AuthorName:  c.AuthorName,
+		ContentID:   c.ContentID,
 		Price:       c.Price,
 		ReleaseDate: c.ReleaseDate,
 		Images:      images,

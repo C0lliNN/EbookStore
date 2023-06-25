@@ -1,10 +1,8 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 
 	"github.com/ebookstore/internal/core/shop"
@@ -16,7 +14,7 @@ type Shop interface {
 	FindOrderByID(context.Context, string) (shop.OrderResponse, error)
 	CreateOrder(context.Context, shop.CreateOrder) (shop.OrderResponse, error)
 	CompleteOrder(context.Context, string) error
-	GetOrderDeliverableContent(context.Context, string) (io.ReadCloser, error)
+	GetOrderDeliverableContent(context.Context, string) (shop.ShopBookResponse, error)
 }
 
 type ShopHandler struct {
@@ -111,27 +109,21 @@ func (h *ShopHandler) createOrder(c *gin.Context) {
 // downloadOrder godoc
 // @Summary Download the book for the given Order
 // @Tags Shop
-// @Produce  application/pdf
-// @Param payload body shop.CreateOrder true "Order Payload"
-// @Success 200 "Success"
+// @Produce  json
+// @Param id path string true "orderId ID"
+// @Success 200 {object} shop.BookOrderResponse
 // @Failure 402 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/orders/{id}/download [get]
 func (h *ShopHandler) downloadOrder(c *gin.Context) {
-	content, err := h.shop.GetOrderDeliverableContent(c, c.Param("id"))
+	response, err := h.shop.GetOrderDeliverableContent(c, c.Param("id"))
 	if err != nil {
 		_ = c.Error(fmt.Errorf("(downloadOrder) failed handling get book content: %w", err))
 		return
 	}
 
-	buffer := new(bytes.Buffer)
-	if _, err = buffer.ReadFrom(content); err != nil {
-		_ = c.Error(fmt.Errorf("(downloadOrder) failed reading content: %w", err))
-		return
-	}
-
-	c.DataFromReader(http.StatusOK, int64(buffer.Len()), "application/pdf", buffer, nil)
+	c.JSON(http.StatusOK, response)
 }
 
 // handleStripeWebhook godoc

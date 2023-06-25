@@ -4,7 +4,6 @@ package mocks
 
 import (
 	context "context"
-	io "io"
 
 	mock "github.com/stretchr/testify/mock"
 )
@@ -60,46 +59,6 @@ func (_m *StorageClient) GeneratePutPreSignedUrl(ctx context.Context, key string
 	}
 
 	return r0, r1
-}
-
-// RetrieveFile provides a mock function with given fields: ctx, key
-func (_m *StorageClient) RetrieveFile(ctx context.Context, key string) (io.ReadCloser, error) {
-	ret := _m.Called(ctx, key)
-
-	var r0 io.ReadCloser
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, string) (io.ReadCloser, error)); ok {
-		return rf(ctx, key)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, string) io.ReadCloser); ok {
-		r0 = rf(ctx, key)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(io.ReadCloser)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = rf(ctx, key)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
-// SaveFile provides a mock function with given fields: ctx, key, contentType, content
-func (_m *StorageClient) SaveFile(ctx context.Context, key string, contentType string, content io.ReadSeeker) error {
-	ret := _m.Called(ctx, key, contentType, content)
-
-	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, string, string, io.ReadSeeker) error); ok {
-		r0 = rf(ctx, key, contentType, content)
-	} else {
-		r0 = ret.Error(0)
-	}
-
-	return r0
 }
 
 // NewStorageClient creates a new instance of StorageClient. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
