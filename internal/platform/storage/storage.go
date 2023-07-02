@@ -8,6 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/ebookstore/internal/log"
 )
 
 type Config struct {
@@ -45,6 +46,8 @@ func (c *Storage) GenerateGetPreSignedUrl(ctx context.Context, key string) (stri
 func (c *Storage) GeneratePutPreSignedUrl(ctx context.Context, key string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
+
+	log.FromContext(ctx).Info("generating PUT presigned url for key: %s", key)
 
 	presignResult, err := c.PresignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(string(c.Bucket)),

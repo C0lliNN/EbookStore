@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ebookstore/internal/core/shop"
+	"github.com/ebookstore/internal/log"
 	"github.com/gin-gonic/gin"
 )
 
@@ -135,6 +136,8 @@ func (h *ShopHandler) downloadOrder(c *gin.Context) {
 // @Success 500 {object} ErrorResponse
 // @Router /api/v1/stripe/webhook [post]
 func (h *ShopHandler) handleStripeWebhook(c *gin.Context) {
+	log.FromContext(c).Infof("processing new stripe webhook request")
+
 	var request shop.HandleStripeWebhook
 	if err := c.ShouldBindJSON(&request); err != nil {
 		_ = c.Error(&BindingErr{Err: fmt.Errorf("(handleStripeWebhook) failed binding request: %w", err)})

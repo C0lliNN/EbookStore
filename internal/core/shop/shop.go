@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/ebookstore/internal/core/catalog"
+	"github.com/ebookstore/internal/log"
 )
 
 type Repository interface {
@@ -48,6 +49,8 @@ func New(c Config) *Shop {
 }
 
 func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedOrdersResponse, error) {
+	log.FromContext(ctx).Info("new request for fetching orders")
+
 	query := request.OrderQuery()
 	if !isAdmin(ctx) {
 		// Non-admin users should only see their orders
@@ -63,6 +66,8 @@ func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedO
 }
 
 func (s *Shop) FindOrderByID(ctx context.Context, id string) (OrderResponse, error) {
+	log.FromContext(ctx).Infof("new request for fetching order %s", id)
+
 	order, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
 		return OrderResponse{}, fmt.Errorf("(FindOrderByID) failed fetching order: %w", err)
@@ -76,11 +81,14 @@ func (s *Shop) FindOrderByID(ctx context.Context, id string) (OrderResponse, err
 }
 
 func (s *Shop) CreateOrder(ctx context.Context, request CreateOrder) (OrderResponse, error) {
+
 	if err := s.Validator.Validate(request); err != nil {
 		return OrderResponse{}, fmt.Errorf("(CreateOrder) failed validating request: %w", err)
 	}
 
 	order := request.Order(s.IDGenerator.NewID(), userId(ctx))
+	log.FromContext(ctx).Infof("creating new order with id %s", order.ID)
+
 	book, err := s.CatalogService.FindBookByID(ctx, order.BookID)
 	if err != nil {
 		return OrderResponse{}, fmt.Errorf("(CreateOrder) failed finding book by id %s: %w", order.BookID, err)
@@ -99,6 +107,8 @@ func (s *Shop) CreateOrder(ctx context.Context, request CreateOrder) (OrderRespo
 }
 
 func (s *Shop) CompleteOrder(ctx context.Context, orderID string) error {
+	log.FromContext(ctx).Infof("completing the order %s", orderID)
+
 	order, err := s.Repository.FindByID(ctx, orderID)
 	if err != nil {
 		return fmt.Errorf("(CompleteOrder) failed finding order by id %s: %w", orderID, err)
@@ -113,6 +123,8 @@ func (s *Shop) CompleteOrder(ctx context.Context, orderID string) error {
 }
 
 func (s *Shop) GetOrderDeliverableContent(ctx context.Context, orderID string) (ShopBookResponse, error) {
+	log.FromContext(ctx).Infof("getting deliverable content for order %s", orderID)
+
 	order, err := s.Repository.FindByID(ctx, orderID)
 	if err != nil {
 		return ShopBookResponse{}, fmt.Errorf("(GetOrderDeliverableContent) failed finding order by id %s: %w", orderID, err)

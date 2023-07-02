@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ebookstore/internal/core/shop"
+	"github.com/ebookstore/internal/log"
 	"github.com/spf13/viper"
 	"github.com/stripe/stripe-go/v72"
 	"github.com/stripe/stripe-go/v72/paymentintent"
@@ -31,6 +32,8 @@ func NewStripePaymentService() *StripePaymentService {
 func (c *StripePaymentService) CreatePaymentIntentForOrder(ctx context.Context, order *shop.Order) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
+
+	log.FromContext(ctx).Infof("creating payment intent for order %s", order.ID)
 
 	params := &stripe.PaymentIntentParams{
 		Params:   stripe.Params{Context: ctx},
