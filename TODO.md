@@ -49,7 +49,7 @@
 * [x] Add CORS Middleware
 * [x] Allow a single a book to have multiple images instead of only one
 * [x] Use the S3 Presigning API to send book content to the user instead of downloading the file in the server
-* [ ] Validate Data Size in All Requests
+* [x] Validate Data Size in All Requests
 * [ ] Add INFO Logging in important places 
 * [ ] Protect code against SQL Injection
 * [ ] Improve test suite, use apitest for the HTTP handlers
