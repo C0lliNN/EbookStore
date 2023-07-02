@@ -74,4 +74,5 @@
 * [ ] Try to make the file extension transparent to the usecase
 * [ ] Use mocks in the same package
 * [ ] Refactor Logging (use function log(ctx, msg, fields))
+* [ ] Create a new script for cleaning data
 

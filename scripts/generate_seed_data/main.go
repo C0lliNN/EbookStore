@@ -2,10 +2,13 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"os"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/ebookstore/internal/core/auth"
 	"github.com/ebookstore/internal/core/catalog"
 	"github.com/ebookstore/internal/core/shop"
@@ -13,7 +16,6 @@ import (
 	"github.com/ebookstore/internal/platform/config"
 	"github.com/ebookstore/internal/platform/hash"
 	"github.com/ebookstore/internal/platform/payment"
-	"github.com/ebookstore/internal/platform/storage"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
 )
@@ -118,16 +120,11 @@ func createUsers() []auth.User {
 func createBooks() []catalog.Book {
 	log.Println("Creating books...")
 
-	storageClient := storage.NewStorage(storage.Config{
-		S3Client: config.NewS3Client(config.NewAWSConfig()),
-		Bucket:   config.NewBucket(),
-	})
-
 	book1Poster, err := os.Open("./book1_image.jpg")
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = storageClient.SaveFile(context.TODO(), "book1-poster", "image/jpeg", book1Poster); err != nil {
+	if err = saveFile(context.TODO(), "book1-poster", "image/jpeg", book1Poster); err != nil {
 		log.Fatal(err)
 	}
 
@@ -135,7 +132,7 @@ func createBooks() []catalog.Book {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = storageClient.SaveFile(context.TODO(), "book1-content", "application/pdf", book1Content); err != nil {
+	if err = saveFile(context.TODO(), "book1-content", "application/pdf", book1Content); err != nil {
 		log.Fatal(err)
 	}
 
@@ -162,7 +159,7 @@ func createBooks() []catalog.Book {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = storageClient.SaveFile(context.TODO(), "book2-poster", "image/jpeg", book2Poster); err != nil {
+	if err = saveFile(context.TODO(), "book2-poster", "image/jpeg", book2Poster); err != nil {
 		log.Fatal(err)
 	}
 
@@ -170,7 +167,7 @@ func createBooks() []catalog.Book {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if err = storageClient.SaveFile(context.TODO(), "book2-content", "application/pdf", book2Content); err != nil {
+	if err = saveFile(context.TODO(), "book2-content", "application/pdf", book2Content); err != nil {
 		log.Fatal(err)
 	}
 
@@ -246,4 +243,24 @@ func createOrders() []shop.Order {
 	}
 
 	return []shop.Order{order1, order2, order3}
+}
+
+func saveFile(ctx context.Context, key string, contentType string, content io.ReadSeeker) error {
+	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
+	defer cancel()
+
+	s3Client := config.NewS3Client(config.NewAWSConfig())
+	bucket := config.NewBucket()
+
+	_, err := s3Client.PutObject(ctx, &s3.PutObjectInput{
+		Key:         aws.String(key),
+		Bucket:      aws.String(string(bucket)),
+		ContentType: aws.String(contentType),
+		Body:        content,
+	})
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	return nil
 }

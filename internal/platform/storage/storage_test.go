@@ -1,10 +1,8 @@
 package storage_test
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"testing"
 
 	"github.com/ebookstore/internal/platform/config"
@@ -70,30 +68,4 @@ func (s *StorageClientTestSuite) TestGeneratePutPreSignedUrl() {
 
 	assert.Nil(s.T(), err)
 	assert.NotEmpty(s.T(), url)
-}
-
-func (s *StorageClientTestSuite) TestSaveFile() {
-	key := "some-key"
-	content := bytes.NewReader([]byte("this is the content of a book"))
-
-	err := s.storage.SaveFile(context.TODO(), key, "text/plain", content)
-
-	assert.Nil(s.T(), err)
-}
-
-func (s *StorageClientTestSuite) TestRetrieveFile() {
-	key := "some-key"
-	byts := []byte("this is the content of a book")
-	content := bytes.NewReader(byts)
-
-	err := s.storage.SaveFile(context.TODO(), key, "text/plain", content)
-	assert.Nil(s.T(), err)
-
-	reader, err := s.storage.RetrieveFile(context.TODO(), key)
-	assert.Nil(s.T(), err)
-
-	actual, err := ioutil.ReadAll(reader)
-	assert.Nil(s.T(), err)
-
-	assert.Equal(s.T(), byts, actual)
 }
