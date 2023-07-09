@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ebookstore/internal/core/query"
 	"github.com/ebookstore/internal/log"
 )
 
 type Repository interface {
-	FindByQuery(ctx context.Context, query BookQuery) (paginated PaginatedBooks, err error)
+	FindByQuery(ctx context.Context, query query.Query, page query.Page) (paginated PaginatedBooks, err error)
 	FindByID(ctx context.Context, id string) (book Book, err error)
 	Create(ctx context.Context, book *Book) error
 	Update(ctx context.Context, book *Book) error
@@ -46,9 +47,7 @@ func New(c Config) *Catalog {
 func (c *Catalog) FindBooks(ctx context.Context, request SearchBooks) (PaginatedBooksResponse, error) {
 	log.FromContext(ctx).Info("new request for fetching books")
 
-	query := request.BookQuery()
-
-	paginatedBooks, err := c.Repository.FindByQuery(ctx, query)
+	paginatedBooks, err := c.Repository.FindByQuery(ctx, request.CreateQuery(), request.CreatePage())
 	if err != nil {
 		return PaginatedBooksResponse{}, fmt.Errorf("(FindBooks) failed finding books: %w", err)
 	}

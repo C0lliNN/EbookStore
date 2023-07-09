@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/ebookstore/internal/core/catalog"
+	"github.com/ebookstore/internal/core/query"
 	"gorm.io/gorm"
 )
 
@@ -19,16 +19,16 @@ func NewBookRepository(db *gorm.DB) *BookRepository {
 	return &BookRepository{db: db}
 }
 
-func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuery) (catalog.PaginatedBooks, error) {
+func (r *BookRepository) FindByQuery(ctx context.Context, query query.Query, page query.Page) (catalog.PaginatedBooks, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
 	db := r.db.WithContext(ctx)
 
-	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
+	conditions := parseQuery(query)
 
 	paginated := catalog.PaginatedBooks{}
-	result := db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Find(&paginated.Books)
+	result := db.Limit(page.Size).Offset(page.Offset()).Where(conditions).Find(&paginated.Books)
 	if err := result.Error; err != nil {
 		return catalog.PaginatedBooks{}, fmt.Errorf("(FindByQuery) failed running select query: %w", err)
 	}
@@ -38,25 +38,10 @@ func (r *BookRepository) FindByQuery(ctx context.Context, query catalog.BookQuer
 		return catalog.PaginatedBooks{}, fmt.Errorf("(FindByQuery) failed running count query: %w", err)
 	}
 
-	paginated.Limit = query.Limit
-	paginated.Offset = query.Offset
+	paginated.Limit = page.Size
+	paginated.Offset = page.Offset()
 	paginated.TotalBooks = count
 	return paginated, nil
-}
-
-func (r *BookRepository) createConditionsFromCriteria(criteria []catalog.Criteria) string {
-	conditions := make([]string, 0, len(criteria))
-	for _, c := range criteria {
-		if !c.IsEmpty() {
-			if parsed, ok := c.Value.(string); ok {
-				conditions = append(conditions, fmt.Sprintf("%s %s '%s'", c.Field, c.Operator, parsed))
-			} else {
-				conditions = append(conditions, fmt.Sprintf("%s %s %v", c.Field, c.Operator, c.Value))
-			}
-		}
-	}
-
-	return strings.Join(conditions, " AND ")
 }
 
 func (r *BookRepository) FindByID(ctx context.Context, id string) (catalog.Book, error) {

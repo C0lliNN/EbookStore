@@ -59,21 +59,23 @@ func TestCatalog(t *testing.T) {
 
 func (s *CatalogTestSuite) TestFindByQuery_WhenRepositoryFails() {
 	request := catalog.SearchBooks{}
-	query := request.BookQuery()
+	query := request.CreateQuery()
+	page := request.CreatePage()
 
-	s.repo.On(findByQueryMethod, context.TODO(), query).Return(catalog.PaginatedBooks{}, fmt.Errorf("some error"))
+	s.repo.On(findByQueryMethod, context.TODO(), query, page).Return(catalog.PaginatedBooks{}, fmt.Errorf("some error"))
 
 	_, err := s.catalog.FindBooks(context.TODO(), request)
 
 	assert.Error(s.T(), err)
 
-	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
+	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query, page)
 	s.storageClient.AssertNotCalled(s.T(), generateGetPreSignedUrlMethod)
 }
 
 func (s *CatalogTestSuite) TestFindByQuery_WhenStorageClientFails() {
 	request := catalog.SearchBooks{}
-	query := request.BookQuery()
+	query := request.CreateQuery()
+	page := request.CreatePage()
 
 	paginatedBooks := catalog.PaginatedBooks{
 		Books: []catalog.Book{
@@ -81,20 +83,21 @@ func (s *CatalogTestSuite) TestFindByQuery_WhenStorageClientFails() {
 		},
 	}
 
-	s.repo.On(findByQueryMethod, context.TODO(), query).Return(paginatedBooks, nil)
+	s.repo.On(findByQueryMethod, context.TODO(), query, page).Return(paginatedBooks, nil)
 	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key").Return("", fmt.Errorf("some error"))
 
 	_, err := s.catalog.FindBooks(context.TODO(), request)
 
 	assert.Error(s.T(), err)
 
-	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
+	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query, page)
 	s.storageClient.AssertNumberOfCalls(s.T(), generateGetPreSignedUrlMethod, 1)
 }
 
 func (s *CatalogTestSuite) TestFindByQuery_Successfully() {
 	request := catalog.SearchBooks{}
-	query := request.BookQuery()
+	query := request.CreateQuery()
+	page := request.CreatePage()
 
 	paginatedBooks := catalog.PaginatedBooks{
 		Books: []catalog.Book{
@@ -104,7 +107,7 @@ func (s *CatalogTestSuite) TestFindByQuery_Successfully() {
 		Limit: 10,
 	}
 
-	s.repo.On(findByQueryMethod, context.TODO(), query).Return(paginatedBooks, nil)
+	s.repo.On(findByQueryMethod, context.TODO(), query, page).Return(paginatedBooks, nil)
 	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key").Return("some-link-1", nil).Once()
 	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key2").Return("some-link-2", nil).Once()
 	s.storageClient.On(generateGetPreSignedUrlMethod, context.TODO(), "some-key3").Return("some-link-3", nil).Once()
@@ -119,7 +122,7 @@ func (s *CatalogTestSuite) TestFindByQuery_Successfully() {
 	assert.Equal(s.T(), expected, actual)
 	assert.Nil(s.T(), err)
 
-	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query)
+	s.repo.AssertCalled(s.T(), findByQueryMethod, context.TODO(), query, page)
 	s.storageClient.AssertNumberOfCalls(s.T(), generateGetPreSignedUrlMethod, 3)
 }
 

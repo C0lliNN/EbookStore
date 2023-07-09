@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/ebookstore/internal/core/catalog"
+	"github.com/ebookstore/internal/core/query"
 	"github.com/ebookstore/internal/core/shop"
 	mocks2 "github.com/ebookstore/internal/mocks/core/shop"
 	"github.com/stretchr/testify/assert"
@@ -57,21 +58,22 @@ func TestShop(t *testing.T) {
 
 func (s *ShopTestSuite) TestFindOrders_Admin_Successfully() {
 	request := shop.SearchOrders{}
-	query := request.OrderQuery()
+	query := request.CreateQuery()
+	page := request.CreatePage()
 
 	paginatedOrders := shop.PaginatedOrders{
 		Orders: []shop.Order{{ID: "some-id"}},
 		Limit:  10,
 	}
 	ctx := context.WithValue(context.Background(), "admin", true)
-	s.repo.On(findOrdersByQueryMethod, ctx, query).Return(paginatedOrders, nil)
+	s.repo.On(findOrdersByQueryMethod, ctx, query, page).Return(paginatedOrders, nil)
 
 	expected := shop.NewPaginatedOrdersResponse(paginatedOrders)
 	actual, err := s.shop.FindOrders(ctx, request)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
-	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, ctx, query)
+	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, ctx, query, page)
 }
 
 func (s *ShopTestSuite) TestFindOrders_NonAdmin_Successfully() {
@@ -82,30 +84,35 @@ func (s *ShopTestSuite) TestFindOrders_NonAdmin_Successfully() {
 		Limit:  10,
 	}
 
-	query := request.OrderQuery()
-	query.UserID = "some-user-id"
+	q := request.CreateQuery()
+	q = *q.And(query.Condition{Field: "user_id", Operator: query.Equal, Value: "some-user-id"})
+	page := request.CreatePage()
 
 	ctx := context.WithValue(context.Background(), "userId", "some-user-id")
-	s.repo.On(findOrdersByQueryMethod, ctx, query).Return(paginatedOrders, nil)
+	s.repo.On(findOrdersByQueryMethod, ctx, q, page).Return(paginatedOrders, nil)
 
 	expected := shop.NewPaginatedOrdersResponse(paginatedOrders)
 	actual, err := s.shop.FindOrders(ctx, request)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), expected, actual)
-	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, ctx, query)
+	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, ctx, q, page)
 }
 
 func (s *ShopTestSuite) TestFindOrders_WithError() {
 	request := shop.SearchOrders{}
-	query := request.OrderQuery()
+	q := request.CreateQuery()
+	q = *q.And(query.Condition{Field: "user_id", Operator: query.Equal, Value: "some-user-id"})
+	page := request.CreatePage()
 
-	s.repo.On(findOrdersByQueryMethod, context.TODO(), query).Return(shop.PaginatedOrders{}, fmt.Errorf("some error"))
+	ctx := context.WithValue(context.Background(), "userId", "some-user-id")
 
-	_, err := s.shop.FindOrders(context.TODO(), request)
+	s.repo.On(findOrdersByQueryMethod, ctx, q, page).Return(shop.PaginatedOrders{}, fmt.Errorf("some error"))
+
+	_, err := s.shop.FindOrders(ctx, request)
 
 	assert.Error(s.T(), err)
-	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, context.TODO(), query)
+	s.repo.AssertCalled(s.T(), findOrdersByQueryMethod, ctx, q, page)
 }
 
 func (s *ShopTestSuite) TestFindOrderByID_Admin_Successfully() {

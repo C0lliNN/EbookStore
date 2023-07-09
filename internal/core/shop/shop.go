@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"github.com/ebookstore/internal/core/catalog"
+	"github.com/ebookstore/internal/core/query"
 	"github.com/ebookstore/internal/log"
 )
 
 type Repository interface {
-	FindByQuery(ctx context.Context, query OrderQuery) (PaginatedOrders, error)
+	FindByQuery(ctx context.Context, q query.Query, p query.Page) (PaginatedOrders, error)
 	FindByID(ctx context.Context, id string) (Order, error)
 	Create(ctx context.Context, order *Order) error
 	Update(ctx context.Context, order *Order) error
@@ -51,13 +52,13 @@ func New(c Config) *Shop {
 func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedOrdersResponse, error) {
 	log.FromContext(ctx).Info("new request for fetching orders")
 
-	query := request.OrderQuery()
+	q := request.CreateQuery()
 	if !isAdmin(ctx) {
 		// Non-admin users should only see their orders
-		query.UserID = userId(ctx)
+		q = *q.And(query.Condition{Field: "user_id", Operator: query.Equal, Value: userId(ctx)})
 	}
 
-	paginatedOrders, err := s.Repository.FindByQuery(ctx, query)
+	paginatedOrders, err := s.Repository.FindByQuery(ctx, q, request.CreatePage())
 	if err != nil {
 		return PaginatedOrdersResponse{}, fmt.Errorf("(FindOrders) failed fetching orders: %w", err)
 	}

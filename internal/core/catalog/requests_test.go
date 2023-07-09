@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/ebookstore/internal/core/query"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
@@ -17,85 +18,73 @@ func TestSearchBookRun(t *testing.T) {
 	suite.Run(t, new(SearchBooksTestSuite))
 }
 
-func (s *SearchBooksTestSuite) TestBookQuery_WithNoFields() {
+func (s *SearchBooksTestSuite) TestCreateQuery_WithNoFields() {
 	dto := SearchBooks{}
 
-	expected := BookQuery{
-		Limit: 10,
-	}
-	actual := dto.BookQuery()
+	expected := query.Query{}
+	actual := dto.CreateQuery()
 
 	assert.Equal(s.T(), expected, actual)
 }
 
-func (s *SearchBooksTestSuite) TestBookQuery_WithTitle() {
+func (s *SearchBooksTestSuite) TestCreateQuery_WithTitle() {
 	dto := SearchBooks{Title: "some-title"}
 
-	expected := BookQuery{
-		Title: "some-title",
-		Limit: 10,
-	}
-	actual := dto.BookQuery()
+	expected := *query.New().And(query.Condition{Field: "title", Operator: query.Match, Value: "some-title"})
+	actual := dto.CreateQuery()
 
 	assert.Equal(s.T(), expected, actual)
 }
 
-func (s *SearchBooksTestSuite) TestBookQuery_WithDescription() {
+func (s *SearchBooksTestSuite) TestCreateQuery_WithDescription() {
 	dto := SearchBooks{Description: "some-description"}
 
-	expected := BookQuery{
-		Description: "some-description",
-		Limit:       10,
-	}
-	actual := dto.BookQuery()
+	expected := *query.New().And(query.Condition{Field: "description", Operator: query.Match, Value: "some-description"})
+	actual := dto.CreateQuery()
 
 	assert.Equal(s.T(), expected, actual)
 }
 
-func (s *SearchBooksTestSuite) TestBookQuery_WithAuthorName() {
+func (s *SearchBooksTestSuite) TestCreateQuery_WithAuthorName() {
 	dto := SearchBooks{AuthorName: "some-name"}
 
-	expected := BookQuery{
-		AuthorName: "some-name",
-		Limit:      10,
-	}
-	actual := dto.BookQuery()
+	expected := *query.New().And(query.Condition{Field: "author_name", Operator: query.Match, Value: "some-name"})
+	actual := dto.CreateQuery()
 
 	assert.Equal(s.T(), expected, actual)
 }
 
-func (s *SearchBooksTestSuite) TestBookQuery_WithPage() {
+func (s *SearchBooksTestSuite) TestCreateQuery_WithMultipleFields() {
+	dto := SearchBooks{Title: "some-title", AuthorName: "some-name"}
+
+	expected := *query.New().And(query.Condition{Field: "title", Operator: query.Match, Value: "some-title"}).
+		And(query.Condition{Field: "author_name", Operator: query.Match, Value: "some-name"})
+	
+	actual := dto.CreateQuery()
+
+	assert.Equal(s.T(), expected, actual)
+}
+
+func (s *SearchBooksTestSuite) TestCreatePage_WithPage() {
 	dto := SearchBooks{Page: 4}
 
-	expected := BookQuery{
-		Limit:  10,
-		Offset: 30,
+	expected := query.Page{
+		Size:  15,
+		Number: 4,
 	}
-	actual := dto.BookQuery()
+	actual := dto.CreatePage()
 
 	assert.Equal(s.T(), expected, actual)
 }
 
-func (s *SearchBooksTestSuite) TestBookQuery_WithPerPage() {
+func (s *SearchBooksTestSuite) TestCreatePage_WithPerPage() {
 	dto := SearchBooks{PerPage: 20}
 
-	expected := BookQuery{
-		Limit: 20,
+	expected := query.Page{
+		Number: 1,
+		Size: 20,
 	}
-	actual := dto.BookQuery()
-
-	assert.Equal(s.T(), expected, actual)
-}
-
-func (s *SearchBooksTestSuite) TestBookQuery_WithMultipleFields() {
-	dto := SearchBooks{Page: 3, PerPage: 20, Title: "some-title"}
-
-	expected := BookQuery{
-		Limit:  20,
-		Offset: 40,
-		Title:  "some-title",
-	}
-	actual := dto.BookQuery()
+	actual := dto.CreatePage()
 
 	assert.Equal(s.T(), expected, actual)
 }

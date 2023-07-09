@@ -1,25 +1,35 @@
 package shop
 
+import "github.com/ebookstore/internal/core/query"
+
 type SearchOrders struct {
 	Status  string `form:"status"`
 	Page    int    `form:"page"`
 	PerPage int    `form:"perPage"`
 }
 
-func (s *SearchOrders) OrderQuery() OrderQuery {
-	if s.Page == 0 {
-		s.Page = 1
+func (s *SearchOrders) CreateQuery() query.Query {
+	q := query.New()
+
+	if s.Status != "" {
+		q.And(query.Condition{Field: "status", Operator: query.Equal, Value: s.Status})
 	}
 
-	if s.PerPage == 0 {
-		s.PerPage = 10
+	return *q
+}
+
+func (s *SearchOrders) CreatePage() query.Page {
+	p := query.DefaultPage
+
+	if (s.Page > 0) {
+		p.Number = s.Page
 	}
 
-	return OrderQuery{
-		Status: OrderStatus(s.Status),
-		Limit:  s.PerPage,
-		Offset: (s.Page - 1) * s.PerPage,
+	if (s.PerPage > 0) {
+		p.Size = s.PerPage
 	}
+
+	return p
 }
 
 type CreateOrder struct {

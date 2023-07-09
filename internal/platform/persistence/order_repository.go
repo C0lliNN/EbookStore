@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
+	"github.com/ebookstore/internal/core/query"
 	"github.com/ebookstore/internal/core/shop"
 	"gorm.io/gorm"
 )
@@ -19,15 +19,15 @@ func NewOrderRepository(db *gorm.DB) *OrderRepository {
 	return &OrderRepository{db: db}
 }
 
-func (r *OrderRepository) FindByQuery(ctx context.Context, query shop.OrderQuery) (shop.PaginatedOrders, error) {
+func (r *OrderRepository) FindByQuery(ctx context.Context, q query.Query, p query.Page) (shop.PaginatedOrders, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
 	db := r.db.WithContext(ctx)
-	conditions := r.createConditionsFromCriteria(query.CreateCriteria())
+	conditions := parseQuery(q)
 
 	paginated := shop.PaginatedOrders{}
-	result := db.Limit(query.Limit).Offset(query.Offset).Where(conditions).Order("created_at DESC").Find(&paginated.Orders)
+	result := db.Limit(p.Size).Offset(p.Offset()).Where(conditions).Order("created_at DESC").Find(&paginated.Orders)
 	if err := result.Error; err != nil {
 		return shop.PaginatedOrders{}, fmt.Errorf("(FindByQuery) failed running select query: %w", err)
 	}
@@ -37,27 +37,11 @@ func (r *OrderRepository) FindByQuery(ctx context.Context, query shop.OrderQuery
 		return shop.PaginatedOrders{}, fmt.Errorf("(FindByQuery) failed running count query: %w", err)
 	}
 
-	paginated.Limit = query.Limit
-	paginated.Offset = query.Offset
+	paginated.Limit = p.Size
+	paginated.Offset = p.Offset()
 	paginated.TotalOrders = count
 
 	return paginated, nil
-}
-
-func (r *OrderRepository) createConditionsFromCriteria(criteria []shop.Criteria) string {
-	conditions := make([]string, 0, len(criteria))
-
-	for _, c := range criteria {
-		if !c.IsEmpty() {
-			if parsed, ok := c.Value.(string); ok {
-				conditions = append(conditions, fmt.Sprintf("%s %s '%s'", c.Field, c.Operator, parsed))
-			} else {
-				conditions = append(conditions, fmt.Sprintf("%s %s %v", c.Field, c.Operator, c.Value))
-			}
-		}
-	}
-
-	return strings.Join(conditions, " AND ")
 }
 
 func (r *OrderRepository) FindByID(ctx context.Context, id string) (shop.Order, error) {

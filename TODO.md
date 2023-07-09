@@ -62,7 +62,7 @@
 * [ ] Add ability to specify mime type in the request for creating a presigned url
 
 ## Possible Improvements
-* [ ] Try to implement Query Pattern to decouple domain from Database specific technologies
+* [x] Try to implement Query Pattern to decouple domain from Database specific technologies
 * [ ] Try to implement Unit of Work Pattern for transactional use cases
 * [ ] Move Request/Response to server package and implement the CQRS Pattern
 * [ ] Consider using one use case per file approach

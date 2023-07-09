@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ebookstore/internal/core/catalog"
+	"github.com/ebookstore/internal/core/query"
 	"github.com/ebookstore/internal/platform/persistence"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -74,7 +75,7 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
-	paginatedBooks, err := s.repo.FindByQuery(ctx, catalog.BookQuery{})
+	paginatedBooks, err := s.repo.FindByQuery(ctx, *query.New(), query.DefaultPage)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), 3, len(paginatedBooks.Books))
@@ -120,7 +121,8 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithTitle() {
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
-	paginatedBooks, err := s.repo.FindByQuery(ctx, catalog.BookQuery{Title: "Domain Driver Design"})
+	q := *query.New().And(query.Condition{Field: "title", Operator: query.Match, Value: "Domain Driver Design"})
+	paginatedBooks, err := s.repo.FindByQuery(ctx, q, query.DefaultPage)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), 1, len(paginatedBooks.Books))
@@ -168,7 +170,8 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithDescription() {
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
-	paginatedBooks, err := s.repo.FindByQuery(ctx, catalog.BookQuery{Description: "Craftsman"})
+	q := *query.New().And(query.Condition{Field: "description", Operator: query.Match, Value: "Craftsman"})
+	paginatedBooks, err := s.repo.FindByQuery(ctx, q, query.DefaultPage)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), 1, len(paginatedBooks.Books))
@@ -216,7 +219,8 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithAuthorName() {
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
-	paginatedBooks, err := s.repo.FindByQuery(ctx, catalog.BookQuery{AuthorName: "Eric Evans"})
+	q := *query.New().And(query.Condition{Field: "author_name", Operator: query.Match, Value: "Eric Evans"})
+	paginatedBooks, err := s.repo.FindByQuery(ctx, q, query.DefaultPage)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), 1, len(paginatedBooks.Books))
@@ -224,7 +228,7 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithAuthorName() {
 	assert.Equal(s.T(), book3.ID, paginatedBooks.Books[0].ID)
 }
 
-func (s *BookRepositoryTestSuite) TestFindByQuery_WithLimit() {
+func (s *BookRepositoryTestSuite) TestFindByQuery_WithPageSize() {
 	ctx := context.TODO()
 
 	book1 := catalog.Book{
@@ -257,7 +261,10 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithLimit() {
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
-	paginatedBooks, err := s.repo.FindByQuery(ctx, catalog.BookQuery{Limit: 2})
+	page := query.DefaultPage
+	page.Size = 2
+
+	paginatedBooks, err := s.repo.FindByQuery(ctx, *query.New(), page)
 
 	assert.Nil(s.T(), err)
 	assert.Equal(s.T(), 2, len(paginatedBooks.Books))
@@ -267,7 +274,7 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithLimit() {
 	assert.Equal(s.T(), book2.ID, paginatedBooks.Books[1].ID)
 }
 
-func (s *BookRepositoryTestSuite) TestFindByQuery_WithOffset() {
+func (s *BookRepositoryTestSuite) TestFindByQuery_WithPageNumber() {
 	ctx := context.TODO()
 
 	book1 := catalog.Book{
@@ -300,14 +307,16 @@ func (s *BookRepositoryTestSuite) TestFindByQuery_WithOffset() {
 	err = s.repo.Create(ctx, &book3)
 	require.Nil(s.T(), err)
 
-	paginatedBooks, err := s.repo.FindByQuery(ctx, catalog.BookQuery{Offset: 1})
+	page := query.DefaultPage
+	page.Number = 2
+	page.Size = 1
+	paginatedBooks, err := s.repo.FindByQuery(ctx, *query.New(), page)
 
 	assert.Nil(s.T(), err)
-	assert.Equal(s.T(), 2, len(paginatedBooks.Books))
+	assert.Equal(s.T(), 1, len(paginatedBooks.Books))
 	assert.Equal(s.T(), 1, paginatedBooks.Offset)
 	assert.Equal(s.T(), int64(3), paginatedBooks.TotalBooks)
 	assert.Equal(s.T(), book2.ID, paginatedBooks.Books[0].ID)
-	assert.Equal(s.T(), book3.ID, paginatedBooks.Books[1].ID)
 }
 
 func (s *BookRepositoryTestSuite) TestFindByID_WithInvalidID() {

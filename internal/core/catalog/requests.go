@@ -2,6 +2,8 @@ package catalog
 
 import (
 	"time"
+
+	"github.com/ebookstore/internal/core/query"
 )
 
 type SearchBooks struct {
@@ -12,22 +14,36 @@ type SearchBooks struct {
 	PerPage     int    `form:"perPage"`
 }
 
-func (s *SearchBooks) BookQuery() BookQuery {
-	if s.Page == 0 {
-		s.Page = 1
+func (s *SearchBooks) CreateQuery() query.Query {
+	q := query.New()
+
+	if s.Title != "" {
+		q.And(query.Condition{Field: "title", Operator: query.Match, Value: s.Title})
 	}
 
-	if s.PerPage == 0 {
-		s.PerPage = 10
+	if s.Description != "" {
+		q.And(query.Condition{Field: "description", Operator: query.Match, Value: s.Description})
 	}
 
-	return BookQuery{
-		Title:       s.Title,
-		Description: s.Description,
-		AuthorName:  s.AuthorName,
-		Limit:       s.PerPage,
-		Offset:      (s.Page - 1) * s.PerPage,
+	if s.AuthorName != "" {
+		q.And(query.Condition{Field: "author_name", Operator: query.Match, Value: s.AuthorName})
 	}
+
+	return *q
+}
+
+func (s *SearchBooks) CreatePage() query.Page {
+	p := query.DefaultPage
+
+	if (s.Page > 0) {
+		p.Number = s.Page
+	}
+
+	if (s.PerPage > 0) {
+		p.Size = s.PerPage
+	}
+
+	return p
 }
 
 type CreateBook struct {

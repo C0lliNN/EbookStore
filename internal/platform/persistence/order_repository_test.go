@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/ebookstore/internal/core/query"
 	"github.com/ebookstore/internal/core/shop"
 	"github.com/ebookstore/internal/platform/persistence"
 	"github.com/google/uuid"
@@ -69,10 +70,10 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
 	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{})
+	actual, err := s.repo.FindByQuery(ctx, *query.New(), query.DefaultPage)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), 0, actual.Limit)
+	assert.Equal(s.T(), 15, actual.Limit)
 	assert.Equal(s.T(), 0, actual.Offset)
 	assert.Equal(s.T(), int64(3), actual.TotalOrders)
 	assert.Equal(s.T(), order3.ID, actual.Orders[0].ID)
@@ -114,7 +115,10 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithLimit() {
 	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{Limit: 1})
+	q := *query.New()
+	p := query.DefaultPage
+	p.Size = 1
+	actual, err := s.repo.FindByQuery(ctx, q, p)
 	assert.Nil(s.T(), err)
 
 	assert.Equal(s.T(), 1, actual.Limit)
@@ -124,7 +128,7 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithLimit() {
 	assert.Len(s.T(), actual.Orders, 1)
 }
 
-func (s *OrderRepositoryTestSuite) TestFindByQuery_WithOffset() {
+func (s *OrderRepositoryTestSuite) TestFindByQuery_WithPaging() {
 	order1 := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
@@ -158,15 +162,16 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithOffset() {
 	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{Offset: 1})
-	assert.Nil(s.T(), err)
+	q := *query.New()
+	p := query.Page{Size: 1, Number: 2}
+	actual, err := s.repo.FindByQuery(ctx, q, p)
+	assert.NoError(s.T(), err)
 
-	assert.Equal(s.T(), 0, actual.Limit)
+	assert.Equal(s.T(), 1, actual.Limit)
 	assert.Equal(s.T(), 1, actual.Offset)
 	assert.Equal(s.T(), int64(3), actual.TotalOrders)
 	assert.Equal(s.T(), order2.ID, actual.Orders[0].ID)
-	assert.Equal(s.T(), order1.ID, actual.Orders[1].ID)
-	assert.Len(s.T(), actual.Orders, 2)
+	assert.Len(s.T(), actual.Orders, 1)
 }
 
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithStatus() {
@@ -203,10 +208,12 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithStatus() {
 	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{Status: shop.Paid})
-	assert.Nil(s.T(), err)
+	q := *query.New().And(query.Condition{Field: "status", Operator: query.Equal, Value: shop.Paid})
+	p := query.DefaultPage
+	actual, err := s.repo.FindByQuery(ctx, q, p)
+	assert.NoError(s.T(), err)
 
-	assert.Equal(s.T(), 0, actual.Limit)
+	assert.Equal(s.T(), 15, actual.Limit)
 	assert.Equal(s.T(), 0, actual.Offset)
 	assert.Equal(s.T(), int64(1), actual.TotalOrders)
 	assert.Equal(s.T(), order1.ID, actual.Orders[0].ID)
@@ -247,10 +254,12 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithBookID() {
 	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{BookID: order1.BookID})
+	q := *query.New().And(query.Condition{Field: "book_id", Operator: query.Equal, Value: order1.BookID})
+	p := query.DefaultPage
+	actual, err := s.repo.FindByQuery(ctx, q, p)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), 0, actual.Limit)
+	assert.Equal(s.T(), 15, actual.Limit)
 	assert.Equal(s.T(), 0, actual.Offset)
 	assert.Equal(s.T(), int64(1), actual.TotalOrders)
 	assert.Equal(s.T(), order1.ID, actual.Orders[0].ID)
@@ -291,10 +300,12 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithUserID() {
 	err = s.repo.Create(ctx, &order3)
 	require.Nil(s.T(), err)
 
-	actual, err := s.repo.FindByQuery(ctx, shop.OrderQuery{UserID: order1.UserID})
+	q := *query.New().And(query.Condition{Field: "user_id", Operator: query.Equal, Value: order1.UserID})
+	p := query.DefaultPage
+	actual, err := s.repo.FindByQuery(ctx, q, p)
 	assert.Nil(s.T(), err)
 
-	assert.Equal(s.T(), 0, actual.Limit)
+	assert.Equal(s.T(), 15, actual.Limit)
 	assert.Equal(s.T(), 0, actual.Offset)
 	assert.Equal(s.T(), int64(1), actual.TotalOrders)
 	assert.Equal(s.T(), order1.ID, actual.Orders[0].ID)
