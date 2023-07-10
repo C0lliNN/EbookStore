@@ -51,7 +51,7 @@
 * [x] Use the S3 Presigning API to send book content to the user instead of downloading the file in the server
 * [x] Validate Data Size in All Requests
 * [x] Add INFO Logging in important places 
-* [ ] Protect code against SQL Injection
+* [x] Protect code against SQL Injection
 * [ ] Improve test suite, use apitest for the HTTP handlers
 * [ ] Close DB in Sever Shutdown
 * [ ] Create Shopping Cart Functionality

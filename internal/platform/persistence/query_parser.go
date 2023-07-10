@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/ebookstore/internal/core/query"
@@ -15,27 +14,29 @@ var operatorMapping = map[query.ComparisonOperator]string{
 }
 
 // parseQuery function responsible for parsing a query into a SQL string
-func parseQuery(query query.Query) string {
+func parseQuery(query query.Query) (string, []interface{}) {
 	if query.Empty() {
-		return ""
+		return "", nil
 	}
 
 	iterator := query.Iterator()
 	var result strings.Builder
+	var values []interface{}
 	for iterator.HasNext() {
 		operator, condition := iterator.Next()
 		if len(operator) > 0 {
 			result.WriteString(fmt.Sprintf(" %s ", operator))
-		} 
+		}
 
 		field := condition.Field
 		op := parseCondition(condition)
 		value := parseValue(condition)
 
-		result.WriteString(fmt.Sprintf("%s %s %s", field, op, value))
+		result.WriteString(fmt.Sprintf("%s %s ?", field, op))
+		values = append(values, value)
 	}
 
-	return result.String()
+	return result.String(), values
 }
 
 func parseCondition(condition query.Condition) string {
@@ -50,17 +51,14 @@ func parseCondition(condition query.Condition) string {
 
 	return operatorMapping[condition.Operator]
 }
-	
 
-func parseValue(condition query.Condition) string {
+func parseValue(condition query.Condition) interface{} {
 	switch {
 	case condition.Value == nil:
-		return "NULL"
+		return nil
 	case condition.Operator == query.Match:
-		return fmt.Sprintf("'%%%s%%'", condition.Value)
-	case reflect.TypeOf(condition.Value).Kind() == reflect.String:
-		return fmt.Sprintf("'%s'", condition.Value)
+		return fmt.Sprintf("%%%s%%", condition.Value)
 	default:
-		return fmt.Sprintf("%v", condition.Value)
+		return condition.Value
 	}
 }

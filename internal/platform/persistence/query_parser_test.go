@@ -11,37 +11,49 @@ func TestParseQuery(t *testing.T) {
 	tests := []struct {
 		name     string
 		query    query.Query
-		expected string
+		expectedQuery string
+		expectedValues []interface{}
 	} {
 		{
 			name: "when query is empty, then it should return an empty string",
 			query: *query.New(),
-			expected: "",
+			expectedQuery: "",
+			expectedValues: nil,
+		},
+		{
+			name: "when query has ILIKE condition, then it should return a string with ILIKE and the value should have %",
+			query: *query.New().And(query.Condition{Field: "title", Operator: query.Match, Value: "value"}),
+			expectedQuery: "title ILIKE ?",
+			expectedValues: []interface{}{"%value%"},
 		},
 		{
 			name: "when query has only one condition, then it should return a string with the condition",
 			query: *query.New().And(query.Condition{Field: "title", Operator: query.Equal, Value: "value"}),
-			expected: "title = 'value'",
+			expectedQuery: "title = ?",
+			expectedValues: []interface{}{"value"},
 		},
 		{
 			name: "when query has two conditions, then it should return a string with the conditions",
 			query: *query.New().And(query.Condition{Field: "title", Operator: query.Equal, Value: "value"}).
 				And(query.Condition{Field: "author", Operator: query.Equal, Value: "author"}),
-			expected: "title = 'value' AND author = 'author'",
+			expectedQuery: "title = ? AND author = ?",
+			expectedValues: []interface{}{"value", "author"},
 		},
 		{
 			name: "when query has three conditions, then it should return a string with the conditions",
 			query: *query.New().And(query.Condition{Field: "title", Operator: query.NotEqual, Value: nil}).
 				And(query.Condition{Field: "author", Operator: query.Equal, Value: "author"}).
 				And(query.Condition{Field: "price", Operator: query.Equal, Value: 10}),
-			expected: "title IS NOT NULL AND author = 'author' AND price = 10",
+			expectedQuery: "title IS NOT ? AND author = ? AND price = ?",
+			expectedValues: []interface{}{nil, "author", 10},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			actual := parseQuery(tc.query)
-			assert.Equal(t, actual, tc.expected)
+			actualQuery, actualValues := parseQuery(tc.query)
+			assert.Equal(t, actualValues, tc.expectedValues)
+			assert.Equal(t, actualQuery, tc.expectedQuery)
 		})
 	}
 }
@@ -91,27 +103,27 @@ func TestParseValue(t *testing.T) {
 	tests := []struct {
 		name     string
 		condition query.Condition
-		expected string
+		expected interface{}
 	} {
 		{
-			name: "when operator is match, then it should return a string in the format ILIKE",
-			condition: query.Condition{Field: "title", Operator: query.Match, Value: "value"},
-			expected: "'%value%'",
-		},
-		{
-			name: "when value is a string, then it should return a string in the format 'value'",
+			name: "when value is a string, then it should return the string",
 			condition: query.Condition{Field: "title", Operator: query.Equal, Value: "value"},
-			expected: "'value'",
+			expected: "value",
 		},
 		{
-			name: "when value is nil, then it should return NULL",
+			name: "when the operator is match, then it should return the string surrounded with %",
+			condition: query.Condition{Field: "title", Operator: query.Match, Value: "value"},
+			expected: "%value%",
+		},
+		{
+			name: "when value is an int, then it should return the int",
+			condition: query.Condition{Field: "title", Operator: query.Equal, Value: 10},
+			expected: 10,
+		},
+		{
+			name: "when value is nil, then it should return nil",
 			condition: query.Condition{Field: "title", Operator: query.Equal, Value: nil},
-			expected: "NULL",
-		},
-		{
-			name: "when value does not fit into the other cases, then it should return a string representation of the value",
-			condition: query.Condition{Field: "title", Operator: query.Equal, Value: 1},
-			expected: "1",
+			expected: nil,
 		},
 	}
 

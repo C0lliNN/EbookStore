@@ -24,16 +24,16 @@ func (r *OrderRepository) FindByQuery(ctx context.Context, q query.Query, p quer
 	defer cancel()
 
 	db := r.db.WithContext(ctx)
-	conditions := parseQuery(q)
+	conditions, values := parseQuery(q)
 
 	paginated := shop.PaginatedOrders{}
-	result := db.Limit(p.Size).Offset(p.Offset()).Where(conditions).Order("created_at DESC").Find(&paginated.Orders)
+	result := db.Limit(p.Size).Offset(p.Offset()).Where(conditions, values...).Order("created_at DESC").Find(&paginated.Orders)
 	if err := result.Error; err != nil {
 		return shop.PaginatedOrders{}, fmt.Errorf("(FindByQuery) failed running select query: %w", err)
 	}
 
 	var count int64
-	if err := db.Model(&shop.Order{}).Where(conditions).Count(&count).Error; err != nil {
+	if err := db.Model(&shop.Order{}).Where(conditions, values...).Count(&count).Error; err != nil {
 		return shop.PaginatedOrders{}, fmt.Errorf("(FindByQuery) failed running count query: %w", err)
 	}
 

@@ -25,16 +25,16 @@ func (r *BookRepository) FindByQuery(ctx context.Context, query query.Query, pag
 
 	db := r.db.WithContext(ctx)
 
-	conditions := parseQuery(query)
+	conditions, values := parseQuery(query)
 
 	paginated := catalog.PaginatedBooks{}
-	result := db.Limit(page.Size).Offset(page.Offset()).Where(conditions).Find(&paginated.Books)
+	result := db.Limit(page.Size).Offset(page.Offset()).Where(conditions, values...).Find(&paginated.Books)
 	if err := result.Error; err != nil {
 		return catalog.PaginatedBooks{}, fmt.Errorf("(FindByQuery) failed running select query: %w", err)
 	}
 
 	var count int64
-	if err := db.Preload("Images").Model(&catalog.Book{}).Where(conditions).Count(&count).Error; err != nil {
+	if err := db.Preload("Images").Model(&catalog.Book{}).Where(conditions, values...).Count(&count).Error; err != nil {
 		return catalog.PaginatedBooks{}, fmt.Errorf("(FindByQuery) failed running count query: %w", err)
 	}
 
