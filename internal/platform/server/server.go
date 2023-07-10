@@ -6,7 +6,7 @@ import (
 	"time"
 
 	_ "github.com/ebookstore/docs"
-	"github.com/ebookstore/internal/migrator"
+	"github.com/ebookstore/internal/platform/migrator"
 	"github.com/gin-contrib/cors"
 	limits "github.com/gin-contrib/size"
 	"github.com/gin-gonic/gin"

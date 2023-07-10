@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/ebookstore/internal/migrator"
+	"github.com/ebookstore/internal/platform/migrator"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/spf13/viper"

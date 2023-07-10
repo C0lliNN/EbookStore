@@ -10,7 +10,7 @@ import (
 	"github.com/ebookstore/internal/core/auth"
 	"github.com/ebookstore/internal/core/catalog"
 	"github.com/ebookstore/internal/core/shop"
-	"github.com/ebookstore/internal/migrator"
+	"github.com/ebookstore/internal/platform/migrator"
 	"github.com/ebookstore/internal/platform/config"
 	"github.com/ebookstore/internal/platform/email"
 	"github.com/ebookstore/internal/platform/generator"

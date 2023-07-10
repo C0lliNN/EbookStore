@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/ebookstore/internal/migrator"
 	"github.com/ebookstore/internal/platform/config"
+	"github.com/ebookstore/internal/platform/migrator"
 	"github.com/ebookstore/test"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
