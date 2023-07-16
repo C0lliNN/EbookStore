@@ -6,7 +6,6 @@ import (
 	"time"
 
 	_ "github.com/ebookstore/docs"
-	"github.com/ebookstore/internal/platform/migrator"
 	"github.com/gin-contrib/cors"
 	limits "github.com/gin-contrib/size"
 	"github.com/gin-gonic/gin"
@@ -33,7 +32,6 @@ type Addr string
 type Timeout time.Duration
 
 type Config struct {
-	Migrator                 *migrator.Migrator
 	Router                   *gin.Engine
 	CorrelationIDMiddleware  *CorrelationIDMiddleware
 	HealthcheckHandler       *HealthcheckHandler
@@ -58,8 +56,6 @@ func New(c Config) *Server {
 }
 
 func (s *Server) Start() error {
-	s.Migrator.Sync()
-
 	router := s.Router
 
 	router.Use(s.CorrelationIDMiddleware.Handler())

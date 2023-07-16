@@ -4,36 +4,25 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"testing"
 	"time"
 
+	"github.com/ebookstore/internal/container"
 	"github.com/ebookstore/internal/core/auth"
-	"github.com/ebookstore/internal/core/catalog"
-	"github.com/ebookstore/internal/core/shop"
 	"github.com/ebookstore/internal/platform/config"
-	"github.com/ebookstore/internal/platform/email"
-	"github.com/ebookstore/internal/platform/generator"
-	"github.com/ebookstore/internal/platform/hash"
-	"github.com/ebookstore/internal/platform/migrator"
-	"github.com/ebookstore/internal/platform/payment"
-	"github.com/ebookstore/internal/platform/persistence"
-	"github.com/ebookstore/internal/platform/server"
-	"github.com/ebookstore/internal/platform/storage"
-	"github.com/ebookstore/internal/platform/token"
-	"github.com/ebookstore/internal/platform/validator"
 	"github.com/ebookstore/test"
 	"github.com/spf13/viper"
+	"github.com/steinfletcher/apitest"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gorm.io/gorm"
 )
 
 type ServerSuiteTest struct {
 	suite.Suite
-	baseURL             string
+	container 		 	*container.Container
+	baseURL string
 	postgresContainer   *test.PostgresContainer
 	localstackContainer *test.LocalstackContainer
-	db                  *gorm.DB
-	server              *server.Server
 }
 
 func (s *ServerSuiteTest) SetupSuite() {
@@ -57,10 +46,10 @@ func (s *ServerSuiteTest) SetupSuite() {
 	viper.Set("AWS_S3_ENDPOINT", fmt.Sprintf("http://s3.localhost.localstack.cloud:%v", s.localstackContainer.Port))
 
 	s.baseURL = fmt.Sprintf("http://%v", viper.GetString("SERVER_ADDR"))
-	s.createServer()
-
-	go func() {
-		_ = s.server.Start()
+	s.container = container.New()
+	
+	go func () {
+		s.container.Start(context.TODO())
 	}()
 
 	require.Eventually(s.T(), func() bool {
@@ -73,6 +62,12 @@ func (s *ServerSuiteTest) SetupSuite() {
 	}, time.Second*15, time.Millisecond*500)
 }
 
+func (s *ServerSuiteTest) TearDownTest() {
+	s.container.DB().Exec("DELETE FROM users")
+	s.container.DB().Exec("DELETE FROM books")
+	s.container.DB().Exec("DELETE FROM orders")
+}
+
 func (s *ServerSuiteTest) TearDownSuite() {
 	ctx := context.TODO()
 
@@ -80,90 +75,69 @@ func (s *ServerSuiteTest) TearDownSuite() {
 	_ = s.localstackContainer.Terminate(ctx)
 }
 
-func (s *ServerSuiteTest) createServer() {
-	databaseURI := config.NewMigrationDatabaseURI()
-	source := config.NewMigrationSource()
-	migratorConfig := migrator.Config{
-		DatabaseURI: databaseURI,
-		Source:      source,
+func TestServer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
 	}
-	migratorMigrator := migrator.New(migratorConfig)
-	engine := config.NewServerEngine()
-	correlationIDMiddleware := server.NewCorrelationIDMiddleware()
-	db := config.NewConnection()
-	healthcheckHandler := server.NewHeathcheckHandler(db)
-	loggerMiddleware := server.NewLoggerMiddleware()
-	hmacSecret := config.NewHMACSecret()
-	jwtWrapper := token.NewJWTWrapper(hmacSecret)
-	authenticationMiddleware := server.NewAuthenticationMiddleware(jwtWrapper)
-	errorMiddleware := server.NewErrorMiddleware()
-	userRepository := persistence.NewUserRepository(db)
-	bcryptWrapper := hash.NewBcryptWrapper()
-	awsConfig := config.NewAWSConfig()
-	client := config.NewSESClient(awsConfig)
-	emailEmail := email.NewSESEmailClient(client)
-	passwordGenerator := generator.NewPasswordGenerator()
-	uuidGenerator := generator.NewUUIDGenerator()
-	validatorValidator := validator.New()
-	authConfig := auth.Config{
-		Repository:        userRepository,
-		Tokener:           jwtWrapper,
-		Hasher:            bcryptWrapper,
-		EmailClient:       emailEmail,
-		PasswordGenerator: passwordGenerator,
-		IDGenerator:       uuidGenerator,
-		Validator:         validatorValidator,
-	}
-	authenticator := auth.New(authConfig)
-	authenticationHandler := server.NewAuthenticatorHandler(authenticator)
-	bookRepository := persistence.NewBookRepository(db)
-	s3Client := config.NewS3Client(awsConfig)
-	presignClient := config.NewPresignClient(s3Client)
-	bucket := config.NewBucket()
-	storageConfig := storage.Config{
-		S3Client:      s3Client,
-		PresignClient: presignClient,
-		Bucket:        bucket,
-	}
-	storageStorage := storage.NewStorage(storageConfig)
-	catalogConfig := catalog.Config{
-		Repository:    bookRepository,
-		StorageClient: storageStorage,
-		IDGenerator:   uuidGenerator,
-		Validator:     validatorValidator,
-	}
-	catalogCatalog := catalog.New(catalogConfig)
-	catalogHandler := server.NewCatalogHandler(catalogCatalog)
-	orderRepository := persistence.NewOrderRepository(db)
-	stripeClient := payment.NewStripePaymentService()
-	shopConfig := shop.Config{
-		Repository:     orderRepository,
-		PaymentClient:  stripeClient,
-		CatalogService: catalogCatalog,
-		IDGenerator:    uuidGenerator,
-		Validator:      validatorValidator,
-	}
-	shopShop := shop.New(shopConfig)
-	shopHandler := server.NewShopHandler(shopShop)
-	addr := config.NewServerAddr()
-	timeout := config.NewServerTimeout()
-	serverConfig := server.Config{
-		Migrator:                 migratorMigrator,
-		Router:                   engine,
-		CorrelationIDMiddleware:  correlationIDMiddleware,
-		HealthcheckHandler:       healthcheckHandler,
-		RateLimitMiddleware:      server.NewRateLimitMiddleware(),
-		LoggerMiddleware:         loggerMiddleware,
-		AuthenticationMiddleware: authenticationMiddleware,
-		ErrorMiddleware:          errorMiddleware,
-		AuthenticationHandler:    authenticationHandler,
-		CatalogHandler:           catalogHandler,
-		ShopHandler:              shopHandler,
-		Addr:                     addr,
-		Timeout:                  timeout,
-	}
-	serverServer := server.New(serverConfig)
+	suite.Run(t, new(ServerSuiteTest))
+}
 
-	s.db = db
-	s.server = serverServer
+func (s *ServerSuiteTest) createCustomer() string {
+	password := "password"
+	
+	var response auth.CredentialsResponse
+
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/register").
+		JSON(auth.RegisterRequest{
+			FirstName:            "Raphael",
+			LastName:             "Collin",
+			Email:                "raphael@test.com",
+			Password:             password,
+			PasswordConfirmation: password,
+		}).
+		Expect(s.T()).
+		Status(http.StatusCreated).
+		End().
+		JSON(&response)
+
+	return response.Token
+}
+
+func (s *ServerSuiteTest) createAdmin() string {
+	password := "password"
+	
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/register").
+		JSON(auth.RegisterRequest{
+			FirstName:            "Raphael",
+			LastName:             "Collin",
+			Email:                "raphael2@test.com",
+			Password:             password,
+			PasswordConfirmation: password,
+		}).
+		Expect(s.T()).
+		Status(http.StatusCreated).
+		End()
+
+	result := s.container.DB().Model(&auth.User{}).Where("email = 'raphael2@test.com'").Update("role", auth.Admin)
+	require.NoError(s.T(), result.Error)
+
+	var response auth.CredentialsResponse
+
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/login").
+		JSON(auth.LoginRequest{
+			Email:                "raphael2@test.com",
+			Password:             password,
+		}).
+		Expect(s.T()).
+		Status(http.StatusOK).
+		End().
+		JSON(&response)
+
+	return response.Token
 }

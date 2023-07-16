@@ -21,6 +21,8 @@ require (
 	github.com/lib/pq v1.10.2
 	github.com/magiconair/properties v1.8.5
 	github.com/spf13/viper v1.8.1
+	github.com/steinfletcher/apitest v1.5.15 // indirect
+	github.com/steinfletcher/apitest-jsonpath v1.7.2
 	github.com/stretchr/testify v1.8.0
 	github.com/stripe/stripe-go/v72 v72.67.0
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2

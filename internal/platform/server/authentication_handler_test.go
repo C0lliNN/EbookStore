@@ -1,184 +1,106 @@
 package server_test
 
 import (
-	"bytes"
-	"encoding/json"
 	"net/http"
-	"testing"
+
+	"github.com/steinfletcher/apitest"
+	"github.com/steinfletcher/apitest-jsonpath"
 
 	"github.com/ebookstore/internal/core/auth"
-	"github.com/ebookstore/internal/platform/server"
-	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
-type AuthenticatorHandlerTestSuite struct {
-	ServerSuiteTest
-}
-
-func TestAuthenticatorHandler(t *testing.T) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-	}
-	suite.Run(t, new(AuthenticatorHandlerTestSuite))
-}
-
-func (s *AuthenticatorHandlerTestSuite) TearDownTest() {
-	s.db.Delete(&auth.User{}, "1 = 1")
-}
-
-func (s *AuthenticatorHandlerTestSuite) TestRegister_Successfully() {
+func (s *ServerSuiteTest) TestRegister_Successfully() {
 	password := "password"
-	payload := auth.RegisterRequest{
-		FirstName:            "Raphael",
-		LastName:             "Collin",
-		Email:                "raphael@test.com",
-		Password:             password,
-		PasswordConfirmation: password,
-	}
 
-	data, err := json.Marshal(payload)
-	require.Nil(s.T(), err)
-
-	response, err := http.Post(s.baseURL+"/api/v1/register", "application/json", bytes.NewReader(data))
-	require.Nil(s.T(), err)
-	require.Equal(s.T(), http.StatusCreated, response.StatusCode)
-
-	credentials := &auth.CredentialsResponse{}
-	err = json.NewDecoder(response.Body).Decode(credentials)
-
-	require.Nil(s.T(), err)
-	require.NotEmpty(s.T(), credentials.Token)
+	apitest.New().
+		EnableNetworking(http.DefaultClient).
+		Post(s.baseURL + "/api/v1/register").
+		JSON(auth.RegisterRequest{
+			FirstName:            "Raphael",
+			LastName:             "Collin",
+			Email:                "raphael@test.com",
+			Password:             password,
+			PasswordConfirmation: password,
+		}).
+		Expect(s.T()).
+		Status(http.StatusCreated).
+		Assert(jsonpath.Present("$.token")).
+		End()
 }
 
-func (s *AuthenticatorHandlerTestSuite) TestRegister_WithInvalidData() {
+func (s *ServerSuiteTest) TestRegister_WithInvalidData() {
 	password := "password"
-	payload := auth.RegisterRequest{
-		FirstName:            "",
-		LastName:             "Collin",
-		Email:                "raphael@test.com",
-		Password:             password,
-		PasswordConfirmation: password,
-	}
 
-	data, err := json.Marshal(payload)
-	require.Nil(s.T(), err)
-
-	response, err := http.Post(s.baseURL+"/api/v1/register", "application/json", bytes.NewReader(data))
-	require.Nil(s.T(), err)
-	require.Equal(s.T(), http.StatusBadRequest, response.StatusCode)
-
-	errorResponse := &server.ErrorResponse{}
-	err = json.NewDecoder(response.Body).Decode(errorResponse)
-
-	require.Nil(s.T(), err)
-	require.Equal(s.T(), "the payload is not valid", errorResponse.Message)
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/register").
+		JSON(auth.RegisterRequest{
+			FirstName:            "",
+			LastName:             "Collin",
+			Email:                "raphael@test.com",
+			Password:             password,
+			PasswordConfirmation: password,
+		}).
+		Expect(s.T()).
+		Status(http.StatusBadRequest).
+		Assert(jsonpath.Equal("$.message", "the payload is not valid")).
+		End()
 }
 
-func (s *AuthenticatorHandlerTestSuite) TestLogin_Failure() {
-	password := "password"
-	payload := auth.RegisterRequest{
-		FirstName:            "Raphael",
-		LastName:             "Collin",
-		Email:                "raphael@test.com",
-		Password:             password,
-		PasswordConfirmation: password,
-	}
+func (s *ServerSuiteTest) TestLogin_Failure() {
+	s.createCustomer()
 
-	data, err := json.Marshal(payload)
-	require.Nil(s.T(), err)
-
-	response, err := http.Post(s.baseURL+"/api/v1/register", "application/json", bytes.NewReader(data))
-	require.Nil(s.T(), err)
-	require.Equal(s.T(), http.StatusCreated, response.StatusCode)
-
-	payload2 := auth.LoginRequest{
-		Email:    "raphael@test.com",
-		Password: "password",
-	}
-
-	data, err = json.Marshal(payload2)
-	require.Nil(s.T(), err)
-
-	response, err = http.Post(s.baseURL+"/api/v1/login", "application/json", bytes.NewReader(data))
-	require.Nil(s.T(), err)
-
-	credentials := &auth.CredentialsResponse{}
-	err = json.NewDecoder(response.Body).Decode(credentials)
-
-	require.Nil(s.T(), err)
-	require.Equal(s.T(), http.StatusOK, response.StatusCode)
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/login").
+		JSON(auth.LoginRequest{
+			Email:                "raphael@test.com",
+			Password:             "password2",
+		}).
+		Expect(s.T()).
+		Status(http.StatusUnauthorized).
+		End()	
 }
 
-func (s *AuthenticatorHandlerTestSuite) TestLogin_Success() {
-	s.createUser()
+func (s *ServerSuiteTest) TestLogin_Success() {
+	s.createCustomer()
 
-	payload := auth.LoginRequest{
-		Email:    "raphael@test.com",
-		Password: "password",
-	}
-
-	data, err := json.Marshal(payload)
-	require.Nil(s.T(), err)
-
-	response, err := http.Post(s.baseURL+"/api/v1/login", "application/json", bytes.NewReader(data))
-	require.Nil(s.T(), err)
-
-	credentials := &auth.CredentialsResponse{}
-	err = json.NewDecoder(response.Body).Decode(credentials)
-	require.Nil(s.T(), err)
-
-	require.Equal(s.T(), http.StatusOK, response.StatusCode)
-	require.NotEmpty(s.T(), credentials.Token)
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/login").
+		JSON(auth.LoginRequest{
+			Email:                "raphael@test.com",
+			Password:             "password",
+		}).
+		Expect(s.T()).
+		Status(http.StatusOK).
+		Assert(jsonpath.Present("$.token")).
+		End()	
 }
 
-func (s *AuthenticatorHandlerTestSuite) TestResetPassword_Failure() {
-	payload := auth.PasswordResetRequest{
-		Email: "raphael@test.com",
-	}
-
-	data, err := json.Marshal(payload)
-	require.Nil(s.T(), err)
-
-	response, err := http.Post(s.baseURL+"/api/v1/password-reset", "application/json", bytes.NewReader(data))
-	require.Nil(s.T(), err)
-
-	errorResponse := &server.ErrorResponse{}
-	err = json.NewDecoder(response.Body).Decode(errorResponse)
-	require.Nil(s.T(), err)
-
-	require.Equal(s.T(), http.StatusNotFound, response.StatusCode)
-	require.Equal(s.T(), "the provided User was not found", errorResponse.Message)
+func (s *ServerSuiteTest) TestResetPassword_Failure() {
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/password-reset").
+		JSON(auth.PasswordResetRequest{
+			Email: "raphael@test.com",
+		}).
+		Expect(s.T()).
+		Status(http.StatusNotFound).
+		Assert(jsonpath.Equal("$.message", "the provided User was not found")).
+		End()
 }
 
-func (s *AuthenticatorHandlerTestSuite) TestResetPassword_Success() {
-	s.createUser()
-	payload := auth.PasswordResetRequest{
-		Email: "raphael@test.com",
-	}
+func (s *ServerSuiteTest) TestResetPassword_Success() {
+	s.createCustomer()
 
-	data, err := json.Marshal(payload)
-	require.Nil(s.T(), err)
-
-	response, err := http.Post(s.baseURL+"/api/v1/password-reset", "application/json", bytes.NewReader(data))
-	require.Nil(s.T(), err)
-	require.Equal(s.T(), http.StatusNoContent, response.StatusCode)
-}
-
-func (s *AuthenticatorHandlerTestSuite) createUser() {
-	password := "password"
-	payload := auth.RegisterRequest{
-		FirstName:            "Raphael",
-		LastName:             "Collin",
-		Email:                "raphael@test.com",
-		Password:             password,
-		PasswordConfirmation: password,
-	}
-
-	data, err := json.Marshal(payload)
-	require.Nil(s.T(), err)
-
-	response, err := http.Post(s.baseURL+"/api/v1/register", "application/json", bytes.NewReader(data))
-	require.Nil(s.T(), err)
-	require.Equal(s.T(), http.StatusCreated, response.StatusCode)
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/password-reset").
+		JSON(auth.PasswordResetRequest{
+			Email: "raphael@test.com",
+		}).
+		Expect(s.T()).
+		Status(http.StatusNoContent).
+		End()
 }

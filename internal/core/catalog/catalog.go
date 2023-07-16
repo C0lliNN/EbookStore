@@ -173,7 +173,7 @@ func (c *Catalog) GeneratePutPreSignedUrl(ctx context.Context) (PresignURLRespon
 		return PresignURLResponse{}, fmt.Errorf("(GeneratePutPreSignedUrl) failed generating presigned url: %w", err)
 	}
 
-	return PresignURLResponse{URL: url}, nil
+	return PresignURLResponse{ID: idGenerator, URL: url}, nil
 }
 
 func isAdmin(ctx context.Context) bool {

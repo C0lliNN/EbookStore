@@ -74,5 +74,6 @@ func NewPaginatedBooksResponse(paginatedBooks PaginatedBooks, imageLinks map[str
 }
 
 type PresignURLResponse struct {
+	ID string `json:"id"`
 	URL string `json:"url"`
 }
