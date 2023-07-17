@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/steinfletcher/apitest"
-	"github.com/steinfletcher/apitest-jsonpath"
+	jsonpath "github.com/steinfletcher/apitest-jsonpath"
 
 	"github.com/ebookstore/internal/core/auth"
 )
@@ -48,34 +48,34 @@ func (s *ServerSuiteTest) TestRegister_WithInvalidData() {
 }
 
 func (s *ServerSuiteTest) TestLogin_Failure() {
-	s.createCustomer()
+	s.createDefaultCustomer()
 
 	apitest.New().
 		EnableNetworking().
 		Post(s.baseURL + "/api/v1/login").
 		JSON(auth.LoginRequest{
-			Email:                "raphael@test.com",
-			Password:             "password2",
+			Email:    "raphael@test.com",
+			Password: "password2",
 		}).
 		Expect(s.T()).
 		Status(http.StatusUnauthorized).
-		End()	
+		End()
 }
 
 func (s *ServerSuiteTest) TestLogin_Success() {
-	s.createCustomer()
+	s.createDefaultCustomer()
 
 	apitest.New().
 		EnableNetworking().
 		Post(s.baseURL + "/api/v1/login").
 		JSON(auth.LoginRequest{
-			Email:                "raphael@test.com",
-			Password:             "password",
+			Email:    "raphael@test.com",
+			Password: "password",
 		}).
 		Expect(s.T()).
 		Status(http.StatusOK).
 		Assert(jsonpath.Present("$.token")).
-		End()	
+		End()
 }
 
 func (s *ServerSuiteTest) TestResetPassword_Failure() {
@@ -92,7 +92,7 @@ func (s *ServerSuiteTest) TestResetPassword_Failure() {
 }
 
 func (s *ServerSuiteTest) TestResetPassword_Success() {
-	s.createCustomer()
+	s.createDefaultCustomer()
 
 	apitest.New().
 		EnableNetworking().

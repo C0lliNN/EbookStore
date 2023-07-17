@@ -52,7 +52,7 @@
 * [x] Validate Data Size in All Requests
 * [x] Add INFO Logging in important places 
 * [x] Protect code against SQL Injection
-* [ ] Improve test suite, use apitest for the HTTP handlers (Add more catalog tests and add shop tests)
+* [x] Improve test suite, use apitest for the HTTP handlers (Add more catalog tests and add shop tests)
 * [x] Close DB in Sever Shutdown
 * [ ] Organize TODO for next iteration
 * [ ] Create Shopping Cart Functionality

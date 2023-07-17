@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v6"
 	"github.com/ebookstore/internal/container"
 	"github.com/ebookstore/internal/core/auth"
 	"github.com/ebookstore/internal/platform/config"
@@ -19,8 +20,8 @@ import (
 
 type ServerSuiteTest struct {
 	suite.Suite
-	container 		 	*container.Container
-	baseURL string
+	container           *container.Container
+	baseURL             string
 	postgresContainer   *test.PostgresContainer
 	localstackContainer *test.LocalstackContainer
 }
@@ -47,8 +48,8 @@ func (s *ServerSuiteTest) SetupSuite() {
 
 	s.baseURL = fmt.Sprintf("http://%v", viper.GetString("SERVER_ADDR"))
 	s.container = container.New()
-	
-	go func () {
+
+	go func() {
 		s.container.Start(context.TODO())
 	}()
 
@@ -82,9 +83,9 @@ func TestServer(t *testing.T) {
 	suite.Run(t, new(ServerSuiteTest))
 }
 
-func (s *ServerSuiteTest) createCustomer() string {
+func (s *ServerSuiteTest) createDefaultCustomer() string {
 	password := "password"
-	
+
 	var response auth.CredentialsResponse
 
 	apitest.New().
@@ -105,9 +106,32 @@ func (s *ServerSuiteTest) createCustomer() string {
 	return response.Token
 }
 
-func (s *ServerSuiteTest) createAdmin() string {
+func (s *ServerSuiteTest) createRandomCustomer() string {
 	password := "password"
-	
+
+	var response auth.CredentialsResponse
+
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL + "/api/v1/register").
+		JSON(auth.RegisterRequest{
+			FirstName:            gofakeit.FirstName(),
+			LastName:             gofakeit.LastName(),
+			Email:                gofakeit.Email(),
+			Password:             password,
+			PasswordConfirmation: password,
+		}).
+		Expect(s.T()).
+		Status(http.StatusCreated).
+		End().
+		JSON(&response)
+
+	return response.Token
+}
+
+func (s *ServerSuiteTest) createDefaultAdmin() string {
+	password := "password"
+
 	apitest.New().
 		EnableNetworking().
 		Post(s.baseURL + "/api/v1/register").
@@ -131,8 +155,8 @@ func (s *ServerSuiteTest) createAdmin() string {
 		EnableNetworking().
 		Post(s.baseURL + "/api/v1/login").
 		JSON(auth.LoginRequest{
-			Email:                "raphael2@test.com",
-			Password:             password,
+			Email:    "raphael2@test.com",
+			Password: password,
 		}).
 		Expect(s.T()).
 		Status(http.StatusOK).

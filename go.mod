@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.15.7
 	github.com/aws/aws-sdk-go-v2/service/s3 v1.26.10
 	github.com/aws/aws-sdk-go-v2/service/ses v1.14.5
+	github.com/brianvoe/gofakeit/v6 v6.23.0 // indirect
 	github.com/bxcodec/faker/v3 v3.6.0
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-contrib/size v0.0.0-20230212012657-e14a14094dc4
