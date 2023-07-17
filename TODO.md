@@ -54,26 +54,30 @@
 * [x] Protect code against SQL Injection
 * [x] Improve test suite, use apitest for the HTTP handlers (Add more catalog tests and add shop tests)
 * [x] Close DB in Sever Shutdown
-* [ ] Organize TODO for next iteration
+* [x] Organize TODO for next iteration
+
+## Features
 * [ ] Create Shopping Cart Functionality
-* [ ] Add Github Actions capabilities
-* [ ] Create prod Dockerfile and deploy folder/script
+* [ ] Add a position field to the image table
+* [ ] Add ability to specify mime type in the request when creating a presigned url
 
-* [ ] Add order to the images
-* [ ] Add ability to specify mime type in the request for creating a presigned url
-
-## Possible Improvements
-* [x] Try to implement Query Pattern to decouple domain from Database specific technologies
-* [ ] Try to implement Unit of Work Pattern for transactional use cases
-* [ ] Move Request/Response to server package and implement the CQRS Pattern
-* [ ] Consider using one use case per file approach
-* [ ] Try to implement Hot reloading to improve the dev experience
-* [ ] Consider using some oauth library instead of heaving a simple auth package
-* [ ] Use an anti-corruption layer to handle the Stripe Webhook in a better way
-* [ ] Improve mocks location. Maybe store the mocks in the same package of their interfaces
-* [ ] Use Stripe CLI in local environment (include instructions in the README.md)
-* [ ] Try to make the file extension transparent to the usecase
+## Refactoring
 * [ ] Use mocks in the same package
 * [ ] Refactor Logging (use function log(ctx, msg, fields))
-* [ ] Create a new script for cleaning data
 
+## Architecture Improvements
+* [x] Try to implement Query Pattern to decouple domain from Database specific technologies
+* [ ] Implement Unit of Work Pattern for transactional use cases
+* [ ] Move Request/Response to server package and implement the CQRS Pattern
+* [ ] Use one use case per file approach
+* [ ] Implement Auth using OAuth2 Specification
+* [ ] Use an anti-corruption layer to handle the Stripe Webhook in a better way
+
+## Dev Experience
+* [ ] Create a new script for cleaning data
+* [ ] Implement Hot reloading for local environment
+* [ ] Use Stripe CLI in local environment (include instructions in the README.md)
+
+## Deploy
+* [ ] Add Github Actions capabilities
+* [ ] Create prod Dockerfile and deploy folder/script
