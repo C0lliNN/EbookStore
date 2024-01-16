@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/ebookstore/internal/log"
@@ -12,7 +13,7 @@ import (
 func NewConnection() *gorm.DB {
 	db, err := sql.Open("postgres", viper.GetString("DATABASE_URI"))
 	if err != nil {
-		log.Default().Fatalf("postgres connection has failed: %v", err)
+		log.Fatalf(context.TODO(), "postgres connection has failed: %v", err)
 		return nil
 	}
 
@@ -23,7 +24,7 @@ func NewConnection() *gorm.DB {
 
 	conn, err := gorm.Open(dialector, &gorm.Config{})
 	if err != nil {
-		log.Default().Fatalf("postgres connection has failed: %T %v", err, err)
+		log.Fatalf(context.TODO(), "postgres connection has failed: %T %v", err, err)
 		return nil
 	}
 

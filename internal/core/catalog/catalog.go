@@ -45,7 +45,7 @@ func New(c Config) *Catalog {
 }
 
 func (c *Catalog) FindBooks(ctx context.Context, request SearchBooks) (PaginatedBooksResponse, error) {
-	log.FromContext(ctx).Info("new request for fetching books")
+	log.Infof(ctx, "new request for fetching books")
 
 	paginatedBooks, err := c.Repository.FindByQuery(ctx, request.CreateQuery(), request.CreatePage())
 	if err != nil {
@@ -66,7 +66,7 @@ func (c *Catalog) FindBooks(ctx context.Context, request SearchBooks) (Paginated
 }
 
 func (c *Catalog) FindBookByID(ctx context.Context, id string) (BookResponse, error) {
-	log.FromContext(ctx).Infof("new request for fetching book %s", id)
+	log.Infof(ctx, "new request for fetching book %s", id)
 
 	book, err := c.Repository.FindByID(ctx, id)
 	if err != nil {
@@ -95,7 +95,7 @@ func (c *Catalog) getPresignedUrlsForBook(ctx context.Context, book Book) ([]str
 }
 
 func (c *Catalog) GetBookContentURL(ctx context.Context, id string) (string, error) {
-	log.FromContext(ctx).Infof("new request for generating book content url %s", id)
+	log.Infof(ctx, "new request for generating book content url %s", id)
 
 	book, err := c.Repository.FindByID(ctx, id)
 	if err != nil {
@@ -111,7 +111,7 @@ func (c *Catalog) GetBookContentURL(ctx context.Context, id string) (string, err
 }
 
 func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookResponse, error) {
-	log.FromContext(ctx).Info("new request for creating book")
+	log.Infof(ctx, "new request for creating book")
 
 	if !isAdmin(ctx) {
 		return BookResponse{}, fmt.Errorf("(CreateBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)
@@ -130,7 +130,7 @@ func (c *Catalog) CreateBook(ctx context.Context, request CreateBook) (BookRespo
 }
 
 func (c *Catalog) UpdateBook(ctx context.Context, request UpdateBook) error {
-	log.FromContext(ctx).Infof("new request for updating book with id %s", request.ID)
+	log.Infof(ctx, "new request for updating book with id %s", request.ID)
 
 	if !isAdmin(ctx) {
 		return fmt.Errorf("(UpdateBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)
@@ -153,7 +153,7 @@ func (c *Catalog) UpdateBook(ctx context.Context, request UpdateBook) error {
 }
 
 func (c *Catalog) DeleteBook(ctx context.Context, id string) error {
-	log.FromContext(ctx).Infof("new request for deleting book with id %s", id)
+	log.Infof(ctx, "new request for deleting book with id %s", id)
 
 	if !isAdmin(ctx) {
 		return fmt.Errorf("(DeleteBook) failed validating access conditions: %w", ErrForbiddenCatalogAccess)

@@ -36,7 +36,7 @@ func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
 		}
 		err := context.Errors.Last().Err
 
-		log.FromContext(context).Warnf("error processing the request: %v", err)
+		log.Warnf(context, "error processing the request: %v", err)
 
 		var (
 			response          *ErrorResponse

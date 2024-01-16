@@ -14,7 +14,7 @@ func NewAWSConfig() *aws.Config {
 
 	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(viper.GetString("AWS_REGION")))
 	if err != nil {
-		log.FromContext(ctx).Fatal(err)
+		log.Fatalf(ctx, "failed to load AWS configuration: %v", err)
 	}
 
 	return &cfg

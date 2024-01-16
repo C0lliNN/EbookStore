@@ -27,9 +27,9 @@ import (
 )
 
 type Container struct {
-	server *server.Server
+	server     *server.Server
 	dbMigrator *migrator.Migrator
-	db    *gorm.DB
+	db         *gorm.DB
 }
 
 func New() *Container {
@@ -116,11 +116,11 @@ func New() *Container {
 		Addr:                     addr,
 		Timeout:                  timeout,
 	}
-	
+
 	container.db = db
 	container.dbMigrator = dbMigrator
 	container.server = server.New(serverConfig)
-	
+
 	return container
 }
 
@@ -132,32 +132,32 @@ func (c *Container) Start(ctx context.Context) {
 
 	go func() {
 		if err := c.server.Start(); err != nil && err != http.ErrServerClosed {
-			log.FromContext(ctx).Fatalf("failed starting server: %v", err)
+			log.Fatalf(ctx, "failed starting server: %v", err)
 		}
 	}()
-	log.FromContext(ctx).Info("starting HTTP server")
+	log.Infof(ctx, "starting HTTP server")
 
 	<-done
-	log.FromContext(ctx).Info("shutting down HTTP server")
+	log.Infof(ctx, "shutting down HTTP server")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := c.server.Shutdown(ctx); err != nil {
-		log.FromContext(ctx).Info("failed to shutdown HTTP server")
+		log.Infof(ctx, "failed to shutdown HTTP server")
 	}
 
-	log.FromContext(ctx).Info("shutting down database")
+	log.Infof(ctx, "shutting down database")
 	db, err := c.db.DB()
 	if err != nil {
-		log.FromContext(ctx).Infof("failed to get database instance: %v", err)
-	}
-    
-	if err := db.Close(); err != nil {
-		log.FromContext(ctx).Infof("failed to close database: %v", err)
+		log.Infof(ctx, "failed to get database instance: %v", err)
 	}
 
-	log.FromContext(ctx).Info("server was shutdown properly")
+	if err := db.Close(); err != nil {
+		log.Infof(ctx, "failed to close database: %v", err)
+	}
+
+	log.Infof(ctx, "server was shutdown properly")
 }
 
 func (c *Container) DB() *gorm.DB {

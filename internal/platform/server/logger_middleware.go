@@ -25,7 +25,8 @@ func (e *LoggerMiddleware) Handler() gin.HandlerFunc {
 		end := time.Now()
 		latency := end.Sub(start)
 
-		logger := log.FromContext(c).With(
+		logger := log.With(
+			c,
 			"status", c.Writer.Status(),
 			"method", c.Request.Method,
 			"path", path,

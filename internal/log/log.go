@@ -34,9 +34,12 @@ func init() {
 	prod = p.Sugar()
 }
 
-// FromContext returns a custom logger based on the context.Context and environment.
-func FromContext(ctx context.Context) *zap.SugaredLogger {
-	logger := Default()
+// fromContext returns a custom logger based on the context.Context and environment.
+func fromContext(ctx context.Context) *zap.SugaredLogger {
+	logger := dev
+	if strings.EqualFold(viper.GetString("ENV"), "production") {
+		logger = prod
+	}
 
 	userId := ""
 	if id, ok := ctx.Value("userId").(string); ok {
@@ -49,11 +52,26 @@ func FromContext(ctx context.Context) *zap.SugaredLogger {
 	)
 }
 
-// Default returns a logger based on the environment. It should only be used when context.Context is not available
-func Default() *zap.SugaredLogger {
-	if strings.EqualFold(viper.GetString("ENV"), "production") {
-		return prod
-	} else {
-		return dev
-	}
+func With(ctx context.Context, args ...interface{}) *zap.SugaredLogger {
+	return fromContext(ctx).With(args...)
+}
+
+func Debugf(ctx context.Context, msg string, args ...interface{}) {
+	fromContext(ctx).Debugf(msg, args...)
+}
+
+func Infof(ctx context.Context, msg string, args ...interface{}) {
+	fromContext(ctx).Infof(msg, args...)
+}
+
+func Warnf(ctx context.Context, msg string, args ...interface{}) {
+	fromContext(ctx).Warnf(msg, args...)
+}
+
+func Errorf(ctx context.Context, msg string, args ...interface{}) {
+	fromContext(ctx).Errorf(msg, args...)
+}
+
+func Fatalf(ctx context.Context, msg string, args ...interface{}) {
+	fromContext(ctx).Fatalf(msg, args...)
 }

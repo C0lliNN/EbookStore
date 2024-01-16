@@ -136,7 +136,7 @@ func (h *ShopHandler) downloadOrder(c *gin.Context) {
 // @Success 500 {object} ErrorResponse
 // @Router /api/v1/stripe/webhook [post]
 func (h *ShopHandler) handleStripeWebhook(c *gin.Context) {
-	log.FromContext(c).Infof("processing new stripe webhook request")
+	log.Infof(c, "processing new stripe webhook request")
 
 	var request shop.HandleStripeWebhook
 	if err := c.ShouldBindJSON(&request); err != nil {

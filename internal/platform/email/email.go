@@ -36,7 +36,7 @@ func (e *Email) SendPasswordResetEmail(ctx context.Context, user auth.User, newP
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
-	log.FromContext(ctx).Info("sending password reset email")
+	log.Infof(ctx, "sending password reset email")
 
 	sourceEmail := viper.GetString("AWS_SES_SOURCE_EMAIL")
 	messageBody, err := e.getMessageBody(user, newPassword)

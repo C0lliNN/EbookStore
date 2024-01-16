@@ -63,7 +63,7 @@
 
 ## Refactoring
 * [ ] Use mocks in the same package
-* [ ] Refactor Logging (use function log(ctx, msg, fields))
+* [x] Refactor Logging (use function log(ctx, msg, fields))
 
 ## Architecture Improvements
 * [x] Try to implement Query Pattern to decouple domain from Database specific technologies
@@ -74,8 +74,7 @@
 * [ ] Use an anti-corruption layer to handle the Stripe Webhook in a better way
 
 ## Dev Experience
-* [ ] Create a new script for cleaning data
-* [ ] Implement Hot reloading for local environment
+* [x] Create a new script for cleaning data
 * [ ] Use Stripe CLI in local environment (include instructions in the README.md)
 
 ## Deploy

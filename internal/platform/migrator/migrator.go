@@ -1,6 +1,8 @@
 package migrator
 
 import (
+	"context"
+
 	"github.com/ebookstore/internal/log"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -26,17 +28,18 @@ func New(c Config) *Migrator {
 // Sync Applies new database migrations
 func (m *Migrator) Sync() {
 	mi, err := migrate.New(string(m.Source), string(m.DatabaseURI))
+	ctx := context.TODO()
 
 	if err != nil {
-		log.Default().Fatalf("(Sync) error happened when trying to sync migrations: %v", err)
+		log.Fatalf(ctx, "(Sync) error happened when trying to sync migrations: %v", err)
 	}
 
 	if err = mi.Up(); err != nil {
 		if err == migrate.ErrNoChange {
-			log.Default().Debug("(Sync) the current migrations are up to date")
+			log.Debugf(ctx, "(Sync) the current migrations are up to date")
 			return
 		}
 
-		log.Default().Fatalf("(Sync) an error happened when trying to sync migrations: %v", err)
+		log.Fatalf(ctx, "(Sync) an error happened when trying to sync migrations: %v", err)
 	}
 }

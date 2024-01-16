@@ -50,7 +50,7 @@ func New(c Config) *Shop {
 }
 
 func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedOrdersResponse, error) {
-	log.FromContext(ctx).Info("new request for fetching orders")
+	log.Infof(ctx, "new request for fetching orders")
 
 	q := request.CreateQuery()
 	if !isAdmin(ctx) {
@@ -67,7 +67,7 @@ func (s *Shop) FindOrders(ctx context.Context, request SearchOrders) (PaginatedO
 }
 
 func (s *Shop) FindOrderByID(ctx context.Context, id string) (OrderResponse, error) {
-	log.FromContext(ctx).Infof("new request for fetching order %s", id)
+	log.Infof(ctx, "new request for fetching order %s", id)
 
 	order, err := s.Repository.FindByID(ctx, id)
 	if err != nil {
@@ -88,7 +88,7 @@ func (s *Shop) CreateOrder(ctx context.Context, request CreateOrder) (OrderRespo
 	}
 
 	order := request.Order(s.IDGenerator.NewID(), userId(ctx))
-	log.FromContext(ctx).Infof("creating new order with id %s", order.ID)
+	log.Infof(ctx, "creating new order with id %s", order.ID)
 
 	book, err := s.CatalogService.FindBookByID(ctx, order.BookID)
 	if err != nil {
@@ -108,7 +108,7 @@ func (s *Shop) CreateOrder(ctx context.Context, request CreateOrder) (OrderRespo
 }
 
 func (s *Shop) CompleteOrder(ctx context.Context, orderID string) error {
-	log.FromContext(ctx).Infof("completing the order %s", orderID)
+	log.Infof(ctx, "completing the order %s", orderID)
 
 	order, err := s.Repository.FindByID(ctx, orderID)
 	if err != nil {
@@ -124,7 +124,7 @@ func (s *Shop) CompleteOrder(ctx context.Context, orderID string) error {
 }
 
 func (s *Shop) GetOrderDeliverableContent(ctx context.Context, orderID string) (ShopBookResponse, error) {
-	log.FromContext(ctx).Infof("getting deliverable content for order %s", orderID)
+	log.Infof(ctx, "getting deliverable content for order %s", orderID)
 
 	order, err := s.Repository.FindByID(ctx, orderID)
 	if err != nil {

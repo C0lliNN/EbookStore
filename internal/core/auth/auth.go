@@ -66,7 +66,7 @@ func (a *Authenticator) Register(ctx context.Context, request RegisterRequest) (
 
 	user := request.User(a.IDGenerator.NewID())
 
-	log.FromContext(ctx).Infof("creating new user with id %s", user.ID)
+	log.Infof(ctx, "creating new user with id %s", user.ID)
 
 	hashedPassword, err := a.Hasher.HashPassword(user.Password)
 	if err != nil {
@@ -96,7 +96,7 @@ func (a *Authenticator) Login(ctx context.Context, request LoginRequest) (Creden
 		return CredentialsResponse{}, fmt.Errorf("(Login) failed finding user: %w", err)
 	}
 
-	log.FromContext(ctx).Info("new login attempt for user with id %s", user.ID)
+	log.Infof(ctx, "new login attempt for user with id %s", user.ID)
 
 	if err = a.Hasher.CompareHashAndPassword(user.Password, request.Password); err != nil {
 		return CredentialsResponse{}, fmt.Errorf("(Login) failed comparing hash and password: %w", ErrWrongPassword)
@@ -129,7 +129,7 @@ func (a *Authenticator) ResetPassword(ctx context.Context, request PasswordReset
 		return fmt.Errorf("(ResetPassword) failed finding user: %w", err)
 	}
 
-	log.FromContext(ctx).Infof("resetting password for user with id %s", user.ID)
+	log.Infof(ctx, "resetting password for user with id %s", user.ID)
 
 	newPassword := a.PasswordGenerator.NewPassword()
 	hashedNewPassword, err := a.Hasher.HashPassword(newPassword)

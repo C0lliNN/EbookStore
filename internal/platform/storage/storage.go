@@ -46,7 +46,7 @@ func (c *Storage) GeneratePutPreSignedUrl(ctx context.Context, key string) (stri
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
-	log.FromContext(ctx).Info("generating PUT presigned url for key: %s", key)
+	log.Infof(ctx, "generating PUT presigned url for key: %s", key)
 
 	presignResult, err := c.PresignClient.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket: aws.String(string(c.Bucket)),

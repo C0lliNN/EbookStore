@@ -33,7 +33,7 @@ func (c *StripePaymentService) CreatePaymentIntentForOrder(ctx context.Context, 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
-	log.FromContext(ctx).Infof("creating payment intent for order %s", order.ID)
+	log.Infof(ctx, "creating payment intent for order %s", order.ID)
 
 	params := &stripe.PaymentIntentParams{
 		Params:   stripe.Params{Context: ctx},
