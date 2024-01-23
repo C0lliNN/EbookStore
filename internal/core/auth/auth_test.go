@@ -7,7 +7,6 @@ import (
 	"testing"
 
 	"github.com/ebookstore/internal/core/auth"
-	mocks2 "github.com/ebookstore/internal/mocks/core/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -27,24 +26,24 @@ const (
 
 type AuthenticatorTestSuite struct {
 	suite.Suite
-	token             *mocks2.TokenHandler
-	repo              *mocks2.Repository
-	emailClient       *mocks2.EmailClient
-	passwordGenerator *mocks2.PasswordGenerator
-	hash              *mocks2.HashHandler
-	idGenerator       *mocks2.IDGenerator
-	validator         *mocks2.Validator
+	token             *auth.MockTokenHandler
+	repo              *auth.MockRepository
+	emailClient       *auth.MockEmailClient
+	passwordGenerator *auth.MockPasswordGenerator
+	hash              *auth.MockHashHandler
+	idGenerator       *auth.MockIDGenerator
+	validator         *auth.MockValidator
 	authenticator     *auth.Authenticator
 }
 
 func (s *AuthenticatorTestSuite) SetupTest() {
-	s.token = new(mocks2.TokenHandler)
-	s.repo = new(mocks2.Repository)
-	s.emailClient = new(mocks2.EmailClient)
-	s.passwordGenerator = new(mocks2.PasswordGenerator)
-	s.hash = new(mocks2.HashHandler)
-	s.idGenerator = new(mocks2.IDGenerator)
-	s.validator = new(mocks2.Validator)
+	s.token = new(auth.MockTokenHandler)
+	s.repo = new(auth.MockRepository)
+	s.emailClient = new(auth.MockEmailClient)
+	s.passwordGenerator = new(auth.MockPasswordGenerator)
+	s.hash = new(auth.MockHashHandler)
+	s.idGenerator = new(auth.MockIDGenerator)
+	s.validator = new(auth.MockValidator)
 
 	config := auth.Config{
 		Repository:        s.repo,
@@ -281,7 +280,7 @@ func (s *AuthenticatorTestSuite) TestLogin_Successfully() {
 	s.token.AssertNumberOfCalls(s.T(), generateTokenMethod, 1)
 }
 
-func (s AuthenticatorTestSuite) TestResetPassword_WhenValidationFails() {
+func (s *AuthenticatorTestSuite) TestResetPassword_WhenValidationFails() {
 	request := auth.PasswordResetRequest{Email: "some email"}
 	s.validator.On(validateMethod, request).Return(fmt.Errorf("some error"))
 
@@ -297,7 +296,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenValidationFails() {
 	s.emailClient.AssertNotCalled(s.T(), sendEmailMethod)
 }
 
-func (s AuthenticatorTestSuite) TestResetPassword_WhenUserWasNotFound() {
+func (s *AuthenticatorTestSuite) TestResetPassword_WhenUserWasNotFound() {
 	request := auth.PasswordResetRequest{Email: "some email"}
 	s.validator.On(validateMethod, request).Return(nil)
 	s.repo.On(findByEmail, context.TODO(), request.Email).Return(auth.User{}, fmt.Errorf("some error"))
@@ -314,7 +313,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenUserWasNotFound() {
 	s.emailClient.AssertNotCalled(s.T(), sendEmailMethod)
 }
 
-func (s AuthenticatorTestSuite) TestResetPassword_WhenPasswordHashingFails() {
+func (s *AuthenticatorTestSuite) TestResetPassword_WhenPasswordHashingFails() {
 	request := auth.PasswordResetRequest{Email: "some email"}
 
 	s.validator.On(validateMethod, request).Return(nil)
@@ -334,7 +333,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenPasswordHashingFails() {
 	s.emailClient.AssertNotCalled(s.T(), sendEmailMethod)
 }
 
-func (s AuthenticatorTestSuite) TestResetPassword_WhenUpdateFails() {
+func (s *AuthenticatorTestSuite) TestResetPassword_WhenUpdateFails() {
 	request := auth.PasswordResetRequest{Email: "some email"}
 	user := auth.User{Email: request.Email, Password: "another-password"}
 	newPassword := "password"
@@ -359,7 +358,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenUpdateFails() {
 	s.emailClient.AssertNotCalled(s.T(), sendEmailMethod)
 }
 
-func (s AuthenticatorTestSuite) TestResetPassword_WhenEmailSendingFails() {
+func (s *AuthenticatorTestSuite) TestResetPassword_WhenEmailSendingFails() {
 	request := auth.PasswordResetRequest{Email: "some email"}
 	user := auth.User{Email: request.Email, Password: "another-password"}
 	newPassword := "password"
@@ -385,7 +384,7 @@ func (s AuthenticatorTestSuite) TestResetPassword_WhenEmailSendingFails() {
 	s.emailClient.AssertNumberOfCalls(s.T(), sendEmailMethod, 1)
 }
 
-func (s AuthenticatorTestSuite) TestResetPassword_Successfully() {
+func (s *AuthenticatorTestSuite) TestResetPassword_Successfully() {
 	request := auth.PasswordResetRequest{Email: "some email"}
 	user := auth.User{Email: request.Email, Password: "another-password"}
 	newPassword := "password"

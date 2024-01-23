@@ -9,7 +9,6 @@ import (
 	"github.com/ebookstore/internal/core/catalog"
 	"github.com/ebookstore/internal/core/query"
 	"github.com/ebookstore/internal/core/shop"
-	mocks2 "github.com/ebookstore/internal/mocks/core/shop"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -28,20 +27,20 @@ const (
 
 type ShopTestSuite struct {
 	suite.Suite
-	repo           *mocks2.Repository
-	paymentClient  *mocks2.PaymentClient
-	catalogService *mocks2.CatalogService
-	idGenerator    *mocks2.IDGenerator
-	validator      *mocks2.Validator
+	repo           *shop.MockRepository
+	paymentClient  *shop.MockPaymentClient
+	catalogService *shop.MockCatalogService
+	idGenerator    *shop.MockIDGenerator
+	validator      *shop.MockValidator
 	shop           *shop.Shop
 }
 
 func (s *ShopTestSuite) SetupTest() {
-	s.repo = new(mocks2.Repository)
-	s.paymentClient = new(mocks2.PaymentClient)
-	s.catalogService = new(mocks2.CatalogService)
-	s.idGenerator = new(mocks2.IDGenerator)
-	s.validator = new(mocks2.Validator)
+	s.repo = new(shop.MockRepository)
+	s.paymentClient = new(shop.MockPaymentClient)
+	s.catalogService = new(shop.MockCatalogService)
+	s.idGenerator = new(shop.MockIDGenerator)
+	s.validator = new(shop.MockValidator)
 
 	s.shop = shop.New(shop.Config{
 		Repository:     s.repo,

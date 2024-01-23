@@ -62,7 +62,7 @@
 * [ ] Add ability to specify mime type in the request when creating a presigned url
 
 ## Refactoring
-* [ ] Use mocks in the same package
+* [x] Use mocks in the same package
 * [x] Refactor Logging (use function log(ctx, msg, fields))
 
 ## Architecture Improvements

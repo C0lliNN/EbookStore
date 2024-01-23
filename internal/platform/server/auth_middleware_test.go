@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/ebookstore/internal/core/auth"
-	mocks "github.com/ebookstore/internal/mocks/platform/server"
 	"github.com/ebookstore/internal/platform/server"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
@@ -20,7 +19,7 @@ const extractUserFromTokenMethod = "ExtractUserFromToken"
 type AuthMiddlewareTestSuite struct {
 	suite.Suite
 	context    *gin.Context
-	token      *mocks.TokenHandler
+	token      *server.MockTokenHandler
 	middleware *server.AuthenticationMiddleware
 }
 
@@ -28,7 +27,7 @@ func (s *AuthMiddlewareTestSuite) SetupTest() {
 	s.context, _ = gin.CreateTestContext(httptest.NewRecorder())
 	s.context.Request = httptest.NewRequest("GET", "/books", strings.NewReader(""))
 
-	s.token = new(mocks.TokenHandler)
+	s.token = new(server.MockTokenHandler)
 	s.middleware = server.NewAuthenticationMiddleware(s.token)
 }
 
