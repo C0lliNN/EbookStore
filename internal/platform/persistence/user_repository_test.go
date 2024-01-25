@@ -14,12 +14,12 @@ import (
 )
 
 type UserRepositoryTestSuite struct {
-	RepositoryTestSuite
+	PostgresRepositoryTestSuite
 	repo *persistence.UserRepository
 }
 
 func (s *UserRepositoryTestSuite) SetupSuite() {
-	s.RepositoryTestSuite.SetupSuite()
+	s.PostgresRepositoryTestSuite.SetupSuite()
 
 	s.repo = persistence.NewUserRepository(s.db)
 }

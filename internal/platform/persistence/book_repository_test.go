@@ -15,12 +15,12 @@ import (
 )
 
 type BookRepositoryTestSuite struct {
-	RepositoryTestSuite
+	PostgresRepositoryTestSuite
 	repo *persistence.BookRepository
 }
 
 func (s *BookRepositoryTestSuite) SetupSuite() {
-	s.RepositoryTestSuite.SetupSuite()
+	s.PostgresRepositoryTestSuite.SetupSuite()
 
 	s.repo = persistence.NewBookRepository(s.db)
 }
@@ -356,6 +356,7 @@ func (s *BookRepositoryTestSuite) TestFindByID_WithValidID() {
 	assert.Equal(s.T(), expected.Title, actual.Title)
 	assert.Equal(s.T(), expected.Description, actual.Description)
 	assert.Equal(s.T(), expected.Price, actual.Price)
+	assert.Equal(s.T(), expected.Images, actual.Images)
 }
 
 func (s *BookRepositoryTestSuite) TestCreate_Successfully() {

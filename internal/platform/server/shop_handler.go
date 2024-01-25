@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 
@@ -10,19 +9,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type Shop interface {
-	FindOrders(context.Context, shop.SearchOrders) (shop.PaginatedOrdersResponse, error)
-	FindOrderByID(context.Context, string) (shop.OrderResponse, error)
-	CreateOrder(context.Context, shop.CreateOrder) (shop.OrderResponse, error)
-	CompleteOrder(context.Context, string) error
-	GetOrderDeliverableContent(context.Context, string) (shop.ShopBookResponse, error)
-}
-
 type ShopHandler struct {
-	shop Shop
+	shop *shop.Shop
 }
 
-func NewShopHandler(shop Shop) *ShopHandler {
+func NewShopHandler(shop *shop.Shop) *ShopHandler {
 	return &ShopHandler{
 		shop: shop,
 	}
@@ -32,8 +23,11 @@ func (h *ShopHandler) Routes() []Route {
 	return []Route{
 		{Method: http.MethodGet, Path: "/orders", Handler: h.getOrders, Public: false},
 		{Method: http.MethodGet, Path: "/orders/:id", Handler: h.getOrder, Public: false},
-		{Method: http.MethodGet, Path: "/orders/:id/download", Handler: h.downloadOrder, Public: false},
+		{Method: http.MethodGet, Path: "/orders/:id/items/:itemId/download", Handler: h.downloadOrder, Public: false},
 		{Method: http.MethodPost, Path: "/orders", Handler: h.createOrder, Public: false},
+		{Method: http.MethodGet, Path: "/active-cart", Handler: h.getActiveCart, Public: false},
+		{Method: http.MethodPost, Path: "/cart/items/:id", Handler: h.addItemToCart, Public: false},
+		{Method: http.MethodDelete, Path: "/cart/items/:id", Handler: h.removeItemFromCart, Public: false},
 		{Method: http.MethodPost, Path: "/stripe/webhook", Handler: h.handleStripeWebhook, Public: true},
 	}
 }
@@ -82,23 +76,16 @@ func (h *ShopHandler) getOrder(c *gin.Context) {
 }
 
 // createOrder godoc
-// @Summary Create a new Order
+// @Summary Create a new Order from the user active cart
 // @Tags Shop
 // @Accept json
 // @Produce  json
-// @Param payload body shop.CreateOrder true "Order Payload"
 // @Success 201 {object} shop.OrderResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/orders [post]
 func (h *ShopHandler) createOrder(c *gin.Context) {
-	var request shop.CreateOrder
-	if err := c.ShouldBindJSON(&request); err != nil {
-		_ = c.Error(&BindingErr{Err: fmt.Errorf("(createOrder) failed binding request: %w", err)})
-		return
-	}
-
-	response, err := h.shop.CreateOrder(c, request)
+	response, err := h.shop.CreateOrder(c)
 	if err != nil {
 		_ = c.Error(fmt.Errorf("(createOrder) failed handling create request: %w", err))
 		return
@@ -111,16 +98,78 @@ func (h *ShopHandler) createOrder(c *gin.Context) {
 // @Summary Download the book for the given Order
 // @Tags Shop
 // @Produce  json
-// @Param id path string true "orderId ID"
-// @Success 200 {object} shop.ShopBookResponse
+// @Param id path string true "Order ID"
+// @Param itemId path string true "Item ID to be downloaded"
+// @Success 200 {object} shop.DownloadResponse
 // @Failure 402 {object} ErrorResponse
 // @Failure 404 {object} ErrorResponse
 // @Failure 500 {object} ErrorResponse
 // @Router /api/v1/orders/{id}/download [get]
 func (h *ShopHandler) downloadOrder(c *gin.Context) {
-	response, err := h.shop.GetOrderDeliverableContent(c, c.Param("id"))
+	req := shop.DownloadOrderContentRequest{
+		OrderID: c.Param("id"),
+		ItemID:  c.Param("itemId"),
+	}
+
+	response, err := h.shop.DownloadOrderItemContent(c, req)
 	if err != nil {
 		_ = c.Error(fmt.Errorf("(downloadOrder) failed handling get book content: %w", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// getActiveCart godoc
+// @Summary Fetch the active cart for the current user
+// @Tags Shop
+// @Produce  json
+// @Success 200 {object} shop.CartResponse
+// @Failure 404 {object} ErrorResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/active-cart [get]
+func (h *ShopHandler) getActiveCart(c *gin.Context) {
+	response, err := h.shop.GetCart(c)
+	if err != nil {
+		_ = c.Error(fmt.Errorf("(getActiveCart) failed handling find request: %w", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// addItemToCart godoc
+// @Summary Add an item to the active cart
+// @Tags Shop
+// @Accept json
+// @Produce  json
+// @Param id path string true "Item ID"
+// @Success 200 {object} shop.CartResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/cart/items/{id} [post]
+func (h *ShopHandler) addItemToCart(c *gin.Context) {
+	response, err := h.shop.AddItemToCart(c, c.Param("id"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("(addItemToCart) failed handling add item request: %w", err))
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
+}
+
+// removeItemFromCart godoc
+// @Summary Remove an item from the active cart
+// @Tags Shop
+// @Accept json
+// @Produce  json
+// @Param id path string true "Item ID"
+// @Success 200 {object} shop.CartResponse
+// @Failure 500 {object} ErrorResponse
+// @Router /api/v1/cart/items/{id} [delete]
+func (h *ShopHandler) removeItemFromCart(c *gin.Context) {
+	response, err := h.shop.RemoveItemFromCart(c, c.Param("id"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("(removeItemFromCart) failed handling remove item request: %w", err))
 		return
 	}
 

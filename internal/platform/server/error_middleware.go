@@ -59,8 +59,12 @@ func (e *ErrorMiddleware) Handler() gin.HandlerFunc {
 			response = newErrorResponse(http.StatusUnauthorized, err)
 		case errors.Is(err, catalog.ErrForbiddenCatalogAccess), errors.Is(err, shop.ErrForbiddenOrderAccess):
 			response = newErrorResponse(http.StatusForbidden, err)
-		case errors.Is(err, shop.ErrOrderNotPaid):
+		case errors.Is(err, shop.ErrOrderNotCompleted):
 			response = newErrorResponse(http.StatusPaymentRequired, err)
+		case errors.Is(err, shop.ErrItemAlreadyInCart):
+			response = newErrorResponse(http.StatusConflict, err)
+		case errors.Is(err, shop.ErrItemNotFoundInCart), errors.Is(err, shop.ErrItemNotFoundInOrder):
+			response = newErrorResponse(http.StatusNotFound, err)
 		default:
 			response = newGenericErrorResponse(err)
 		}

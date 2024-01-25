@@ -13,10 +13,9 @@ const (
 type Order struct {
 	ID              string
 	Status          OrderStatus
-	Total           int64
 	PaymentIntentID *string
 	ClientSecret    *string
-	BookID          string
+	Items           []Item
 	UserID          string
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
@@ -24,4 +23,25 @@ type Order struct {
 
 func (o *Order) Complete() {
 	o.Status = Paid
+}
+
+func (o *Order) Completed() bool {
+	return o.Status == Paid
+}
+
+func (o *Order) TotalPrice() int64 {
+	var total int64
+	for _, i := range o.Items {
+		total += i.Price
+	}
+	return total
+}
+
+func (o *Order) HasItem(itemID string) bool {
+	for _, i := range o.Items {
+		if i.ID == itemID {
+			return true
+		}
+	}
+	return false
 }

@@ -67,7 +67,7 @@ func (e *Email) SendPasswordResetEmail(ctx context.Context, user auth.User, newP
 	}
 
 	if _, err = e.Client.SendEmail(ctx, input); err != nil {
-		return fmt.Errorf("(SendPasswordResetEmail) failed sending email")
+		return fmt.Errorf("(SendPasswordResetEmail) failed sending email: %w", err)
 	}
 
 	return nil

@@ -1,19 +1,23 @@
 package shop
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewOrderResponse(t *testing.T) {
 	order := Order{
-		ID:              "order-id",
-		Status:          Paid,
-		Total:           3000,
+		ID:     "order-id",
+		Status: Paid,
+		Items: []Item{
+			{Price: 10},
+			{Price: 20},
+			{Price: 30},
+		},
 		PaymentIntentID: nil,
 		ClientSecret:    nil,
-		BookID:          "some-book-id",
 		UserID:          "user-id",
 		CreatedAt:       time.Date(2022, time.September, 24, 18, 30, 0, 0, time.UTC),
 		UpdatedAt:       time.Date(2022, time.September, 24, 18, 40, 0, 0, time.UTC),
@@ -22,10 +26,10 @@ func TestNewOrderResponse(t *testing.T) {
 	expected := OrderResponse{
 		ID:              order.ID,
 		Status:          string(order.Status),
-		Total:           order.Total,
+		TotalPrice:      int64(60),
 		PaymentIntentID: order.PaymentIntentID,
 		ClientSecret:    order.ClientSecret,
-		BookID:          order.BookID,
+		Items:           []ItemResponse{{Price: 10}, {Price: 20}, {Price: 30}},
 		UserID:          order.UserID,
 		CreatedAt:       order.CreatedAt,
 		UpdatedAt:       order.UpdatedAt,
@@ -40,10 +44,9 @@ func TestNewPaginatedOrdersResponse(t *testing.T) {
 	order1 := Order{
 		ID:              "order-id",
 		Status:          Paid,
-		Total:           3000,
 		PaymentIntentID: nil,
 		ClientSecret:    nil,
-		BookID:          "some-book-id",
+		Items:           []Item{{Price: 10}, {Price: 20}, {Price: 30}},
 		UserID:          "user-id",
 		CreatedAt:       time.Date(2022, time.September, 24, 18, 30, 0, 0, time.UTC),
 		UpdatedAt:       time.Date(2022, time.September, 24, 18, 40, 0, 0, time.UTC),
@@ -51,10 +54,9 @@ func TestNewPaginatedOrdersResponse(t *testing.T) {
 	order2 := Order{
 		ID:              "order-id2",
 		Status:          Pending,
-		Total:           4000,
 		PaymentIntentID: nil,
 		ClientSecret:    nil,
-		BookID:          "some-book-id2",
+		Items:           []Item{{Price: 10}, {Price: 30}, {Price: 30}},
 		UserID:          "user-id2",
 		CreatedAt:       time.Date(2022, time.September, 25, 18, 30, 0, 0, time.UTC),
 		UpdatedAt:       time.Date(2022, time.September, 25, 18, 40, 0, 0, time.UTC),
@@ -62,10 +64,9 @@ func TestNewPaginatedOrdersResponse(t *testing.T) {
 	order3 := Order{
 		ID:              "order-id3",
 		Status:          Cancelled,
-		Total:           2800,
 		PaymentIntentID: nil,
 		ClientSecret:    nil,
-		BookID:          "some-book-id3",
+		Items:           []Item{{Price: 10}, {Price: 30}, {Price: 40}},
 		UserID:          "user-id3",
 		CreatedAt:       time.Date(2022, time.September, 26, 18, 30, 0, 0, time.UTC),
 		UpdatedAt:       time.Date(2022, time.September, 26, 18, 40, 0, 0, time.UTC),
@@ -87,6 +88,46 @@ func TestNewPaginatedOrdersResponse(t *testing.T) {
 	}
 
 	actual := NewPaginatedOrdersResponse(paginatedOrders)
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestNewItemResponse(t *testing.T) {
+	item := Item{
+		ID:             "item-id",
+		Name:           "item-name",
+		Price:          10,
+		PreviewImageID: "preview-image-id",
+		OrderID:        "order-id",
+	}
+
+	expected := ItemResponse{
+		ID:             item.ID,
+		Name:           item.Name,
+		Price:          item.Price,
+		PreviewImageID: item.PreviewImageID,
+	}
+
+	actual := newItemResponse(item)
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestNewCartResponse(t *testing.T) {
+	cart := Cart{
+		ID:     "cart-id",
+		Items:  []Item{{Price: 10}, {Price: 20}, {Price: 30}},
+		UserID: "user-id",
+	}
+
+	expected := CartResponse{
+		ID:         cart.ID,
+		Items:      []ItemResponse{{Price: 10}, {Price: 20}, {Price: 30}},
+		UserID:     cart.UserID,
+		TotalPrice: cart.TotalPrice(),
+	}
+
+	actual := NewCartResponse(cart)
 
 	assert.Equal(t, expected, actual)
 }

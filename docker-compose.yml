@@ -9,12 +9,17 @@ services:
       - POSTGRES_PASSWORD=postgres
     ports:
       - "5432:5432"
+
+  cache:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
   localstack:
     image: localstack/localstack:1.4.0
     ports:
       - "4566-4599:4566-4599"
     environment:
-      - DEFAULT_REGION=us-east-2
       - SERVICES=ses,s3
       - LEGACY_INIT_DIR=1
       - DATA_DIR=/tmp/localstack/data

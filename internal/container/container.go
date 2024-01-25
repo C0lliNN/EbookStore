@@ -8,6 +8,9 @@ import (
 	"syscall"
 	"time"
 
+	redisclient "github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
+
 	"github.com/ebookstore/internal/core/auth"
 	"github.com/ebookstore/internal/core/catalog"
 	"github.com/ebookstore/internal/core/shop"
@@ -30,6 +33,7 @@ type Container struct {
 	server     *server.Server
 	dbMigrator *migrator.Migrator
 	db         *gorm.DB
+	cache      *redisclient.Client
 }
 
 func New() *Container {
@@ -45,6 +49,7 @@ func New() *Container {
 	engine := config.NewServerEngine()
 	correlationIDMiddleware := server.NewCorrelationIDMiddleware()
 	db := config.NewConnection()
+	cache := config.NewRedisClient()
 	healthcheckHandler := server.NewHeathcheckHandler(db)
 	rateLimitMiddleware := server.NewRateLimitMiddleware()
 	loggerMiddleware := server.NewLoggerMiddleware()
@@ -90,13 +95,15 @@ func New() *Container {
 	catalogCatalog := catalog.New(catalogConfig)
 	catalogHandler := server.NewCatalogHandler(catalogCatalog)
 	orderRepository := persistence.NewOrderRepository(db)
+	cartRepository := persistence.NewCartRepository(cache, time.Minute*time.Duration(viper.GetInt("REDIS_CART_TTL")))
 	stripePaymentService := payment.NewStripePaymentService()
 	shopConfig := shop.Config{
-		Repository:     orderRepository,
-		PaymentClient:  stripePaymentService,
-		CatalogService: catalogCatalog,
-		IDGenerator:    uuidGenerator,
-		Validator:      validatorValidator,
+		OrderRepository: orderRepository,
+		CartRepository:  cartRepository,
+		PaymentClient:   stripePaymentService,
+		CatalogService:  catalogCatalog,
+		IDGenerator:     uuidGenerator,
+		Validator:       validatorValidator,
 	}
 	shopShop := shop.New(shopConfig)
 	shopHandler := server.NewShopHandler(shopShop)
@@ -118,6 +125,7 @@ func New() *Container {
 	}
 
 	container.db = db
+	container.cache = cache
 	container.dbMigrator = dbMigrator
 	container.server = server.New(serverConfig)
 
@@ -162,4 +170,8 @@ func (c *Container) Start(ctx context.Context) {
 
 func (c *Container) DB() *gorm.DB {
 	return c.db
+}
+
+func (c *Container) Cache() *redisclient.Client {
+	return c.cache
 }

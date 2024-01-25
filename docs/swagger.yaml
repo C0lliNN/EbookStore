@@ -61,6 +61,8 @@ definitions:
         items:
           $ref: '#/definitions/catalog.ImageResponse'
         type: array
+      mainImageId:
+        type: string
       price:
         type: integer
       releaseDate:
@@ -103,6 +105,8 @@ definitions:
     type: object
   catalog.PresignURLResponse:
     properties:
+      id:
+        type: string
       url:
         type: string
     type: object
@@ -132,18 +136,45 @@ definitions:
       message:
         type: string
     type: object
-  shop.CreateOrder:
+  shop.CartResponse:
     properties:
-      bookId:
-        maxLength: 36
+      createdAt:
         type: string
-    required:
-    - bookId
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/shop.ItemResponse'
+        type: array
+      total:
+        type: integer
+      updatedAt:
+        type: string
+      userId:
+        type: string
+    type: object
+  shop.DownloadResponse:
+    properties:
+      url:
+        type: string
+    type: object
+  shop.ItemResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      previewImageId:
+        type: string
+      price:
+        type: integer
     type: object
   shop.OrderResponse:
     properties:
       bookId:
-        type: string
+        items:
+          $ref: '#/definitions/shop.ItemResponse'
+        type: array
       clientSecret:
         type: string
       createdAt:
@@ -176,11 +207,6 @@ definitions:
       totalPages:
         type: integer
     type: object
-  shop.ShopBookResponse:
-    properties:
-      url:
-        type: string
-    type: object
 host: http://localhost:8080
 info:
   contact:
@@ -194,6 +220,26 @@ info:
   title: E-book Store
   version: "1.0"
 paths:
+  /api/v1/active-cart:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/shop.CartResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Fetch the active cart for the current user
+      tags:
+      - Shop
   /api/v1/books:
     get:
       parameters:
@@ -369,6 +415,53 @@ paths:
       summary: Update the provided Book
       tags:
       - Catalog
+  /api/v1/cart/items/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/shop.CartResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Remove an item from the active cart
+      tags:
+      - Shop
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Item ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/shop.CartResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/server.ErrorResponse'
+      summary: Add an item to the active cart
+      tags:
+      - Shop
   /api/v1/healthcheck:
     get:
       produces:
@@ -443,13 +536,6 @@ paths:
     post:
       consumes:
       - application/json
-      parameters:
-      - description: Order Payload
-        in: body
-        name: payload
-        required: true
-        schema:
-          $ref: '#/definitions/shop.CreateOrder'
       produces:
       - application/json
       responses:
@@ -465,7 +551,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/server.ErrorResponse'
-      summary: Create a new Order
+      summary: Create a new Order from the user active cart
       tags:
       - Shop
   /api/v1/orders/{id}:
@@ -497,9 +583,14 @@ paths:
   /api/v1/orders/{id}/download:
     get:
       parameters:
-      - description: orderId ID
+      - description: Order ID
         in: path
         name: id
+        required: true
+        type: string
+      - description: Item ID to be downloaded
+        in: path
+        name: itemId
         required: true
         type: string
       produces:
@@ -508,7 +599,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/shop.ShopBookResponse'
+            $ref: '#/definitions/shop.DownloadResponse'
         "402":
           description: Payment Required
           schema:

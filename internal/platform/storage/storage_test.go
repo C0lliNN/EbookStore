@@ -26,9 +26,7 @@ func (s *StorageClientTestSuite) SetupSuite() {
 
 	var err error
 	s.container, err = test.NewLocalstackContainer(ctx)
-	if err != nil {
-		s.T().Fatal(err)
-	}
+	s.Require().NoError(err)
 
 	viper.Set("AWS_S3_ENDPOINT", fmt.Sprintf("http://s3.localhost.localstack.cloud:%v", s.container.Port))
 

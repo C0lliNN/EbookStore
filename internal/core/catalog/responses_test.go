@@ -39,6 +39,7 @@ func TestNewBookResponse(t *testing.T) {
 				Link:        "link",
 			},
 		},
+		MainImageID: book.MainImageID(),
 		Price:       book.Price,
 		ReleaseDate: book.ReleaseDate,
 		CreatedAt:   book.CreatedAt,

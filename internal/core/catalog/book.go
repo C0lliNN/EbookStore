@@ -20,3 +20,11 @@ type Image struct {
 	Description string
 	BookID      string
 }
+
+func (b Book) MainImageID() string {
+	// TODO: implement position to be able to choose main image
+	if len(b.Images) > 0 {
+		return b.Images[0].ID
+	}
+	return ""
+}

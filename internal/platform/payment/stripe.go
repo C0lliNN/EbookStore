@@ -37,7 +37,7 @@ func (c *StripePaymentService) CreatePaymentIntentForOrder(ctx context.Context, 
 
 	params := &stripe.PaymentIntentParams{
 		Params:   stripe.Params{Context: ctx},
-		Amount:   stripe.Int64(order.Total),
+		Amount:   stripe.Int64(order.TotalPrice()),
 		Currency: stripe.String(string(stripe.CurrencyUSD)),
 		PaymentMethodTypes: []*string{
 			stripe.String("card"),

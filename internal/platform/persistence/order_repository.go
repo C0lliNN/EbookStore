@@ -27,7 +27,11 @@ func (r *OrderRepository) FindByQuery(ctx context.Context, q query.Query, p quer
 	conditions, values := parseQuery(q)
 
 	paginated := shop.PaginatedOrders{}
-	result := db.Limit(p.Size).Offset(p.Offset()).Where(conditions, values...).Order("created_at DESC").Find(&paginated.Orders)
+	result := db.Limit(p.Size).Offset(p.Offset()).
+		Preload("Items").
+		Where(conditions, values...).
+		Order("created_at DESC").
+		Find(&paginated.Orders)
 	if err := result.Error; err != nil {
 		return shop.PaginatedOrders{}, fmt.Errorf("(FindByQuery) failed running select query: %w", err)
 	}
@@ -49,7 +53,7 @@ func (r *OrderRepository) FindByID(ctx context.Context, id string) (shop.Order, 
 	defer cancel()
 
 	order := shop.Order{}
-	result := r.db.WithContext(ctx).First(&order, "id = ?", id)
+	result := r.db.WithContext(ctx).Preload("Items").First(&order, "id = ?", id)
 	if err := result.Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			err = &ErrEntityNotFound{entity: "order"}

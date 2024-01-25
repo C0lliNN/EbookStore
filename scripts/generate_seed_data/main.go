@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/redis/go-redis/v9"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/ebookstore/internal/core/auth"
@@ -21,7 +23,8 @@ import (
 )
 
 var (
-	db *gorm.DB
+	db    *gorm.DB
+	cache *redis.Client
 )
 
 func init() {
@@ -34,10 +37,11 @@ func init() {
 		Source:      source,
 	}
 
-	migrator := migrator.New(migratorConfig)
-	migrator.Sync()
+	migrate := migrator.New(migratorConfig)
+	migrate.Sync()
 
 	db = config.NewConnection()
+	cache = config.NewRedisClient()
 }
 
 func main() {
@@ -64,6 +68,10 @@ func cleanDatabase() {
 	}
 
 	if err := db.Delete(&auth.User{}, "1 = 1").Error; err != nil {
+		log.Fatal(err)
+	}
+
+	if err := cache.FlushAll(context.Background()).Err(); err != nil {
 		log.Fatal(err)
 	}
 }
@@ -148,7 +156,7 @@ func createBooks() []catalog.Book {
 				Description: "poster",
 			},
 		},
-		Price:       0,
+		Price:       5000,
 		ReleaseDate: time.Time{},
 	}
 	if err = db.Create(&book1).Error; err != nil {
@@ -183,7 +191,7 @@ func createBooks() []catalog.Book {
 				Description: "poster",
 			},
 		},
-		Price:       0,
+		Price:       3000,
 		ReleaseDate: time.Time{},
 	}
 	if err = db.Create(&book2).Error; err != nil {
@@ -201,8 +209,15 @@ func createOrders() []shop.Order {
 	order1 := shop.Order{
 		ID:     "order-id1",
 		Status: shop.Pending,
-		Total:  40000,
-		BookID: "book-id1",
+		Items: []shop.Item{
+			{
+				ID:             "book-id1",
+				Name:           "Clean Code",
+				Price:          40000,
+				OrderID:        "order-id1",
+				PreviewImageID: "book1-poster",
+			},
+		},
 		UserID: "customer-id1",
 	}
 	if err := stripeClient.CreatePaymentIntentForOrder(context.TODO(), &order1); err != nil {
@@ -215,8 +230,15 @@ func createOrders() []shop.Order {
 	order2 := shop.Order{
 		ID:     "order-id2",
 		Status: shop.Pending,
-		Total:  40000,
-		BookID: "book-id2",
+		Items: []shop.Item{
+			{
+				ID:             "book-id2",
+				Name:           "Domain Driver Design",
+				Price:          40000,
+				OrderID:        "order-id2",
+				PreviewImageID: "book2-poster",
+			},
+		},
 		UserID: "customer-id1",
 	}
 	if err := stripeClient.CreatePaymentIntentForOrder(context.TODO(), &order2); err != nil {
@@ -231,8 +253,15 @@ func createOrders() []shop.Order {
 	order3 := shop.Order{
 		ID:     "order-id3",
 		Status: shop.Paid,
-		Total:  40000,
-		BookID: "book-id2",
+		Items: []shop.Item{
+			{
+				ID:             "book-id2",
+				Name:           "Domain Driver Design",
+				Price:          40000,
+				OrderID:        "order-id3",
+				PreviewImageID: "book2-poster",
+			},
+		},
 		UserID: "customer-id2",
 	}
 	if err := stripeClient.CreatePaymentIntentForOrder(context.TODO(), &order3); err != nil {

@@ -11,6 +11,7 @@ type BookResponse struct {
 	Description string          `json:"description"`
 	AuthorName  string          `json:"authorName"`
 	Images      []ImageResponse `json:"images"`
+	MainImageID string          `json:"mainImageId"`
 	Price       int             `json:"price"`
 	ReleaseDate time.Time       `json:"releaseDate"`
 	CreatedAt   time.Time       `json:"createdAt"`
@@ -29,6 +30,7 @@ func NewBookResponse(book Book, links []string) BookResponse {
 		Description: book.Description,
 		AuthorName:  book.AuthorName,
 		Images:      images,
+		MainImageID: book.MainImageID(),
 		Price:       book.Price,
 		ReleaseDate: book.ReleaseDate,
 		CreatedAt:   book.CreatedAt,
@@ -74,6 +76,6 @@ func NewPaginatedBooksResponse(paginatedBooks PaginatedBooks, imageLinks map[str
 }
 
 type PresignURLResponse struct {
-	ID string `json:"id"`
+	ID  string `json:"id"`
 	URL string `json:"url"`
 }

@@ -52,6 +52,8 @@ func (c *Catalog) FindBooks(ctx context.Context, request SearchBooks) (Paginated
 		return PaginatedBooksResponse{}, fmt.Errorf("(FindBooks) failed finding books: %w", err)
 	}
 
+	fmt.Println("paginatedBooks", paginatedBooks.Books[0].Images)
+
 	imageLinksByBookId := make(map[string][]string)
 
 	for _, book := range paginatedBooks.Books {

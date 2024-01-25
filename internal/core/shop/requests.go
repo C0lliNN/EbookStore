@@ -21,28 +21,18 @@ func (s *SearchOrders) CreateQuery() query.Query {
 func (s *SearchOrders) CreatePage() query.Page {
 	p := query.DefaultPage
 
-	if (s.Page > 0) {
+	if s.Page > 0 {
 		p.Number = s.Page
 	}
 
-	if (s.PerPage > 0) {
+	if s.PerPage > 0 {
 		p.Size = s.PerPage
 	}
 
 	return p
 }
 
-type CreateOrder struct {
-	BookID string `json:"bookId" validate:"required,max=36"`
-}
-
-func (c CreateOrder) Order(orderId, userId string) Order {
-	return Order{
-		ID:     orderId,
-		BookID: c.BookID,
-		UserID: userId,
-	}
-}
+type CreateOrder struct{}
 
 type HandleStripeWebhook struct {
 	ID       string                 `json:"id"`
@@ -51,4 +41,9 @@ type HandleStripeWebhook struct {
 	Request  map[string]interface{} `json:"request"`
 	Livemode bool                   `json:"livemode"`
 	Created  int                    `json:"created"`
+}
+
+type DownloadOrderContentRequest struct {
+	OrderID string `form:"orderId"`
+	ItemID  string `form:"itemId"`
 }

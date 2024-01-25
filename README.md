@@ -59,6 +59,9 @@ This is a high-level technical documentation about how this application is struc
 ### Backend Container Diagram
 ![](https://i.ibb.co/LS9pSDK/image.png)
 
+### Infrastructure Diagram
+![](./docs/infrastructure_diagrams2.png)
+
 ### Design Principles / Techniques
 * SOLID Principles
 * Hexagonal Architecture

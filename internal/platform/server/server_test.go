@@ -24,6 +24,7 @@ type ServerSuiteTest struct {
 	baseURL             string
 	postgresContainer   *test.PostgresContainer
 	localstackContainer *test.LocalstackContainer
+	redisContainer      *test.RedisContainer
 }
 
 func (s *ServerSuiteTest) SetupSuite() {
@@ -33,18 +34,18 @@ func (s *ServerSuiteTest) SetupSuite() {
 	ctx := context.TODO()
 
 	s.postgresContainer, err = test.NewPostgresContainer(ctx)
-	if err != nil {
-		s.FailNow(err.Error())
-	}
+	s.Require().NoError(err)
 
 	s.localstackContainer, err = test.NewLocalstackContainer(ctx)
-	if err != nil {
-		s.FailNow(err.Error())
-	}
+	s.Require().NoError(err)
+
+	s.redisContainer, err = test.NewRedisContainer(ctx)
+	s.Require().NoError(err)
 
 	viper.Set("DATABASE_URI", s.postgresContainer.URI)
 	viper.Set("AWS_SES_ENDPOINT", fmt.Sprintf("http://localhost:%v", s.localstackContainer.Port))
 	viper.Set("AWS_S3_ENDPOINT", fmt.Sprintf("http://s3.localhost.localstack.cloud:%v", s.localstackContainer.Port))
+	viper.Set("REDIS_ADDR", s.redisContainer.Endpoint)
 
 	s.baseURL = fmt.Sprintf("http://%v", viper.GetString("SERVER_ADDR"))
 	s.container = container.New()
@@ -67,6 +68,7 @@ func (s *ServerSuiteTest) TearDownTest() {
 	s.container.DB().Exec("DELETE FROM users")
 	s.container.DB().Exec("DELETE FROM books")
 	s.container.DB().Exec("DELETE FROM orders")
+	s.container.Cache().FlushAll(context.Background())
 }
 
 func (s *ServerSuiteTest) TearDownSuite() {
@@ -74,6 +76,7 @@ func (s *ServerSuiteTest) TearDownSuite() {
 
 	_ = s.postgresContainer.Terminate(ctx)
 	_ = s.localstackContainer.Terminate(ctx)
+	_ = s.redisContainer.Terminate(ctx)
 }
 
 func TestServer(t *testing.T) {

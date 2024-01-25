@@ -15,12 +15,12 @@ import (
 )
 
 type OrderRepositoryTestSuite struct {
-	RepositoryTestSuite
+	PostgresRepositoryTestSuite
 	repo *persistence.OrderRepository
 }
 
 func (s *OrderRepositoryTestSuite) SetupSuite() {
-	s.RepositoryTestSuite.SetupSuite()
+	s.PostgresRepositoryTestSuite.SetupSuite()
 
 	s.repo = persistence.NewOrderRepository(s.db)
 }
@@ -40,22 +40,25 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithEmptyQuery() {
 	order1 := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 5000},
+		},
 		UserID: "user-id",
 	}
 	order2 := shop.Order{
 		ID:     "some-id2",
 		Status: shop.Pending,
-		Total:  4000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 4000},
+		},
 		UserID: "user-id",
 	}
 	order3 := shop.Order{
 		ID:     "some-id3",
 		Status: shop.Pending,
-		Total:  3500,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 3500},
+		},
 		UserID: "user-id",
 	}
 
@@ -85,22 +88,25 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithLimit() {
 	order1 := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 5000},
+		},
 		UserID: "user-id",
 	}
 	order2 := shop.Order{
 		ID:     "some-id2",
 		Status: shop.Pending,
-		Total:  4000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 4000},
+		},
 		UserID: "user-id",
 	}
 	order3 := shop.Order{
 		ID:     "some-id3",
 		Status: shop.Pending,
-		Total:  3500,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 3500},
+		},
 		UserID: "user-id",
 	}
 
@@ -132,22 +138,25 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithPaging() {
 	order1 := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 5000},
+		},
 		UserID: "user-id",
 	}
 	order2 := shop.Order{
 		ID:     "some-id2",
 		Status: shop.Pending,
-		Total:  4000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 4000},
+		},
 		UserID: "user-id",
 	}
 	order3 := shop.Order{
 		ID:     "some-id3",
 		Status: shop.Pending,
-		Total:  3500,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 3500},
+		},
 		UserID: "user-id",
 	}
 
@@ -178,22 +187,25 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithStatus() {
 	order1 := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 5000},
+		},
 		UserID: "user-id",
 	}
 	order2 := shop.Order{
 		ID:     "some-id2",
 		Status: shop.Pending,
-		Total:  4000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 4000},
+		},
 		UserID: "user-id",
 	}
 	order3 := shop.Order{
 		ID:     "some-id3",
 		Status: shop.Pending,
-		Total:  3500,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 3500},
+		},
 		UserID: "user-id",
 	}
 
@@ -220,72 +232,29 @@ func (s *OrderRepositoryTestSuite) TestFindByQuery_WithStatus() {
 	assert.Len(s.T(), actual.Orders, 1)
 }
 
-func (s *OrderRepositoryTestSuite) TestFindByQuery_WithBookID() {
-	order1 := shop.Order{
-		ID:     "some-id1",
-		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id2",
-		UserID: "user-id",
-	}
-	order2 := shop.Order{
-		ID:     "some-id2",
-		Status: shop.Pending,
-		Total:  4000,
-		BookID: "book-id",
-		UserID: "user-id",
-	}
-	order3 := shop.Order{
-		ID:     "some-id3",
-		Status: shop.Pending,
-		Total:  3500,
-		BookID: "book-id",
-		UserID: "user-id",
-	}
-
-	ctx := context.TODO()
-
-	err := s.repo.Create(ctx, &order1)
-	require.Nil(s.T(), err)
-
-	err = s.repo.Create(ctx, &order2)
-	require.Nil(s.T(), err)
-
-	err = s.repo.Create(ctx, &order3)
-	require.Nil(s.T(), err)
-
-	q := *query.New().And(query.Condition{Field: "book_id", Operator: query.Equal, Value: order1.BookID})
-	p := query.DefaultPage
-	actual, err := s.repo.FindByQuery(ctx, q, p)
-	assert.Nil(s.T(), err)
-
-	assert.Equal(s.T(), 15, actual.Limit)
-	assert.Equal(s.T(), 0, actual.Offset)
-	assert.Equal(s.T(), int64(1), actual.TotalOrders)
-	assert.Equal(s.T(), order1.ID, actual.Orders[0].ID)
-	assert.Len(s.T(), actual.Orders, 1)
-}
-
 func (s *OrderRepositoryTestSuite) TestFindByQuery_WithUserID() {
 	order1 := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id2",
+		Items: []shop.Item{
+			{ID: "book-id2", Price: 5000},
+		},
 		UserID: "user-id2",
 	}
 	order2 := shop.Order{
 		ID:     "some-id2",
 		Status: shop.Pending,
-		Total:  4000,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 4000},
+		},
 		UserID: "user-id",
 	}
 	order3 := shop.Order{
 		ID:     "some-id3",
 		Status: shop.Pending,
-		Total:  3500,
-		BookID: "book-id",
+		Items: []shop.Item{
+			{ID: "book-id", Price: 3500},
+		},
 		UserID: "user-id",
 	}
 
@@ -316,8 +285,9 @@ func (s *OrderRepositoryTestSuite) TestFindByID_Successfully() {
 	order := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id2",
+		Items: []shop.Item{
+			{ID: "book-id2", Price: 5000},
+		},
 		UserID: "user-id2",
 	}
 
@@ -343,8 +313,9 @@ func (s *OrderRepositoryTestSuite) TestCreate_Successfully() {
 	order := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id2",
+		Items: []shop.Item{
+			{ID: "book-id2", Price: 5000},
+		},
 		UserID: "user-id2",
 	}
 
@@ -363,8 +334,9 @@ func (s *OrderRepositoryTestSuite) TestCreate_WithError() {
 	order := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id2",
+		Items: []shop.Item{
+			{ID: "book-id2", Price: 5000},
+		},
 		UserID: "user-id2",
 	}
 
@@ -381,8 +353,9 @@ func (s *OrderRepositoryTestSuite) TestUpdate_Successfully() {
 	order := shop.Order{
 		ID:     "some-id1",
 		Status: shop.Paid,
-		Total:  5000,
-		BookID: "book-id2",
+		Items: []shop.Item{
+			{ID: "book-id2", Price: 5000},
+		},
 		UserID: "user-id2",
 	}
 

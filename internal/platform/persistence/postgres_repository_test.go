@@ -13,13 +13,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type RepositoryTestSuite struct {
+type PostgresRepositoryTestSuite struct {
 	suite.Suite
 	db        *gorm.DB
 	container *test.PostgresContainer
 }
 
-func (s *RepositoryTestSuite) SetupSuite() {
+func (s *PostgresRepositoryTestSuite) SetupSuite() {
 	ctx := context.TODO()
 
 	var err error
@@ -47,10 +47,4 @@ func (s *RepositoryTestSuite) SetupSuite() {
 
 	m.Sync()
 
-}
-
-func (s *RepositoryTestSuite) TearDownSuite() {
-	ctx := context.TODO()
-
-	_ = s.container.Terminate(ctx)
 }

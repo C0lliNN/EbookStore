@@ -17,6 +17,37 @@
     "host": "http://localhost:8080",
     "basePath": "/",
     "paths": {
+        "/api/v1/active-cart": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Fetch the active cart for the current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/shop.CartResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/books": {
             "get": {
                 "produces": [
@@ -284,6 +315,78 @@
                 }
             }
         },
+        "/api/v1/cart/items/{id}": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Add an item to the active cart",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/shop.CartResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Shop"
+                ],
+                "summary": "Remove an item from the active cart",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/shop.CartResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/healthcheck": {
             "get": {
                 "produces": [
@@ -405,18 +508,7 @@
                 "tags": [
                     "Shop"
                 ],
-                "summary": "Create a new Order",
-                "parameters": [
-                    {
-                        "description": "Order Payload",
-                        "name": "payload",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/shop.CreateOrder"
-                        }
-                    }
-                ],
+                "summary": "Create a new Order from the user active cart",
                 "responses": {
                     "201": {
                         "description": "Created",
@@ -491,8 +583,15 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "orderId ID",
+                        "description": "Order ID",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Item ID to be downloaded",
+                        "name": "itemId",
                         "in": "path",
                         "required": true
                     }
@@ -501,7 +600,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/shop.ShopBookResponse"
+                            "$ref": "#/definitions/shop.DownloadResponse"
                         }
                     },
                     "402": {
@@ -758,6 +857,9 @@
                         "$ref": "#/definitions/catalog.ImageResponse"
                     }
                 },
+                "mainImageId": {
+                    "type": "string"
+                },
                 "price": {
                     "type": "integer"
                 },
@@ -823,6 +925,9 @@
         "catalog.PresignURLResponse": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "string"
+                },
                 "url": {
                     "type": "string"
                 }
@@ -867,15 +972,54 @@
                 }
             }
         },
-        "shop.CreateOrder": {
+        "shop.CartResponse": {
             "type": "object",
-            "required": [
-                "bookId"
-            ],
             "properties": {
-                "bookId": {
-                    "type": "string",
-                    "maxLength": 36
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/shop.ItemResponse"
+                    }
+                },
+                "total": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "shop.DownloadResponse": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "shop.ItemResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "previewImageId": {
+                    "type": "string"
+                },
+                "price": {
+                    "type": "integer"
                 }
             }
         },
@@ -883,7 +1027,10 @@
             "type": "object",
             "properties": {
                 "bookId": {
-                    "type": "string"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/shop.ItemResponse"
+                    }
                 },
                 "clientSecret": {
                     "type": "string"
@@ -931,14 +1078,6 @@
                 },
                 "totalPages": {
                     "type": "integer"
-                }
-            }
-        },
-        "shop.ShopBookResponse": {
-            "type": "object",
-            "properties": {
-                "url": {
-                    "type": "string"
                 }
             }
         }

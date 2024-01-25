@@ -57,7 +57,7 @@
 * [x] Organize TODO for next iteration
 
 ## Features
-* [ ] Create Shopping Cart Functionality
+* [x] Create Shopping Cart Functionality
 * [ ] Add a position field to the image table
 * [ ] Add ability to specify mime type in the request when creating a presigned url
 

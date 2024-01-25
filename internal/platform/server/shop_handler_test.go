@@ -11,46 +11,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func (s *ServerSuiteTest) TestCreateOrder_InvalidPayload() {
-	token := s.createDefaultCustomer()
-
-	req := shop.CreateOrder{BookID: ""}
-
-	apitest.New().
-		EnableNetworking().
-		Post(s.baseURL+"/api/v1/orders").
-		Header("Authorization", fmt.Sprintf("Bearer %v", token)).
-		JSON(req).
-		Expect(s.T()).
-		Status(http.StatusBadRequest).
-		Assert(jsonpath.Equal("$.message", "the payload is not valid")).
-		End()
-}
-
-func (s *ServerSuiteTest) TestCreateOrder_UnknownBook() {
-	token := s.createDefaultCustomer()
-
-	req := shop.CreateOrder{BookID: "id"}
-
-	apitest.New().
-		EnableNetworking().
-		Post(s.baseURL+"/api/v1/orders").
-		Header("Authorization", fmt.Sprintf("Bearer %v", token)).
-		JSON(req).
-		Expect(s.T()).
-		Status(http.StatusNotFound).
-		Assert(jsonpath.Equal("$.message", "the provided book was not found")).
-		End()
-}
-
 func (s *ServerSuiteTest) TestCreateOrder_Success() {
 	token := s.createDefaultCustomer()
 	book := s.createBook(s.createDefaultAdmin())
-	order := s.createOrder(book, token)
+	s.createCart(token, book)
+	order := s.createOrder(token)
 
 	s.Equal(string(shop.Pending), order.Status)
-	s.Equal(book.ID, order.BookID)
-	s.Equal(book.Price, int(order.Total))
+	s.Equal(book.ID, order.Items[0].ID)
+	s.Equal(book.Price, int(order.TotalPrice))
 }
 
 func (s *ServerSuiteTest) TestGetOrder_Unknown() {
@@ -69,7 +38,8 @@ func (s *ServerSuiteTest) TestGetOrder_Unknown() {
 func (s *ServerSuiteTest) TestGetOrder_Unauthorized() {
 	token := s.createDefaultCustomer()
 	book := s.createBook(s.createDefaultAdmin())
-	order := s.createOrder(book, token)
+	s.createCart(token, book)
+	order := s.createOrder(token)
 
 	apitest.New().
 		EnableNetworking().
@@ -84,7 +54,8 @@ func (s *ServerSuiteTest) TestGetOrder_Unauthorized() {
 func (s *ServerSuiteTest) TestGetOrder_Success() {
 	token := s.createDefaultCustomer()
 	book := s.createBook(s.createDefaultAdmin())
-	expected := s.createOrder(book, token)
+	s.createCart(token, book)
+	expected := s.createOrder(token)
 	var actual shop.OrderResponse
 
 	apitest.New().
@@ -96,9 +67,9 @@ func (s *ServerSuiteTest) TestGetOrder_Success() {
 		End().
 		JSON(&actual)
 
-	s.Equal(expected.BookID, actual.BookID)
+	s.Equal(expected.Items[0].ID, actual.Items[0].ID)
 	s.Equal(expected.Status, actual.Status)
-	s.Equal(expected.Total, actual.Total)
+	s.Equal(expected.TotalPrice, actual.TotalPrice)
 }
 
 func (s *ServerSuiteTest) TestDownloadOrder_Unknown() {
@@ -106,7 +77,7 @@ func (s *ServerSuiteTest) TestDownloadOrder_Unknown() {
 
 	apitest.New().
 		EnableNetworking().
-		Get(s.baseURL+"/api/v1/orders/id1/download").
+		Get(s.baseURL+"/api/v1/orders/id1/items/id2/download").
 		Header("Authorization", fmt.Sprintf("Bearer %v", token)).
 		Expect(s.T()).
 		Status(http.StatusNotFound).
@@ -117,29 +88,31 @@ func (s *ServerSuiteTest) TestDownloadOrder_Unknown() {
 func (s *ServerSuiteTest) TestDownloadOrder_NotPaid() {
 	token := s.createDefaultCustomer()
 	book := s.createBook(s.createDefaultAdmin())
-	order := s.createOrder(book, token)
+	s.createCart(token, book)
+	order := s.createOrder(token)
 
 	apitest.New().
 		EnableNetworking().
-		Get(s.baseURL+"/api/v1/orders/"+order.ID+"/download").
+		Get(s.baseURL+"/api/v1/orders/"+order.ID+"/items/"+book.ID+"/download").
 		Header("Authorization", fmt.Sprintf("Bearer %v", token)).
 		Expect(s.T()).
 		Status(http.StatusPaymentRequired).
-		Assert(jsonpath.Equal("$.message", "only books from paid orders can be downloaded")).
+		Assert(jsonpath.Equal("$.message", "only books from completed orders can be downloaded")).
 		End()
 }
 
 func (s *ServerSuiteTest) TestDownloadOrder_Unauthorized() {
 	token := s.createDefaultCustomer()
 	book := s.createBook(s.createDefaultAdmin())
-	order := s.createOrder(book, token)
-	
+	s.createCart(token, book)
+	order := s.createOrder(token)
+
 	result := s.container.DB().Model(&shop.Order{}).Where("id = ?", order.ID).Update("status", shop.Paid)
 	require.NoError(s.T(), result.Error)
 
 	apitest.New().
 		EnableNetworking().
-		Get(s.baseURL+"/api/v1/orders/"+order.ID+"/download").
+		Get(s.baseURL+"/api/v1/orders/"+order.ID+"/items/"+book.ID+"/download").
 		Header("Authorization", fmt.Sprintf("Bearer %v", s.createRandomCustomer())).
 		Expect(s.T()).
 		Status(http.StatusForbidden).
@@ -150,14 +123,15 @@ func (s *ServerSuiteTest) TestDownloadOrder_Unauthorized() {
 func (s *ServerSuiteTest) TestDownloadOrder_Success() {
 	token := s.createDefaultCustomer()
 	book := s.createBook(s.createDefaultAdmin())
-	
-	order := s.createOrder(book, token)
+
+	s.createCart(token, book)
+	order := s.createOrder(token)
 	result := s.container.DB().Model(&shop.Order{}).Where("id = ?", order.ID).Update("status", shop.Paid)
 	require.NoError(s.T(), result.Error)
 
 	apitest.New().
 		EnableNetworking().
-		Get(s.baseURL+"/api/v1/orders/"+order.ID+"/download").
+		Get(s.baseURL+"/api/v1/orders/"+order.ID+"/items/"+book.ID+"/download").
 		Header("Authorization", fmt.Sprintf("Bearer %v", token)).
 		Expect(s.T()).
 		Status(http.StatusOK).
@@ -168,7 +142,8 @@ func (s *ServerSuiteTest) TestDownloadOrder_Success() {
 func (s *ServerSuiteTest) TestGetOrders_Success() {
 	token := s.createDefaultCustomer()
 	book := s.createBook(s.createDefaultAdmin())
-	order := s.createOrder(book, token)
+	s.createCart(token, book)
+	order := s.createOrder(token)
 
 	var response shop.PaginatedOrdersResponse
 
@@ -185,21 +160,86 @@ func (s *ServerSuiteTest) TestGetOrders_Success() {
 	s.Equal(15, response.PerPage)
 	s.Equal(int64(1), response.TotalItems)
 	s.Equal(1, response.TotalPages)
-	s.Equal(order.BookID, response.Results[0].BookID)
+	s.Equal(order.Items, response.Results[0].Items)
 	s.Equal(order.Status, response.Results[0].Status)
-	s.Equal(order.Total, response.Results[0].Total)
+	s.Equal(order.TotalPrice, response.Results[0].TotalPrice)
 }
 
-func (s *ServerSuiteTest) createOrder(book catalog.BookResponse, customerToken string) shop.OrderResponse {
-	req := shop.CreateOrder{BookID: book.ID}
+func (s *ServerSuiteTest) TestRemoveItemFromCart_NoExistent() {
+	token := s.createDefaultCustomer()
 
+	apitest.New().
+		EnableNetworking().
+		Delete(s.baseURL+"/api/v1/cart/items/id1").
+		Header("Authorization", fmt.Sprintf("Bearer %v", token)).
+		Expect(s.T()).
+		Status(http.StatusNotFound).
+		Assert(jsonpath.Equal("$.message", "item not found in cart")).
+		End()
+}
+
+func (s *ServerSuiteTest) TestRemoveItemFromCart_Success() {
+	token := s.createDefaultCustomer()
+	book := s.createBook(s.createDefaultAdmin())
+	s.createCart(token, book)
+
+	var response shop.CartResponse
+
+	apitest.New().
+		EnableNetworking().
+		Delete(s.baseURL+"/api/v1/cart/items/"+book.ID).
+		Header("Authorization", fmt.Sprintf("Bearer %v", token)).
+		Expect(s.T()).
+		Status(http.StatusOK).
+		End().
+		JSON(&response)
+
+	s.Equal(0, len(response.Items))
+}
+
+func (s *ServerSuiteTest) TestGetCart_Success() {
+	token := s.createDefaultCustomer()
+	book := s.createBook(s.createDefaultAdmin())
+	s.createCart(token, book)
+
+	var response shop.CartResponse
+
+	apitest.New().
+		EnableNetworking().
+		Get(s.baseURL+"/api/v1/active-cart").
+		Header("Authorization", fmt.Sprintf("Bearer %v", token)).
+		Expect(s.T()).
+		Status(http.StatusOK).
+		End().
+		JSON(&response)
+
+	s.Equal(book.ID, response.Items[0].ID)
+	s.Equal(book.Price, int(response.TotalPrice))
+}
+
+func (s *ServerSuiteTest) createCart(customerToken string, book catalog.BookResponse) shop.CartResponse {
+	var response shop.CartResponse
+
+	apitest.New().
+		EnableNetworking().
+		Post(s.baseURL+"/api/v1/cart/items/"+book.ID).
+		Header("Authorization", fmt.Sprintf("Bearer %v", customerToken)).
+		Expect(s.T()).
+		Status(http.StatusOK).
+		End().
+		JSON(&response)
+
+	return response
+}
+
+// createOrder creates a new order using the active cart. Must be called after createCart.
+func (s *ServerSuiteTest) createOrder(customerToken string) shop.OrderResponse {
 	var response shop.OrderResponse
 
 	apitest.New().
 		EnableNetworking().
 		Post(s.baseURL+"/api/v1/orders").
 		Header("Authorization", fmt.Sprintf("Bearer %v", customerToken)).
-		JSON(req).
 		Expect(s.T()).
 		Status(http.StatusCreated).
 		End().

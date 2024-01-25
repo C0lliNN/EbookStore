@@ -6,25 +6,30 @@ import (
 )
 
 type OrderResponse struct {
-	ID              string    `json:"id"`
-	Status          string    `json:"status"`
-	Total           int64     `json:"total"`
-	PaymentIntentID *string   `json:"paymentIntentId"`
-	ClientSecret    *string   `json:"clientSecret"`
-	BookID          string    `json:"bookId"`
-	UserID          string    `json:"userId"`
-	CreatedAt       time.Time `json:"createdAt"`
-	UpdatedAt       time.Time `json:"updatedAt"`
+	ID              string         `json:"id"`
+	Status          string         `json:"status"`
+	TotalPrice      int64          `json:"total"`
+	PaymentIntentID *string        `json:"paymentIntentId"`
+	ClientSecret    *string        `json:"clientSecret"`
+	Items           []ItemResponse `json:"bookId"`
+	UserID          string         `json:"userId"`
+	CreatedAt       time.Time      `json:"createdAt"`
+	UpdatedAt       time.Time      `json:"updatedAt"`
 }
 
 func NewOrderResponse(order Order) OrderResponse {
+	items := make([]ItemResponse, 0, len(order.Items))
+	for _, i := range order.Items {
+		items = append(items, newItemResponse(i))
+
+	}
 	return OrderResponse{
 		ID:              order.ID,
 		Status:          string(order.Status),
-		Total:           order.Total,
+		TotalPrice:      order.TotalPrice(),
 		PaymentIntentID: order.PaymentIntentID,
 		ClientSecret:    order.ClientSecret,
-		BookID:          order.BookID,
+		Items:           items,
 		UserID:          order.UserID,
 		CreatedAt:       order.CreatedAt,
 		UpdatedAt:       order.UpdatedAt,
@@ -54,6 +59,46 @@ func NewPaginatedOrdersResponse(paginatedOrders PaginatedOrders) PaginatedOrders
 	}
 }
 
-type ShopBookResponse struct {
+type DownloadResponse struct {
 	URL string `json:"url"`
+}
+
+type CartResponse struct {
+	ID         string         `json:"id"`
+	Items      []ItemResponse `json:"items"`
+	UserID     string         `json:"userId"`
+	TotalPrice int64          `json:"total"`
+	CreatedAt  time.Time      `json:"createdAt"`
+	UpdatedAt  time.Time      `json:"updatedAt"`
+}
+
+func NewCartResponse(cart Cart) CartResponse {
+	items := make([]ItemResponse, 0, len(cart.Items))
+	for _, i := range cart.Items {
+		items = append(items, newItemResponse(i))
+	}
+	return CartResponse{
+		ID:         cart.ID,
+		Items:      items,
+		UserID:     cart.UserID,
+		TotalPrice: cart.TotalPrice(),
+		CreatedAt:  cart.CreatedAt,
+		UpdatedAt:  cart.UpdatedAt,
+	}
+}
+
+type ItemResponse struct {
+	ID             string `json:"id"`
+	Name           string
+	Price          int64  `json:"price"`
+	PreviewImageID string `json:"previewImageId"`
+}
+
+func newItemResponse(item Item) ItemResponse {
+	return ItemResponse{
+		ID:             item.ID,
+		Name:           item.Name,
+		Price:          item.Price,
+		PreviewImageID: item.PreviewImageID,
+	}
 }
